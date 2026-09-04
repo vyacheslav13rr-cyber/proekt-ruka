@@ -1653,6 +1653,128 @@
   .primary-btn[disabled]{opacity:.4; cursor:default;}
   .primary-btn svg{width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round;}
 
+  /* ---------- Предчек / кассир: две (или три) кнопки способа оплаты в ряд ---------- */
+  .pay-btn-row{display:flex; gap:9px; margin-top:14px;}
+  .pay-btn{
+    flex:1 1 0; min-width:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
+    background:linear-gradient(160deg, var(--gold-light), var(--gold));
+    border:none;
+    border-radius:14px;
+    padding:14px 8px;
+    font-family:'Manrope', sans-serif;
+    font-size:12.5px; font-weight:800; line-height:1.3; text-align:center;
+    color:var(--navy-deep);
+    cursor:pointer;
+    transition:transform .15s ease, opacity .15s ease;
+  }
+  .pay-btn:active{transform:scale(.98);}
+  .pay-btn[disabled]{opacity:.4; cursor:default;}
+  .pay-btn svg{width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+  .pay-btn small{font-size:10px; font-weight:700; opacity:.75;}
+  /* «Чек-коррекция» — та же строка, но приглушённая, отдельным контуром */
+  .pay-btn.pay-btn-ghost{
+    background:var(--surface);
+    border:1px solid var(--card-border);
+    color:var(--text-primary);
+  }
+
+  /* ---------- Экран кассира (МН-24) ---------- */
+  /* временный переключатель роли официант/кассир — только для демонстрации,
+     ролей и аккаунтов в прототипе пока нет (см. isManagerRole) */
+  .role-switch-row{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-top:12px;
+  }
+  .role-switch-label{font-size:11.5px; color:var(--text-muted);}
+  .role-switch{
+    display:flex;
+    background:var(--segment-track);
+    border-radius:11px;
+    padding:3px;
+    gap:2px;
+  }
+  .role-switch-btn{
+    border:none; background:none;
+    padding:6px 11px;
+    border-radius:9px;
+    font-family:'Manrope', sans-serif;
+    font-size:11.5px; font-weight:700;
+    color:var(--text-muted);
+    cursor:pointer;
+  }
+  .role-switch-btn.active{
+    background:linear-gradient(160deg, var(--gold-light), var(--gold));
+    color:var(--navy-deep);
+  }
+  .cash-input{
+    width:100%;
+    text-align:center;
+    margin-top:12px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:17px; font-weight:600;
+  }
+  #cashChange{font-weight:800; color:var(--khaki-block-value);}
+  #cashChange.is-short{color:var(--dot-red);}
+
+  /* ---------- Плитка счёта, ждущего кассира, на «Заказах» ---------- */
+  .table-card-bill-icon{
+    position:absolute; top:8px; right:8px;
+    width:18px; height:18px;
+    color:var(--gold);
+  }
+  .table-card-bill-icon svg{width:100%; height:100%; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+  .table-card.is-bill-tile{border-style:solid; border-color:var(--gold);}
+
+  /* ---------- Свободные столы: свёрнуты до двух рядов ---------- */
+  .free-expand-btn{
+    grid-column:1 / -1;
+    background:none;
+    border:1px dashed var(--khaki-block-border);
+    border-radius:12px;
+    padding:9px;
+    margin-top:2px;
+    font-family:'Manrope', sans-serif;
+    font-size:11.5px; font-weight:700;
+    color:var(--text-muted);
+    cursor:pointer;
+  }
+  .closed-orders-btn{
+    width:100%;
+    background:none;
+    border:1px dashed var(--khaki-block-border);
+    border-radius:12px;
+    padding:11px;
+    margin-top:10px;
+    font-family:'Manrope', sans-serif;
+    font-size:12.5px; font-weight:700;
+    color:var(--text-muted);
+    cursor:pointer;
+  }
+
+  /* ---------- Закрытые заказы (МН-25) ---------- */
+  .closed-order-row{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:10px;
+    padding:12px 2px;
+    border-bottom:1px solid var(--card-border);
+  }
+  .closed-order-row:last-child{border-bottom:none;}
+  .closed-order-tag{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:14px;
+    color:var(--text-primary);
+  }
+  .closed-order-meta{font-size:11px; color:var(--text-muted); margin-top:2px;}
+  .closed-order-sum{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13.5px; font-weight:600;
+    color:var(--accent);
+    white-space:nowrap;
+  }
+  .closed-order-empty{font-size:12.5px; color:var(--text-muted); padding:14px 2px;}
+
   .action-grid{
     display:grid;
     grid-template-columns:1fr 1fr;
@@ -1943,6 +2065,7 @@
   .guest-add-pin svg{width:15px; height:15px; stroke:var(--gold); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
   .guest-add-pin:active{background:rgba(198,153,47,0.16);}
   .guest-add-pin[disabled]{opacity:.35; cursor:default; border-color:var(--card-border); box-shadow:none;}
+  .guest-add-pin[hidden]{display:none;}
 
   /* вкладки гостей под кнопкой «Меню» */
   .guest-tabs{
@@ -2210,6 +2333,7 @@
     background:none;
     color:var(--text-muted);
   }
+  .send-order-btn[hidden]{display:none;}
 
 
 
@@ -3273,6 +3397,7 @@
   }
   .bill-btn:active{transform:scale(.97);}
   .bill-btn svg{width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+  .bill-btn[hidden]{display:none;}
   .order-total{
     display:flex; justify-content:space-between; align-items:center;
     background:var(--khaki-block-bg);
@@ -4135,7 +4260,17 @@
         </button>
         <button class="map-row" data-goto="мн-19">
           <span class="map-id">МН-19</span>
-          <span class="map-name">Расчёт<span class="map-note">Счёт к оплате</span></span>
+          <span class="map-name">Расчёт<span class="map-note">Счёт к оплате · предчек</span></span>
+          <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <button class="map-row" data-goto="мн-24">
+          <span class="map-id">МН-24</span>
+          <span class="map-name">Выбитый счёт<span class="map-note">Экран кассира, вход с плитки счёта</span></span>
+          <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <button class="map-row" data-goto="мн-25">
+          <span class="map-id">МН-25</span>
+          <span class="map-name">Закрытые заказы<span class="map-note">Рассчитанные счета · только менеджер</span></span>
           <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
         </button>
         <div class="map-group-title">Планировщик и профиль</div>
@@ -4185,7 +4320,7 @@
               <span class="stat-block-title">Финансы</span>
               <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
             </div>
-            <div class="stat-block-row"><span class="value-highlight">Выручка</span><strong class="value-highlight">179 000 ₽</strong></div>
+            <div class="stat-block-row"><span class="value-highlight">Выручка</span><strong class="value-highlight" id="financeRevenue">179 000 ₽</strong></div>
             <div class="stat-block-row"><span class="font-serif-match">План</span><strong class="font-serif-match">290 000 ₽</strong></div>
             <div class="progress-track"><div class="progress-fill"></div></div>
             <div class="stat-block-percent">— % от плана</div>
@@ -4269,7 +4404,7 @@
             Назад
           </button>
           <div class="finance-rows">
-            <div class="finance-row"><span class="value-highlight">Выручка</span><strong class="value-highlight">179 000 ₽</strong></div>
+            <div class="finance-row"><span class="value-highlight">Выручка</span><strong class="value-highlight" id="financeDetailRevenue">179 000 ₽</strong></div>
             <div class="finance-row"><span class="font-serif-match">План</span><strong class="font-serif-match">290 000 ₽</strong></div>
             <div class="finance-row"><span>Выполнение плана</span><strong id="detailPercent">—%</strong></div>
             <div class="finance-row"><span>Средний чек</span><strong>1 490 ₽</strong></div>
@@ -4514,6 +4649,9 @@
 
           <div class="table-grid" id="tableGrid"></div>
 
+          <!-- только менеджер/управляющий, см. isManagerRole -->
+          <button class="closed-orders-btn" id="closedOrdersBtn">Закрытые заказы</button>
+
           <!-- перенос между столами: панель живёт, пока выбираем стол-адресат -->
           <div class="hall-transfer-bar" id="hallTransferBar" hidden>
             <div class="transfer-info">
@@ -4731,10 +4869,67 @@
             <span class="order-total-label">К оплате</span>
             <span class="order-total-value" id="precheckTotal">—</span>
           </div>
-          <button class="primary-btn" id="precheckSend">
-            <svg viewBox="0 0 24 24"><path d="M6 9V3h12v6"/><rect x="6" y="13" width="12" height="8" rx="1.4"/><path d="M6 17H4a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-2"/></svg>
-            Отправить на печать
+          <div class="pay-btn-row">
+            <button class="pay-btn" id="precheckCard" data-method="card">
+              <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.2"/><path d="M3 10h18"/></svg>
+              <span>Безналичный расчёт <small>(карта)</small></span>
+            </button>
+            <button class="pay-btn" id="precheckCash" data-method="cash">
+              <svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/></svg>
+              <span>Наличные</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- МН-24 -->
+        <div class="shift-detail" data-detail="cashier" data-back="hall" data-subtitle="Выбитый счёт" hidden>
+          <button class="back-btn">
+            <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+            Назад
           </button>
+          <h3 class="detail-title" id="cashierTitle">Счёт</h3>
+
+          <!-- ролей в прототипе нет — временный переключатель для демонстрации
+               доступа к «Чек-коррекции» (кассир и менеджер) -->
+          <div class="role-switch-row">
+            <span class="role-switch-label">Демо-роль</span>
+            <div class="role-switch" id="cashierRoleSwitch">
+              <button class="role-switch-btn" data-role="waiter">Официант</button>
+              <button class="role-switch-btn" data-role="cashier">Кассир</button>
+            </div>
+          </div>
+
+          <div id="cashierPositions"></div>
+          <div class="order-total">
+            <span class="order-total-label">К оплате</span>
+            <span class="order-total-value" id="cashierTotal">—</span>
+          </div>
+          <div class="pay-btn-row">
+            <button class="pay-btn" id="cashierCard">
+              <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.2"/><path d="M3 10h18"/></svg>
+              <span>Безналичный расчёт <small>(карта)</small></span>
+            </button>
+            <button class="pay-btn" id="cashierCash">
+              <svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/></svg>
+              <span>Наличные</span>
+            </button>
+          </div>
+          <div class="pay-btn-row" id="cashierCorrectRow">
+            <button class="pay-btn pay-btn-ghost" id="cashierCorrect">
+              <svg viewBox="0 0 24 24"><path d="M4 4v6h6"/><path d="M4.5 15a8 8 0 1 0 2-8.5L4 10"/></svg>
+              <span>Чек-коррекция</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- МН-25 -->
+        <div class="shift-detail" data-detail="closed" data-back="hall" data-title="Закрытые заказы" data-subtitle="Рассчитанные счета за смену" hidden>
+          <button class="back-btn">
+            <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+            Назад
+          </button>
+          <h3 class="detail-title">Закрытые заказы</h3>
+          <div id="closedOrdersList"></div>
         </div>
 
         <!-- МН-20 -->
@@ -5327,6 +5522,31 @@
       </div>
     </div>
 
+    <!-- касса: сумма наличными и сдача -->
+    <div class="modal-overlay" id="cashOverlay" hidden>
+      <div class="modal-box">
+        <div class="modal-title">Наличные</div>
+        <div class="modal-note">Сумма к оплате — <span id="cashDue">—</span></div>
+        <input class="profile-field-input password-input cash-input" type="number" inputmode="decimal" id="cashGiven" placeholder="Получено, ₽">
+        <div class="modal-note" id="cashChange"></div>
+        <div class="modal-actions">
+          <button class="modal-btn modal-btn-ghost" id="cashCancel">Отмена</button>
+          <button class="modal-btn modal-btn-gold" id="cashConfirm" disabled>Подтвердить</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- чек-коррекция: вернуть счёт в редактирование -->
+    <div class="modal-overlay" id="correctOverlay" hidden>
+      <div class="modal-box">
+        <div class="modal-title">Внести изменения в заказ?</div>
+        <div class="modal-actions">
+          <button class="modal-btn modal-btn-ghost" id="correctNo">Нет</button>
+          <button class="modal-btn modal-btn-gold" id="correctYes">Да</button>
+        </div>
+      </div>
+    </div>
+
     <div class="modal-overlay" id="saveOverlay" hidden>
       <div class="modal-box">
         <div class="modal-title">Сохранить изменения?</div>
@@ -5518,6 +5738,11 @@
     role: 'manager'   // 'manager' / 'director' — видят «Настройки ресторана», иначе рядовой сотрудник
   };
   const isManagerRole = currentStaff.role === 'manager' || currentStaff.role === 'director';
+
+  /* ролей в прототипе нет — временный переключатель официант/кассир только
+     для демонстрации доступа к «Чек-коррекции» на экране кассира (МН-24) */
+  let demoRole = 'cashier';
+  const canCorrect = () => demoRole === 'cashier' || isManagerRole;
 
   const staffFullName = s => (s.firstName + ' ' + s.lastName).trim();
   const staffInitials = s =>
@@ -6031,17 +6256,8 @@
   applyNotifSwitch(notifEmptySwitch, 'notifEmpty');
 
   /* ---------- Смена: блоки показателей ---------- */
-  document.querySelectorAll('.stat-block[data-revenue][data-plan]').forEach(block => {
-    const revenue = parseFloat(block.dataset.revenue);
-    const plan = parseFloat(block.dataset.plan);
-    const pct = Math.min(100, Math.round((revenue / plan) * 100));
-    const fill = block.querySelector('.progress-fill');
-    const percentLabel = block.querySelector('.stat-block-percent');
-    if (fill) fill.style.width = pct + '%';
-    if (percentLabel) percentLabel.textContent = pct + '% от плана';
-    const detailPercent = document.getElementById('detailPercent');
-    if (detailPercent) detailPercent.textContent = pct + '%';
-  });
+  /* сама функция и первый вызов — ниже, после блока «Счета» (нужны money()
+     и bills, которые определяются дальше по файлу вместе со столами) */
 
   const shiftList = document.getElementById('shiftList');
   document.querySelectorAll('[data-block]').forEach(block => {
@@ -6108,6 +6324,7 @@
       rec.table = currentTable ? currentTable.num : null;
     }
     if (rec.detail === 'precheck') rec.guest = precheckGuest;
+    if (rec.detail === 'cashier') rec.tag = currentCashierTag;
     if (rec.detail === 'guests') rec.table = pendingTable ? pendingTable.num : null;
     rec.title = titleEl.textContent;
     rec.sub = subEl.textContent;
@@ -6134,6 +6351,8 @@
       }
       if (rec.detail === 'shiftlog') { openShiftLog(); return true; }
       if (rec.detail === 'hall') { showDetail('hall', 'Заказы', 'Столы и открытые счета'); return true; }
+      if (rec.detail === 'cashier' && rec.tag && findBill(rec.tag)) { openCashier(rec.tag); return true; }
+      if (rec.detail === 'closed') { renderClosedOrders(); showDetail('closed', 'Закрытые заказы', 'Рассчитанные счета за смену'); return true; }
       const detail = rec.detail
         ? document.querySelector('.shift-detail[data-detail="' + rec.detail + '"]')
         : null;
@@ -6228,6 +6447,51 @@
 
   const money = n => n.toLocaleString('ru-RU') + ' ₽';
   const tableSum = t => (t.items || []).reduce((a, i) => a + i.q * i.p, 0);
+
+  /* ---------- Счета: выбитые (ждут кассира) и закрытые (оплаченные) ----------
+     Счёт — либо весь стол (guest:null, tag === номер стола), либо позиции
+     одного гостя, вынесенные из основного заказа в отдельный счёт с номером
+     через точку (стол 10 → 10.1, следующий 10.2, нумерация не переиспользуется).
+     items — снимок позиций на момент выбивания, дальше не меняется.
+     status: 'billed' — выбит, ждёт кассира; 'paid' — рассчитан и закрыт. */
+  let bills = [];
+
+  function nextBillTag(tableNum) {
+    const n = bills.filter(b => b.table === tableNum && b.guest !== null).length;
+    return tableNum + '.' + (n + 1);
+  }
+
+  /* активный (ещё не рассчитанный) счёт по всему столу — если есть, стол
+     несёт иконку чека и открывает не заказ, а экран кассира */
+  const tableActiveBill = t => bills.find(b => b.table === t.num && b.guest === null && b.status === 'billed');
+  const findBill = tag => bills.find(b => b.tag === tag);
+  const METHOD_LABEL = { card:'Безналичный расчёт (карта)', cash:'Наличные' };
+
+  /* выручка = демо-база из разметки + сумма счетов, закрытых кассиром;
+     план фиксирован. Выбитые, но не рассчитанные кассиром счета в выручку
+     не входят — см. payBill в блоке МН-24 */
+  const financeBlockEl = document.querySelector('.stat-block[data-revenue][data-plan]');
+  const FINANCE_BASE_REVENUE = financeBlockEl ? parseFloat(financeBlockEl.dataset.revenue) : 0;
+  const FINANCE_PLAN = financeBlockEl ? parseFloat(financeBlockEl.dataset.plan) : 0;
+
+  function renderFinance() {
+    if (!financeBlockEl) return;
+    const paidSum = bills.filter(b => b.status === 'paid').reduce((a, b) => a + b.total, 0);
+    const revenue = FINANCE_BASE_REVENUE + paidSum;
+    const pct = FINANCE_PLAN ? Math.min(100, Math.round((revenue / FINANCE_PLAN) * 100)) : 0;
+    const fill = financeBlockEl.querySelector('.progress-fill');
+    const percentLabel = financeBlockEl.querySelector('.stat-block-percent');
+    if (fill) fill.style.width = pct + '%';
+    if (percentLabel) percentLabel.textContent = pct + '% от плана';
+    const detailPercent = document.getElementById('detailPercent');
+    if (detailPercent) detailPercent.textContent = pct + '%';
+    const revenueText = money(revenue);
+    const revEl = document.getElementById('financeRevenue');
+    if (revEl) revEl.textContent = revenueText;
+    const revDetailEl = document.getElementById('financeDetailRevenue');
+    if (revDetailEl) revDetailEl.textContent = revenueText;
+  }
+  renderFinance();
 
   /* mins в данных — стартовое значение; дальше время идёт от openedAt */
   tables.forEach(t => { if (t.mins !== undefined) t.openedAt = Date.now() - t.mins * 60000; });
@@ -6446,6 +6710,9 @@
   /* «Заказы»: общий список ⇄ список, разбитый на секции по официантам —
      переключается свайпом влево/вправо по экрану, без похода в фильтры */
   let ordersByWaiter = false;
+  /* свободные столы свёрнуты до двух рядов, пока не нажали «Развернуть» */
+  let freeExpanded = false;
+  const FREE_COLLAPSE_LIMIT = 6;
 
   const tableGridEl = document.getElementById('tableGrid');
   const zoneTabsEl = document.getElementById('zoneTabs');
@@ -6708,14 +6975,32 @@
     /* оставили пустой стол за гостями — подсветка гаснет, как только на нём появится заказ */
     if (t.pendingEmptyKept && (t.items || []).length) { delete t.pendingEmptyKept; delete t.emptyMissCount; }
     const waiting = !!t.pendingUnsent || !!t.pendingEmptyKept;
+    /* счёт этого стола целиком выбит и ждёт кассира — иконка чека в углу */
+    const billIcon = tableActiveBill(t)
+      ? '<span class="table-card-bill-icon"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6"/><path d="M9 12h6"/></svg></span>'
+      : '';
     return '<div class="table-card is-open' + (t.calling ? ' is-calling' : '') +
         (isSource ? ' is-move-source' : '') +
         (waiting ? ' is-unsent' : '') +
         (t.pendingEmptyKept ? ' is-empty-kept' : '') +
         '" data-table="' + t.num + '" role="button" tabindex="0">' +
+      billIcon +
       tableNumHtml(t) +
       '<span class="table-card-waiter">' + t.waiter + '</span>' +
       '<span class="table-card-sum">' + money(tableSum(t)) + '</span>' +
+    '</div>';
+  }
+
+  /* счёт гостя, вынесенный из основного заказа (10 → 10.1) — отдельная
+     плитка, пока его не рассчитает кассир; клик ведёт на экран кассира,
+     а не в заказ */
+  function billCardTemplate(bill, parent) {
+    return '<div class="table-card is-open is-bill-tile" data-bill="' + bill.tag + '" role="button" tabindex="0">' +
+      '<span class="table-card-bill-icon"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6"/><path d="M9 12h6"/></svg></span>' +
+      '<span class="table-card-num"><span class="table-card-name-text">' + ZONE_LABEL[parent.zone] + '</span>' +
+        '<span class="table-card-num-digit">' + bill.tag + '</span></span>' +
+      '<span class="table-card-waiter">' + guestLabel(parent, bill.guest) + '</span>' +
+      '<span class="table-card-sum">' + money(bill.total) + '</span>' +
     '</div>';
   }
 
@@ -6736,6 +7021,13 @@
     const busyList = list.filter(t => t.status !== 'free').sort(sortFn);
     const freeList = list.filter(t => t.status === 'free').sort(byNum);
 
+    /* счета гостей, выбитые отдельно от стола (10 → 10.1) и ещё не рассчитанные
+       кассиром — отдельные плитки рядом с плиткой их стола */
+    const billEntries = bills
+      .filter(b => b.status === 'billed' && b.guest !== null)
+      .map(b => ({ bill:b, parent:tables.find(x => x.num === b.table) }))
+      .filter(x => x.parent && (currentZone === 'all' || x.parent.zone === currentZone));
+
     let html = '';
     /* по официантам показываем либо когда выбрано 2+ в фильтре, либо когда
        свайпом влево включили этот вид — тогда делим весь текущий список */
@@ -6745,19 +7037,28 @@
         : [...new Set(busyList.map(t => t.waiter))].sort();
       waiterOrder.forEach(w => {
         const own = busyList.filter(t => t.waiter === w);
-        if (!own.length) return;
+        const ownBills = billEntries.filter(x => x.parent.waiter === w);
+        if (!own.length && !ownBills.length) return;
         html += '<div class="table-divider waiter-divider">' + w + ' · ' + own.length + '</div>';
         html += own.map(tableCardTemplate).join('');
+        html += ownBills.map(x => billCardTemplate(x.bill, x.parent)).join('');
       });
     } else {
       html += busyList.map(tableCardTemplate).join('');
+      html += billEntries.map(x => billCardTemplate(x.bill, x.parent)).join('');
     }
 
     /* по официантам свободные столы не показываем — они ничьи, свайп вправо
        возвращает общий список и их обратно */
     if (freeList.length && !ordersByWaiter) {
-      if (busyList.length) html += '<div class="table-divider">Свободные</div>';
-      html += freeList.map(tableCardTemplate).join('');
+      if (busyList.length || billEntries.length) html += '<div class="table-divider">Свободные</div>';
+      const collapse = freeList.length > FREE_COLLAPSE_LIMIT && !freeExpanded;
+      const shownFree = collapse ? freeList.slice(0, FREE_COLLAPSE_LIMIT) : freeList;
+      html += shownFree.map(tableCardTemplate).join('');
+      if (freeList.length > FREE_COLLAPSE_LIMIT) {
+        html += '<button class="free-expand-btn" id="freeExpandBtn">' +
+          (freeExpanded ? 'Свернуть' : 'Развернуть') + '</button>';
+      }
     }
     tableGridEl.innerHTML = html
       ? html
@@ -6766,7 +7067,17 @@
           : '<div class="table-empty">Под фильтры не попал ни один стол</div>');
 
     tableGridEl.querySelectorAll('.table-card[data-table]').forEach(card => {
-      card.addEventListener('click', () => openOrder(parseInt(card.dataset.table, 10), true));
+      card.addEventListener('click', () => {
+        const num = parseInt(card.dataset.table, 10);
+        const t = tables.find(x => x.num === num);
+        /* весь стол выбит целиком — ведём не в заказ, а на экран кассира */
+        const active = t && tableActiveBill(t);
+        if (active) { openCashier(active.tag); setRoute('мн-24'); return; }
+        openOrder(num, true);
+      });
+    });
+    tableGridEl.querySelectorAll('.table-card[data-bill]').forEach(card => {
+      card.addEventListener('click', () => { openCashier(card.dataset.bill); setRoute('мн-24'); });
     });
     tableGridEl.querySelectorAll('.table-card[data-free]').forEach(card => {
       card.addEventListener('click', () => {
@@ -6777,6 +7088,8 @@
         openGuests(num);
       });
     });
+    const freeExpandBtn = document.getElementById('freeExpandBtn');
+    if (freeExpandBtn) freeExpandBtn.addEventListener('click', () => { freeExpanded = !freeExpanded; renderTables(); });
     syncHallTransferBar();
 
     const busy = list.filter(t => t.status !== 'free');
@@ -7458,6 +7771,12 @@
   /* переключатель между «по гостям» и «по курсам» — единая точка, откуда
      список позиций перерисовывается, чтобы не разойтись в трёх местах */
   function renderOrderList(t) {
+    /* счёт выбит и ушёл кассиру — весь состав только на просмотр,
+       тем же способом, что и на самом экране «Расчёт» */
+    if (t.locked) {
+      document.getElementById('orderPositions').innerHTML = renderGuestGroups(t, false, true, true);
+      return;
+    }
     if (courseView && !hasCourseItems(t)) courseView = false;
     document.getElementById('orderPositions').innerHTML =
       courseView ? renderCourseGroups(t) : renderGuestGroups(t, true);
@@ -7558,9 +7877,16 @@
     renderGuestTabs(t);
     renderOrderList(t);
     syncSendBtn();
-    document.getElementById('addGuestBtn').disabled = t.guests >= 12;
+    document.getElementById('addGuestBtn').disabled = t.guests >= 12 || t.locked;
+    document.getElementById('addGuestBtn').hidden = !!t.locked;
     document.getElementById('orderTotal').textContent = money(tableSum(t));
-    document.getElementById('orderPrecheckNote').hidden = !t.precheck;
+    /* счёт выбит целиком — редактирование недоступно: прячем «Отправить»
+       и «Счёт», список уже отрисован только на просмотр (см. renderOrderList) */
+    document.getElementById('sendOrderBtn').hidden = !!t.locked;
+    document.querySelector('[data-order-action="precheck"]').hidden = !!t.locked;
+    const precheckNoteEl = document.getElementById('orderPrecheckNote');
+    precheckNoteEl.hidden = !t.locked;
+    precheckNoteEl.querySelector('span').textContent = 'Счёт выбит, ожидает кассира';
     if (switchingTable) hideToast();
     syncTransferBar();
     renderDrops();
@@ -7821,6 +8147,7 @@
   /* меню открывается в том же окне заказа, без перехода */
   function openPick(guest, keepDrafts) {
     if (!currentTable) return;
+    if (currentTable.locked) return;   // счёт выбит — меню больше не открыть
     pickGuest = guest === undefined
       ? (activeGuest === 'all' ? 0 : activeGuest)
       : guest;
@@ -8006,16 +8333,208 @@
     }
   }
 
-  document.getElementById('precheckSend').addEventListener('click', () => {
-    if (!currentTable) return;
-    currentTable.precheck = true;
-    currentTable.items.forEach(i => { i.sq = i.q; });   // всё ушло в печать
-    logAction(currentTable, 'bill', 'Счёт отправлен на расчёт',
-      (precheckGuest ? guestLabel(currentTable, precheckGuest) : 'Весь стол') +
-      ' · ' + money(tableSum(currentTable)));
+  /* выбор способа оплаты сразу фиксирует счёт — отдельной кнопки
+     «Рассчитать» нет. Весь стол — счёт остаётся на самом столе (он
+     блокируется для правок); один гость — его позиции выносятся в новый
+     счёт с номером через точку, стол при этом остаётся активным. */
+  function commitBill(method) {
+    if (!currentTable || currentTable.locked) return;
+    const methodLabel = METHOD_LABEL[method];
+    if (precheckGuest === null) {
+      if (tableActiveBill(currentTable)) return;
+      currentTable.items.forEach(i => { i.sq = i.q; });   // печать — точка фиксации
+      const bill = {
+        tag:String(currentTable.num), table:currentTable.num, guest:null,
+        items:currentTable.items.slice(), total:tableSum(currentTable),
+        method:method, status:'billed', billedAt:Date.now()
+      };
+      bills.push(bill);
+      currentTable.locked = true;
+      logAction(currentTable, 'bill', 'Счёт выбит · ' + methodLabel, 'Весь стол · ' + money(bill.total));
+    } else {
+      const g = precheckGuest;
+      const moved = [];
+      currentTable.items = currentTable.items.filter(i => {
+        if ((i.g || 0) !== g) return true;
+        i.sq = i.q;
+        moved.push(i);
+        return false;
+      });
+      if (!moved.length) return;
+      const total = moved.reduce((a, i) => a + i.q * i.p, 0);
+      const bill = {
+        tag:nextBillTag(currentTable.num), table:currentTable.num, guest:g,
+        items:moved, total:total,
+        method:method, status:'billed', billedAt:Date.now()
+      };
+      bills.push(bill);
+      logAction(currentTable, 'bill', 'Счёт выбит · ' + methodLabel,
+        guestLabel(currentTable, g) + ' · ' + money(total) + ' · ' + bill.tag);
+    }
+    renderTables();
     openOrder(currentTable.num);
     setRoute('мн-16');
+  }
+
+  document.getElementById('precheckCard').addEventListener('click', () => commitBill('card'));
+  document.getElementById('precheckCash').addEventListener('click', () => commitBill('cash'));
+
+  /* ---------- МН-24: выбитый счёт, роль кассира ---------- */
+  let currentCashierTag = null;
+
+  function renderCashierRole() {
+    document.querySelectorAll('#cashierRoleSwitch .role-switch-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.role === demoRole);
+    });
+    document.getElementById('cashierCorrectRow').hidden = !canCorrect();
+  }
+
+  function openCashier(tag) {
+    const bill = findBill(tag);
+    if (!bill) return;
+    currentCashierTag = tag;
+    const parent = tables.find(x => x.num === bill.table);
+    const label = parent
+      ? (bill.guest === null ? tableLabel(parent) : tableLabel(parent) + ' · ' + guestLabel(parent, bill.guest))
+      : ('Счёт ' + bill.tag);
+    document.getElementById('cashierTitle').textContent = label;
+    document.getElementById('cashierPositions').innerHTML =
+      '<div class="order-positions">' + bill.items.map(i =>
+        '<div class="order-row">' +
+          '<span class="order-qty">' + i.q + '</span>' +
+          '<span class="order-name">' + i.n + '</span>' +
+          '<span class="order-price">' + money(i.q * i.p) + '</span>' +
+        '</div>'
+      ).join('') + '</div>';
+    document.getElementById('cashierTotal').textContent = money(bill.total);
+    renderCashierRole();
+    showDetail('cashier', 'Счёт', bill.tag);
+  }
+
+  document.getElementById('cashierRoleSwitch').addEventListener('click', e => {
+    const btn = e.target.closest('[data-role]');
+    if (!btn) return;
+    demoRole = btn.dataset.role;
+    renderCashierRole();
   });
+
+  /* рассчитан кассиром — счёт уходит в «Закрытые заказы», выручка учитывается
+     только с этого момента (см. renderFinance) */
+  function payBill(method) {
+    const bill = findBill(currentCashierTag);
+    if (!bill || bill.status !== 'billed') return;
+    bill.status = 'paid';
+    bill.method = method;
+    bill.paidAt = Date.now();
+    const parent = tables.find(x => x.num === bill.table);
+    if (parent) {
+      logAction(parent, 'bill', 'Счёт рассчитан · ' + METHOD_LABEL[method],
+        (bill.guest === null ? 'Весь стол' : guestLabel(parent, bill.guest)) + ' · ' + money(bill.total) + ' · ' + bill.tag);
+      if (bill.guest === null) releaseTable(parent);   // весь стол оплачен — освобождаем
+    }
+    renderTables();
+    renderFinance();
+    navBack();
+  }
+
+  document.getElementById('cashierCard').addEventListener('click', () => payBill('card'));
+
+  const cashOverlayEl = document.getElementById('cashOverlay');
+  const cashGivenEl = document.getElementById('cashGiven');
+  document.getElementById('cashierCash').addEventListener('click', () => {
+    const bill = findBill(currentCashierTag);
+    if (!bill) return;
+    cashGivenEl.value = '';
+    document.getElementById('cashDue').textContent = money(bill.total);
+    const changeEl = document.getElementById('cashChange');
+    changeEl.textContent = '';
+    changeEl.classList.remove('is-short');
+    document.getElementById('cashConfirm').disabled = true;
+    cashOverlayEl.hidden = false;
+  });
+  cashGivenEl.addEventListener('input', () => {
+    const bill = findBill(currentCashierTag);
+    const given = parseFloat(cashGivenEl.value);
+    const changeEl = document.getElementById('cashChange');
+    const confirmEl = document.getElementById('cashConfirm');
+    if (!bill || !given || given < bill.total) {
+      changeEl.textContent = given ? 'Не хватает ' + money(bill.total - given) : '';
+      changeEl.classList.toggle('is-short', !!given);
+      confirmEl.disabled = true;
+      return;
+    }
+    changeEl.classList.remove('is-short');
+    changeEl.textContent = 'Сдача — ' + money(given - bill.total);
+    confirmEl.disabled = false;
+  });
+  document.getElementById('cashCancel').addEventListener('click', () => { cashOverlayEl.hidden = true; });
+  document.getElementById('cashConfirm').addEventListener('click', () => {
+    const bill = findBill(currentCashierTag);
+    if (!bill) return;
+    const given = parseFloat(cashGivenEl.value);
+    bill.cashGiven = given;
+    bill.change = given - bill.total;
+    cashOverlayEl.hidden = true;
+    payBill('cash');
+  });
+
+  const correctOverlayEl = document.getElementById('correctOverlay');
+  document.getElementById('cashierCorrect').addEventListener('click', () => {
+    if (!canCorrect()) return;
+    correctOverlayEl.hidden = false;
+  });
+  document.getElementById('correctNo').addEventListener('click', () => { correctOverlayEl.hidden = true; });
+  document.getElementById('correctYes').addEventListener('click', () => {
+    const bill = findBill(currentCashierTag);
+    correctOverlayEl.hidden = true;
+    if (!bill) return;
+    const parent = tables.find(x => x.num === bill.table);
+    bills = bills.filter(b => b.tag !== bill.tag);
+    if (!parent) { renderTables(); navBack(); return; }
+    if (bill.guest === null) {
+      parent.locked = false;
+    } else {
+      parent.items = parent.items.concat(bill.items);
+    }
+    logAction(parent, 'bill', 'Чек-коррекция',
+      (bill.guest === null ? 'Весь стол' : guestLabel(parent, bill.guest)) + ' · счёт ' + bill.tag + ' возвращён в заказ');
+    renderTables();
+    openOrder(parent.num);
+    setRoute('мн-16');
+  });
+
+  /* ---------- МН-25: закрытые заказы — рассчитанные кассиром счета,
+     список висит до закрытия смены; пока доступен только менеджеру ---------- */
+  const closedOrdersBtnEl = document.getElementById('closedOrdersBtn');
+  if (isManagerRole) {
+    closedOrdersBtnEl.addEventListener('click', () => {
+      renderClosedOrders();
+      showDetail('closed', 'Закрытые заказы', 'Рассчитанные счета за смену');
+      setRoute('мн-25');
+    });
+  } else {
+    closedOrdersBtnEl.remove();
+  }
+
+  function renderClosedOrders() {
+    const paid = bills.filter(b => b.status === 'paid').sort((a, b) => b.paidAt - a.paidAt);
+    const listEl = document.getElementById('closedOrdersList');
+    if (!paid.length) {
+      listEl.innerHTML = '<div class="closed-order-empty">Пока нет рассчитанных счетов</div>';
+      return;
+    }
+    listEl.innerHTML = paid.map(b => {
+      const parent = tables.find(x => x.num === b.table);
+      const who = parent ? (b.guest === null ? tableLabel(parent) : tableLabel(parent) + ' · ' + guestLabel(parent, b.guest)) : b.tag;
+      return '<div class="closed-order-row">' +
+        '<span>' +
+          '<span class="closed-order-tag">' + who + '</span>' +
+          '<div class="closed-order-meta">' + stampText(b.paidAt) + ' · ' + METHOD_LABEL[b.method] + '</div>' +
+        '</span>' +
+        '<span class="closed-order-sum">' + money(b.total) + '</span>' +
+      '</div>';
+    }).join('');
+  }
 
   /* ---------- МН-16: выпадающие списки поверх содержимого ---------- */
   let editField = null;
@@ -8056,12 +8575,13 @@
         const dest = tables.find(x => x.num === target && x.status === 'free');
         if (dest) {
           Object.assign(dest, {
-            status:'open', calling:false, precheck:t.precheck,
+            status:'open', calling:false, precheck:t.precheck, locked:t.locked,
             guests:t.guests, mins:t.mins, openedAt:t.openedAt, waiter:t.waiter, items:t.items
           });
+          bills.forEach(b => { if (b.table === t.num) b.table = dest.num; });
           t.status = 'free';
           delete t.guests; delete t.mins; delete t.openedAt; delete t.waiter;
-          t.items = []; t.calling = false; t.precheck = false;
+          t.items = []; t.calling = false; t.precheck = false; t.locked = false;
           logAction(dest, 'move', 'Стол перенесён · ' + tableLabel(dest), 'Был ' + tableLabel(t));
           currentTable = dest;
         }
@@ -8940,6 +9460,7 @@
     t.items = [];
     t.calling = false;
     t.precheck = false;
+    t.locked = false;
     delete t.guests; delete t.mins; delete t.openedAt; delete t.waiter; delete t.split;
     delete t.guestNames;
     delete t.pendingUnsent; delete t.pendingEmptyKept;
@@ -10115,7 +10636,7 @@
      unsentItems: новое количество ИЛИ несохранённые правки модификатора/
      комментария/курса уже отпечатанной позиции. */
   document.getElementById('sendOrderBtn').addEventListener('click', () => {
-    if (!currentTable) return;
+    if (!currentTable || currentTable.locked) return;
     /* вооружённая готовка одной позиции курса — отдельный сценарий, без
        печати и без пересчёта pendingItems ниже (см. commitCourseFire).
        Если за это время в заказе всё же появилось что-то неотправленное
@@ -10181,6 +10702,7 @@
 
   /* отправка счёта на расчёт */
   document.querySelector('[data-order-action="precheck"]').addEventListener('click', () => {
+    if (currentTable && currentTable.locked) return;
     openPrecheck();
     setRoute('мн-19');
   });
@@ -10972,7 +11494,14 @@
     'мн-20': () => { gotoTab('shift'); openBlock('visitors'); },
     'мн-21': () => { gotoTab('shift'); openBlock('staff'); },
     'мн-22': () => { gotoTab('shift'); if (!currentTable) openOrder(4); openHistory(currentTable); },
-    'мн-23': () => { gotoTab('shift'); openShiftLog(); }
+    'мн-23': () => { gotoTab('shift'); openShiftLog(); },
+    'мн-24': () => {
+      gotoTab('shift');
+      const fallback = bills.find(b => b.status === 'billed');
+      const tag = currentCashierTag || (fallback ? fallback.tag : null);
+      if (tag) openCashier(tag);
+    },
+    'мн-25': () => { gotoTab('shift'); renderClosedOrders(); showDetail('closed', 'Закрытые заказы', 'Рассчитанные счета за смену'); }
   };
 
   /* ---------- «Назад» в шапке: делегирует нажатие текущему экрану ---------- */
@@ -11097,7 +11626,7 @@
     el.addEventListener('click', e => { e.stopPropagation(); setRoute(SUB_ROUTE[el.dataset.subblock]); });
   });
 
-  const DETAIL_ROUTE = { finance:'мн-03', startstop:'мн-04', active:'мн-11', hall:'мн-12', reserves:'мн-13', bar:'мн-14', kitchen:'мн-15', order:'мн-16', guests:'мн-17', precheck:'мн-19', history:'мн-22', shiftlog:'мн-23', visitors:'мн-20', staff:'мн-21' };
+  const DETAIL_ROUTE = { finance:'мн-03', startstop:'мн-04', active:'мн-11', hall:'мн-12', reserves:'мн-13', bar:'мн-14', kitchen:'мн-15', order:'мн-16', guests:'мн-17', precheck:'мн-19', history:'мн-22', shiftlog:'мн-23', visitors:'мн-20', staff:'мн-21', cashier:'мн-24', closed:'мн-25' };
 
   /* хеш всегда соответствует тому экрану, который реально открыт */
   window.syncRouteFromScreen = function () {
