@@ -1,0 +1,18 @@
+{
+  "hooks": {
+    "PreCompact": [
+      {
+        "matcher": "auto",
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "bash",
+            "command": "cd \"/c/Users/repub/OneDrive/Desktop/Проект Рука\" && git add -A && if ! git diff --cached --quiet; then git commit -m \"$(printf 'Auto-save before context compaction\\n\\nCo-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>')\" && git push origin main; fi",
+            "timeout": 60,
+            "statusMessage": "Сохраняю изменения на GitHub перед сжатием контекста..."
+          }
+        ]
+      }
+    ]
+  }
+}
