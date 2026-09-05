@@ -3544,40 +3544,42 @@
     padding-top:8px; padding-bottom:10px;
   }
   .startstop-sticky .menu-search-row{margin:0 0 10px;}
-  .startstop-section-tabs{
-    display:flex; gap:8px;
+
+  /* Бар/Кухня прижаты влево и уменьшены; обнуление Старт/Стоп — справа от
+     них, в столбик (Старт сверху, Стоп снизу) */
+  .startstop-top-row{
+    display:flex; align-items:flex-start; gap:10px;
     margin:0 0 8px;
   }
+  .startstop-section-tabs{
+    display:flex; gap:6px;
+  }
   .startstop-section-tabs .pick-section{
-    min-height:40px;
-    font-size:13px;
+    flex:0 0 auto;
+    min-height:auto;
+    padding:8px 16px;
+    font-size:12px;
   }
   /* папки цеха и список позиций ниже не должны соприкасаться, но сам блок
      закреплён — этот отступ уже не в счёт последней строки, а в счёт
      свободно прокручивающегося списка под ней */
   #startstopFolders{margin-bottom:0;}
 
-  /* обнуление старта/стопа текущего цеха: плашка едва отличима от фона
-     экрана (см. content-bg) и уже, чем строка «Бар/Кухня» — сами кнопки
-     того же семейства, что «Бар»/«Кухня», только меньше и без активной
-     заливки: цвет несёт только текст с иконкой */
+  /* обнуление старта/стопа текущего цеха — справа от «Бар/Кухня», Старт
+     над Стопом; контур золотой, фон нейтральный, как у «Бар»/«Кухня» */
   .menu-section-resets{
-    display:flex; align-items:center; justify-content:center; gap:6px;
-    background:var(--surface);
-    border:1px solid var(--card-border);
-    border-radius:11px;
-    padding:5px;
-    margin:0 18px 8px;
+    display:flex; flex-direction:column; gap:5px;
+    margin-left:auto;
   }
   .menu-section-reset{
     flex:0 0 auto;
     display:flex; align-items:center; justify-content:center; gap:4px;
     background:var(--segment-track);
-    border:1px solid var(--card-border);
+    border:1px solid var(--gold);
     border-radius:9px;
-    padding:5px 11px;
+    padding:3px 10px;
     font-family:'Manrope', sans-serif;
-    font-size:10.5px;
+    font-size:10px;
     font-weight:800;
     cursor:pointer;
     transition:filter .18s ease, opacity .18s ease;
@@ -3587,7 +3589,7 @@
   .menu-section-reset[disabled]{opacity:.32; cursor:default;}
 
   /* зелёный — только «Старт», красный — только «Стоп»: цвет только у текста
-     и иконки, фон нейтральный, как у «Бар»/«Кухня» в неактивном состоянии */
+     и иконки, фон нейтральный, контур золотой у обеих */
   .menu-section-reset.reset-start{color:var(--dot-green-soft);}
   .menu-section-reset.reset-stop{color:var(--dot-red-soft);}
 
@@ -4423,14 +4425,16 @@
                 <input type="text" id="ingredientSearchInput" placeholder="Ингредиент">
               </div>
             </div>
-            <div class="startstop-section-tabs" id="startstopSections">
-              <button class="pick-section" data-startstop-section="bar">Бар</button>
-              <button class="pick-section" data-startstop-section="kitchen">Кухня</button>
-            </div>
+            <div class="startstop-top-row">
+              <div class="startstop-section-tabs" id="startstopSections">
+                <button class="pick-section" data-startstop-section="bar">Бар</button>
+                <button class="pick-section" data-startstop-section="kitchen">Кухня</button>
+              </div>
 
-            <div class="menu-section-resets" id="startstopResets">
-              <button class="menu-section-reset reset-start" data-reset-mode="start"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>Старт</button>
-              <button class="menu-section-reset reset-stop" data-reset-mode="stop"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>Стоп</button>
+              <div class="menu-section-resets" id="startstopResets">
+                <button class="menu-section-reset reset-start" data-reset-mode="start"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>Старт</button>
+                <button class="menu-section-reset reset-stop" data-reset-mode="stop"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>Стоп</button>
+              </div>
             </div>
 
             <div class="zone-tabs pick-folders" id="startstopFolders"></div>
