@@ -1726,19 +1726,6 @@
   .table-card-bill-icon svg{width:100%; height:100%; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
   .table-card.is-bill-tile{border-style:solid; border-color:var(--gold);}
 
-  /* закрытый (оплаченный и освобождённый) стол: та же форма, что у занятого,
-     но приглушённее и другим тоном — не спутать со «счёт ждёт кассира».
-     Доступен только менеджеру/кассиру/управляющему, см. canCorrect() в JS */
-  .table-card.is-closed-table{
-    background:var(--khaki-block-bg);
-    border-style:dashed;
-    border-color:var(--khaki-block-border);
-    box-shadow:none;
-  }
-  .table-card.is-closed-table .table-card-bill-icon{color:var(--khaki-block-title);}
-  .table-card.is-closed-table .table-card-waiter,
-  .table-card.is-closed-table .table-card-sum{color:var(--khaki-block-value);}
-
   /* ---------- Свободные столы: свёрнуты до двух рядов ---------- */
   .free-expand-btn{
     grid-column:1 / -1;
@@ -1766,13 +1753,18 @@
   }
 
   /* ---------- Закрытые заказы (МН-25) ---------- */
+  /* строка кликабельна — проваливается в историю стола, см. renderClosedOrders */
   .closed-order-row{
     display:flex; align-items:center; justify-content:space-between;
     gap:10px;
     padding:12px 2px;
     border-bottom:1px solid var(--card-border);
+    cursor:pointer;
   }
+  .closed-order-row:active{opacity:.7;}
   .closed-order-row:last-child{border-bottom:none;}
+  .closed-order-row .chevron{width:16px; height:16px; stroke:var(--text-muted); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0;}
+  .closed-order-end{display:flex; align-items:center; gap:8px; flex-shrink:0;}
   .closed-order-tag{
     font-family:'Fraunces', serif;
     font-weight:600;
@@ -3545,6 +3537,10 @@
   .info-note-body strong{color:var(--text-primary);}
 
   /* ---------- Старт/Стоп лист: цех Бар/Кухня рядом, папки цеха прокручиваются ниже ---------- */
+  /* экран без своего <h3>: заголовок живёт в шапке приложения, поэтому
+     первому полю поиска нужен собственный отступ от кнопки «Назад» */
+  .shift-detail[data-detail="startstop"] .menu-search-row{margin-top:10px;}
+
   .startstop-section-tabs{
     display:flex; gap:8px;
     margin:14px 0 10px;
@@ -3553,42 +3549,45 @@
     min-height:40px;
     font-size:13px;
   }
+  /* папки цеха и список позиций ниже не должны соприкасаться */
+  #startstopFolders{margin-bottom:18px;}
 
   /* обнуление старта/стопа текущего цеха — в отдельной плашке, а не мелкими
      кнопками внутри заголовка, чтобы не терялись */
   .menu-section-resets{
-    display:flex; align-items:center; gap:8px;
+    display:flex; align-items:center; justify-content:center; gap:8px;
     background:var(--khaki-block-bg);
     border:1px solid var(--khaki-block-border);
     border-radius:13px;
-    padding:8px;
+    padding:7px;
     margin-bottom:12px;
   }
   .menu-section-reset{
-    flex:1;
-    display:flex; align-items:center; justify-content:center; gap:5px;
+    flex:0 0 auto;
+    display:flex; align-items:center; justify-content:center; gap:4px;
     border-radius:999px;
-    padding:7px 9px;
+    padding:4px 10px;
     font-family:'Manrope', sans-serif;
-    font-size:11.5px;
+    font-size:10.5px;
     font-weight:700;
     cursor:pointer;
     transition:filter .18s ease, opacity .18s ease;
   }
-  .menu-section-reset svg{width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round;}
+  .menu-section-reset svg{width:10px; height:10px; stroke:currentColor; fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round;}
   .menu-section-reset:active{filter:brightness(1.25);}
   .menu-section-reset[disabled]{opacity:.32; cursor:default;}
 
-  /* зелёный — только «Старт», красный — только «Стоп» */
+  /* зелёный — только «Старт», красный — только «Стоп»; фон едва тонирован —
+     основной сигнал даёт цвет текста и рамки, а не заливка */
   .menu-section-reset.reset-start{
     color:var(--dot-green-soft);
     border:1px solid var(--reset-start-line);
-    background:var(--reset-start-bg);
+    background:transparent;
   }
   .menu-section-reset.reset-stop{
     color:var(--dot-red-soft);
     border:1px solid var(--reset-stop-line);
-    background:var(--reset-stop-bg);
+    background:transparent;
   }
 
   .menu-rows{display:flex; flex-direction:column; gap:8px;}
@@ -6951,18 +6950,9 @@
 
   function tableCardTemplate(t) {
     if (t.status === 'free') {
-      /* стол только что закрыт кассиром — доступен менеджеру/кассиру/
-         управляющему посмотреть историю; остальным — обычная свободная
-         плитка, можно сразу сажать новых гостей (см. canCorrect) */
-      if (t.hadClosedOrder && canCorrect()) {
-        const snap = t.closedHistory || {};
-        return '<div class="table-card is-open is-closed-table" data-closed="' + t.num + '" role="button" tabindex="0">' +
-          '<span class="table-card-bill-icon">' + ICON_BILL + '</span>' +
-          tableNumHtml(t) +
-          '<span class="table-card-waiter">' + (snap.waiter || '') + '</span>' +
-          '<span class="table-card-sum">' + money(tableSum(snap)) + '</span>' +
-        '</div>';
-      }
+      /* оплаченный стол освобождается и выглядит как обычная свободная
+         плитка — с тем же номером, без следов прошлого заказа. Историю
+         смотрят из «Закрытых заказов» (см. renderClosedOrders), не отсюда */
       const k = t.seats || 2;
       return '<button class="table-card is-free" data-free="' + t.num + '">' +
         tableNumHtml(t) +
@@ -7080,14 +7070,6 @@
     });
     tableGridEl.querySelectorAll('.table-card[data-bill]').forEach(card => {
       card.addEventListener('click', () => { openCashier(card.dataset.bill); setRoute('мн-24'); });
-    });
-    tableGridEl.querySelectorAll('.table-card[data-closed]').forEach(card => {
-      card.addEventListener('click', () => {
-        const t = tables.find(x => x.num === parseInt(card.dataset.closed, 10));
-        if (!t) return;
-        openHistory(t);
-        setRoute('мн-22');
-      });
     });
     tableGridEl.querySelectorAll('.table-card[data-free]').forEach(card => {
       card.addEventListener('click', () => {
@@ -7968,7 +7950,7 @@
     const t = tables.find(x => x.num === num);
     if (!t || t.status !== 'free') return;
     Object.assign(t, {
-      status:'open', calling:false, precheck:false, split:false, hadClosedOrder:false,
+      status:'open', calling:false, precheck:false, split:false,
       guests:1, mins:0, openedAt:Date.now(), waiter:CURRENT_WAITER, items:[]
     });
     t.log = [];
@@ -8000,7 +7982,7 @@
   guestsConfirmEl.addEventListener('click', () => {
     if (!pendingTable || !pendingGuests) return;
     Object.assign(pendingTable, {
-      status:'open', calling:false, precheck:false, split:false, hadClosedOrder:false,
+      status:'open', calling:false, precheck:false, split:false,
       guests:pendingGuests, mins:0, openedAt:Date.now(), waiter:CURRENT_WAITER, items:[]
     });
     currentTable = pendingTable;
@@ -8441,10 +8423,11 @@
       logAction(parent, 'bill', 'Счёт рассчитан · ' + METHOD_LABEL[method],
         (bill.guest === null ? 'Весь стол' : guestLabel(parent, bill.guest)) + ' · ' + money(bill.total) + ' · ' + bill.tag);
       if (bill.guest === null) {
-        /* весь стол оплачен — освобождаем, но сохраняем снимок для истории:
-           releaseTable стирает waiter/openedAt/items с живого стола, а
-           hadClosedOrder/closedHistory он не трогает (см. openHistory) */
-        parent.hadClosedOrder = true;
+        /* весь стол оплачен — освобождаем (появится как обычная пустая
+           плитка с тем же номером), но сохраняем снимок для истории:
+           releaseTable стирает живые waiter/openedAt/items, а closedHistory
+           не трогает (см. openHistory) — историю смотрят из «Закрытых
+           заказов», куда сам счёт попадает по статусу 'paid' */
         parent.closedHistory = {
           waiter:parent.waiter, openedAt:parent.openedAt, guests:parent.guests,
           items:parent.items, closedAt:Date.now()
@@ -8546,14 +8529,26 @@
     listEl.innerHTML = paid.map(b => {
       const parent = tables.find(x => x.num === b.table);
       const who = parent ? (b.guest === null ? tableLabel(parent) : tableLabel(parent) + ' · ' + guestLabel(parent, b.guest)) : b.tag;
-      return '<div class="closed-order-row">' +
+      return '<div class="closed-order-row" data-closed-order="' + b.tag + '" role="button" tabindex="0">' +
         '<span>' +
           '<span class="closed-order-tag">' + who + '</span>' +
           '<div class="closed-order-meta">' + stampText(b.paidAt) + ' · ' + METHOD_LABEL[b.method] + '</div>' +
         '</span>' +
-        '<span class="closed-order-sum">' + money(b.total) + '</span>' +
+        '<span class="closed-order-end">' +
+          '<span class="closed-order-sum">' + money(b.total) + '</span>' +
+          '<svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>' +
+        '</span>' +
       '</div>';
     }).join('');
+    listEl.querySelectorAll('[data-closed-order]').forEach(row => {
+      row.addEventListener('click', () => {
+        const bill = findBill(row.dataset.closedOrder);
+        const parent = bill && tables.find(x => x.num === bill.table);
+        if (!parent) return;
+        openHistory(parent);
+        setRoute('мн-22');
+      });
+    });
   }
 
   /* ---------- МН-16: выпадающие списки поверх содержимого ---------- */
@@ -8595,7 +8590,7 @@
         const dest = tables.find(x => x.num === target && x.status === 'free');
         if (dest) {
           Object.assign(dest, {
-            status:'open', calling:false, precheck:t.precheck, locked:t.locked, hadClosedOrder:false,
+            status:'open', calling:false, precheck:t.precheck, locked:t.locked,
             guests:t.guests, mins:t.mins, openedAt:t.openedAt, waiter:t.waiter, items:t.items
           });
           bills.forEach(b => { if (b.table === t.num) b.table = dest.num; });
@@ -11230,6 +11225,29 @@
     startstopFolder = btn.dataset.startstopFolder;
     renderStartStop();
   });
+
+  /* папки цеха тянутся мышью и пальцем — та же логика, что у вкладок
+     гостей и залов (см. zoneTabsEl выше) */
+  (() => {
+    const el = document.getElementById('startstopFolders');
+    let drag = false, moved = false, startX = 0, left = 0;
+    el.addEventListener('pointerdown', e => { drag = true; moved = false; startX = e.clientX; left = el.scrollLeft; });
+    el.addEventListener('pointermove', e => {
+      if (!drag) return;
+      const dx = e.clientX - startX;
+      if (Math.abs(dx) > 4) moved = true;
+      el.scrollLeft = left - dx;
+    });
+    window.addEventListener('pointerup', () => {
+      if (!drag) return;
+      drag = false;
+      setTimeout(() => { moved = false; }, 0);
+    });
+    el.addEventListener('click', e => { if (moved) { e.stopPropagation(); e.preventDefault(); } }, true);
+    el.addEventListener('wheel', e => {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) { el.scrollLeft += e.deltaY; e.preventDefault(); }
+    }, { passive:false });
+  })();
 
   menuSearchInput.addEventListener('input', renderStartStop);
   ingredientSearchInput.addEventListener('input', renderStartStop);
