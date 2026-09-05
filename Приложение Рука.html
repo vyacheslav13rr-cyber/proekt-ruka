@@ -4092,6 +4092,113 @@
     50%{opacity:.35;}
   }
 
+  /* ---------- МН-26: Приветствие (перед регистрацией/входом) ----------
+     Нейтральная палитра (бежевый/хаки/коричневый + золото) не зависит
+     от переключателя темы — гость его ещё не выбирал. Перекрывает весь
+     .screen (шапку и нижнее меню), т.к. .content не позиционирован и
+     .welcome-screen с position:absolute находит ближайшим предком именно
+     .screen (тот же приём, что у .dept-overlay). */
+  .welcome-screen{
+    position:absolute; inset:0;
+    z-index:50;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    align-items:center;
+    padding:60px 28px calc(36px + env(safe-area-inset-bottom));
+    text-align:center;
+    overflow:hidden;
+    background:
+      radial-gradient(120% 60% at 50% -8%, rgba(233,203,126,0.4), transparent 62%),
+      linear-gradient(165deg, #F7F1E3 0%, #EEE0C4 44%, #D8C69B 76%, #A6926B 100%);
+  }
+  .welcome-screen[hidden]{display:none;}
+
+  .welcome-top{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    margin-top:56px;
+  }
+  .welcome-mark{
+    width:92px; height:92px;
+    border-radius:26px;
+    overflow:hidden;
+    margin-bottom:22px;
+    box-shadow:0 22px 40px -18px rgba(110,74,52,0.5), 0 0 0 1px rgba(198,153,47,0.35);
+  }
+  .welcome-mark svg{display:block; width:100%; height:100%;}
+  .welcome-word{
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    font-size:38px;
+    letter-spacing:.05em;
+    color:#3B2A18;
+    margin-bottom:12px;
+  }
+  .welcome-tag{
+    font-family:'Manrope', sans-serif;
+    font-size:14px;
+    font-weight:600;
+    line-height:1.5;
+    color:var(--leather);
+    max-width:230px;
+  }
+
+  .welcome-features{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    align-items:flex-start;
+  }
+  .welcome-feature{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    text-align:left;
+  }
+  .welcome-feature-dot{
+    flex-shrink:0;
+    width:26px; height:26px;
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(160deg, var(--gold-light), var(--gold));
+  }
+  .welcome-feature-dot svg{width:13px; height:13px; stroke:#3B2A18; fill:none; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round;}
+  .welcome-feature-text{
+    font-family:'Manrope', sans-serif;
+    font-size:13px;
+    font-weight:600;
+    color:#4A3A22;
+  }
+
+  .welcome-bottom{
+    width:100%;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .welcome-btn{
+    width:100%;
+    border:none;
+    cursor:pointer;
+    border-radius:16px;
+    padding:16px;
+    font-family:'Manrope', sans-serif;
+    font-size:15px;
+    font-weight:700;
+  }
+  .welcome-btn-primary{
+    background:linear-gradient(160deg, var(--gold-light), var(--gold));
+    color:#3B2413;
+    box-shadow:0 16px 30px -14px rgba(110,74,52,0.55);
+  }
+  .welcome-btn-secondary{
+    background:rgba(255,255,255,0.4);
+    border:1.5px solid rgba(110,74,52,0.35);
+    color:var(--leather);
+  }
+
 </style>
 </head>
 <body>
@@ -4151,6 +4258,13 @@
       <section class="panel" data-panel="map">
         <p class="map-intro">Служебный экран прототипа. Все экраны файла с их ID. Переход — по клику или по хеш-роуту в адресной строке, например <strong>#мн-04</strong>.</p>
         <button class="map-reset" id="draftReset">Сбросить черновики и демо-данные</button>
+
+        <div class="map-group-title">Вход</div>
+        <button class="map-row" data-goto="мн-26">
+          <span class="map-id">МН-26</span>
+          <span class="map-name">Приветствие<span class="map-note">Экран перед регистрацией и входом</span></span>
+          <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
 
         <div class="map-group-title">Главная</div>
         <button class="map-row" data-goto="мн-01">
@@ -5653,6 +5767,37 @@
       <div class="mv-intro">Кнопка появляется, только пока в копилке есть непросмотренные уведомления. Выберите, где ей быть — применится сразу.</div>
       <div class="mv-list" id="nvList"></div>
     </aside>
+
+    <!-- ===== МН-26 · ПРИВЕТСТВИЕ (перед регистрацией/входом) ===== -->
+    <div class="welcome-screen" id="welcomeScreen" hidden>
+    <div class="welcome-top">
+      <div class="welcome-mark">
+        <svg viewBox="0 0 512 512" role="img" aria-label="РУКА"><defs><linearGradient id="rukaBgWelcome" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b3050"/><stop offset="1" stop-color="#0e1c2e"/></linearGradient><clipPath id="rukaCardWelcome"><rect x="16" y="16" width="480" height="480" rx="112"/></clipPath></defs><rect x="16" y="16" width="480" height="480" rx="112" fill="url(#rukaBgWelcome)"/><g clip-path="url(#rukaCardWelcome)"><rect x="92" y="206" width="46" height="194" rx="12" fill="#5b7ba6"/><rect x="156" y="158" width="46" height="242" rx="12" fill="#7c9bc2"/><rect x="220" y="116" width="46" height="284" rx="12" fill="#e6dabf"/><rect x="284" y="62" width="46" height="338" rx="12" fill="#efe6d2"/><path d="M 84,300 A 186,186 0 1 0 438,222 Z" fill="#c9a227"/><polyline points="105,378 222,252 278,306 392,200" fill="none" stroke="#12233a" stroke-width="56" stroke-linecap="round" stroke-linejoin="round"/><polyline points="105,378 222,252 278,306 392,200" fill="none" stroke="#f7efe1" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/></g><rect x="42" y="42" width="428" height="428" rx="92" fill="none" stroke="#c9a227" stroke-width="3" opacity="0.85"/></svg>
+      </div>
+      <h1 class="welcome-word">РУКА</h1>
+      <p class="welcome-tag">Экосистема для управления рестораном: смены, финансы и мессенджер команды — в одном приложении</p>
+    </div>
+
+    <div class="welcome-features">
+      <div class="welcome-feature">
+        <span class="welcome-feature-dot"><svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg></span>
+        <span class="welcome-feature-text">Смена: финансы и стоп-лист в реальном времени</span>
+      </div>
+      <div class="welcome-feature">
+        <span class="welcome-feature-dot"><svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg></span>
+        <span class="welcome-feature-text">Мессенджер команды с ассистентом</span>
+      </div>
+      <div class="welcome-feature">
+        <span class="welcome-feature-dot"><svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg></span>
+        <span class="welcome-feature-text">Роли и права под каждую должность</span>
+      </div>
+    </div>
+
+    <div class="welcome-bottom">
+      <button class="welcome-btn welcome-btn-primary" id="welcomeSignupBtn">Создать аккаунт</button>
+      <button class="welcome-btn welcome-btn-secondary" id="welcomeLoginBtn">Уже есть аккаунт · Войти</button>
+    </div>
+    </div>
 
   </div>
 </div>
@@ -11563,8 +11708,16 @@
       const tag = currentCashierTag || (fallback ? fallback.tag : null);
       if (tag) openCashier(tag);
     },
-    'мн-25': () => { gotoTab('shift'); renderClosedOrders(); showDetail('closed', 'Закрытые заказы', 'Рассчитанные счета за смену'); }
+    'мн-25': () => { gotoTab('shift'); renderClosedOrders(); showDetail('closed', 'Закрытые заказы', 'Рассчитанные счета за смену'); },
+    'мн-26': () => { welcomeScreenEl.hidden = false; }
   };
+
+  /* ---------- МН-26: Приветствие — кнопки входа/регистрации закрывают
+     оверлей поверх карты экранов; полноценной авторизации в прототипе нет,
+     поэтому обе ведут в приложение одинаково */
+  const welcomeScreenEl = document.getElementById('welcomeScreen');
+  document.getElementById('welcomeSignupBtn').addEventListener('click', () => { welcomeScreenEl.hidden = true; });
+  document.getElementById('welcomeLoginBtn').addEventListener('click', () => { welcomeScreenEl.hidden = true; });
 
   /* ---------- «Назад» в шапке: делегирует нажатие текущему экрану ---------- */
   const headerBackEl = document.getElementById('headerBack');
