@@ -3543,13 +3543,13 @@
     display:flex; flex-direction:column;
     padding-top:8px; padding-bottom:10px;
   }
-  .startstop-sticky .menu-search-row{margin:0 0 7px;}
+  .startstop-sticky .menu-search-row{margin:0 0 6px;}
 
   /* Бар/Кухня прижаты влево и уменьшены; обнуление Старт/Стоп — справа от
      них, в столбик (Старт сверху, Стоп снизу) */
   .startstop-top-row{
     display:flex; align-items:flex-start; gap:16px;
-    margin:0 0 7px;
+    margin:0 0 6px;
   }
   .startstop-section-tabs{
     display:flex; gap:6px;
@@ -3559,7 +3559,7 @@
     min-height:auto;
     min-width:100px;
     padding:16px 26px;
-    font-size:14px;
+    font-size:15px;
   }
   /* папки цеха и список позиций ниже не должны соприкасаться, но сам блок
      закреплён — этот отступ уже не в счёт последней строки, а в счёт
@@ -3575,11 +3575,12 @@
   }
   .menu-section-reset{
     flex:0 0 auto;
+    width:80px;
     display:flex; align-items:center; justify-content:center; gap:4px;
     background:var(--segment-track);
     border:1px solid var(--gold);
     border-radius:9px;
-    padding:4px 16px;
+    padding:4px 0;
     font-family:'Manrope', sans-serif;
     font-size:10px;
     font-weight:800;
