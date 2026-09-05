@@ -7,7 +7,7 @@
           {
             "type": "command",
             "shell": "bash",
-            "command": "cd \"/c/Users/repub/OneDrive/Desktop/Проект Рука\" && git add -A && if ! git diff --cached --quiet; then git commit -m \"$(printf 'Auto-save before context compaction\\n\\nCo-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>')\" && git push origin main; fi",
+            "command": "if [ -d \"/c/Users/repub/OneDrive/Desktop/Проект Рука\" ]; then cd \"/c/Users/repub/OneDrive/Desktop/Проект Рука\" && git add -A && if ! git diff --cached --quiet; then git commit -m \"$(printf 'Auto-save before context compaction\\n\\nCo-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>')\" && git push origin main; fi; fi",
             "timeout": 60,
             "statusMessage": "Сохраняю изменения на GitHub перед сжатием контекста..."
           }
@@ -20,7 +20,7 @@
           {
             "type": "command",
             "shell": "bash",
-            "command": "cd \"/c/Users/repub/OneDrive/Desktop/Проект Рука\" && git add -A && if ! git diff --cached --quiet; then git commit -m \"$(printf 'Auto-save after turn\\n\\nCo-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>')\" && git push origin main; fi",
+            "command": "if [ -d \"/c/Users/repub/OneDrive/Desktop/Проект Рука\" ]; then cd \"/c/Users/repub/OneDrive/Desktop/Проект Рука\" && git add -A && if ! git diff --cached --quiet; then git commit -m \"$(printf 'Auto-save after turn\\n\\nCo-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>')\" && git push origin main; fi; fi",
             "timeout": 60,
             "statusMessage": "Сохраняю изменения на GitHub..."
           }
