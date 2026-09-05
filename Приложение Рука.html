@@ -3557,6 +3557,7 @@
   .startstop-section-tabs .pick-section{
     flex:0 0 auto;
     min-height:auto;
+    min-width:100px;
     padding:16px 26px;
     font-size:14px;
   }
@@ -3565,10 +3566,12 @@
      свободно прокручивающегося списка под ней */
   #startstopFolders{margin-bottom:0;}
 
-  /* обнуление старта/стопа текущего цеха — справа от «Бар/Кухня», Старт
-     над Стопом; контур золотой, фон нейтральный, как у «Бар»/«Кухня» */
+  /* обнуление старта/стопа текущего цеха — занимает весь остаток строки
+     после «Бар/Кухня» и центрируется в этом промежутке (а не жмётся ни
+     к кнопкам цеха, ни к правому краю); Старт над Стопом, контур золотой */
   .menu-section-resets{
-    display:flex; flex-direction:column; gap:5px;
+    flex:1;
+    display:flex; flex-direction:column; align-items:center; gap:5px;
   }
   .menu-section-reset{
     flex:0 0 auto;
@@ -3576,7 +3579,7 @@
     background:var(--segment-track);
     border:1px solid var(--gold);
     border-radius:9px;
-    padding:3px 10px;
+    padding:4px 16px;
     font-family:'Manrope', sans-serif;
     font-size:10px;
     font-weight:800;
