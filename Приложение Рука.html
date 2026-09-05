@@ -1726,6 +1726,19 @@
   .table-card-bill-icon svg{width:100%; height:100%; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
   .table-card.is-bill-tile{border-style:solid; border-color:var(--gold);}
 
+  /* закрытый (оплаченный и освобождённый) стол: та же форма, что у занятого,
+     но приглушённее и другим тоном — не спутать со «счёт ждёт кассира».
+     Доступен только менеджеру/кассиру/управляющему, см. canCorrect() в JS */
+  .table-card.is-closed-table{
+    background:var(--khaki-block-bg);
+    border-style:dashed;
+    border-color:var(--khaki-block-border);
+    box-shadow:none;
+  }
+  .table-card.is-closed-table .table-card-bill-icon{color:var(--khaki-block-title);}
+  .table-card.is-closed-table .table-card-waiter,
+  .table-card.is-closed-table .table-card-sum{color:var(--khaki-block-value);}
+
   /* ---------- Свободные столы: свёрнуты до двух рядов ---------- */
   .free-expand-btn{
     grid-column:1 / -1;
@@ -2649,7 +2662,7 @@
   .screen.nav-hidden .pinned-btn{bottom:14px;}
   .order-bar-left{
     flex:1 1 auto;
-    display:flex; align-items:center; gap:6px; min-width:0;
+    display:flex; align-items:center; justify-content:center; gap:8px; min-width:0;
     background:var(--khaki-block-bg);
     border:1px solid var(--khaki-block-border);
     border-radius:14px;
@@ -2660,15 +2673,16 @@
      оно не помещалось в 322px панели (при шестизначной сумме перебор
      доходил до ~26px), а сумма крупным моноширинным и так читается как
      итог. Для скринридера подпись осталась в aria-label. */
-  /* сумма — единственный гибкий элемент строки: при неправдоподобно длинном
-     числе ужмётся и обрежется она сама, внутри своего пилла, а не вытолкнет
-     «Счёт» за его границу (ради этого min-width:0 + overflow).
+  /* сумма и «Счёт» держатся вместе, одной группой по центру пилла (см.
+     justify-content:center выше и margin-left:0 у .bill-btn ниже) — раньше
+     сумма растягивалась на всю ширину и раскидывала их по разным краям.
+     При короткой сумме это держит их рядом, при длинной — группа всё
+     равно остаётся отцентрованной, с равным отступом по краям пилла.
      word-spacing поджимает оба пробела разом — и разрядный (у ru-RU это
      NBSP), и тот, что перед ₽: в моноширинном шрифте они непропорционально
-     широкие и разрывают число на части. Освободившееся место уходит
-     в более крупный кегль самой суммы. */
+     широкие и разрывают число на части. */
   .order-bar .order-total-value{
-    flex:1 1 auto; min-width:0;
+    flex:0 1 auto; min-width:0;
     overflow:hidden; text-overflow:ellipsis;
     font-family:'IBM Plex Mono', monospace;
     font-size:18px; font-weight:500;
@@ -2676,10 +2690,8 @@
     color:var(--khaki-block-value);
     white-space:nowrap;
   }
-  /* «Счёт» прижат к правому краю своего пилла — отступ справа теперь
-     ровно такой же, как у суммы слева */
   .order-bar .bill-btn{
-    margin-left:auto; flex:0 0 auto;
+    margin-left:0; flex:0 0 auto;
     padding:7px 12px; font-size:12.5px; border-radius:11px;
   }
   .order-bar .bill-btn svg{width:15px; height:15px;}
@@ -3532,54 +3544,38 @@
   .info-note-body{font-size:12.5px; line-height:1.5; color:var(--text-soft); margin-top:10px;}
   .info-note-body strong{color:var(--text-primary);}
 
-  .ingredient-results{margin-bottom:18px;}
-  .ingredient-results .menu-section-title{margin-bottom:8px;}
-  .ingredient-empty{font-size:12.5px; color:var(--text-soft); padding:4px 2px;}
-  .menu-row-section-tag{color:var(--text-muted); font-weight:500; font-size:11.5px;}
-
-  .menu-section{margin-bottom:18px;}
-  .menu-section.section-empty{display:none;}
-  .menu-section-header{
-    display:flex; align-items:center; justify-content:space-between;
-    width:100%;
-    background:var(--section-head-bg);
-    border:1px solid var(--section-head-border);
-    border-radius:13px;
-    padding:12px 16px;
-    margin-bottom:10px;
-    cursor:pointer;
-    box-shadow:none;
+  /* ---------- Старт/Стоп лист: цех Бар/Кухня рядом, папки цеха прокручиваются ниже ---------- */
+  .startstop-section-tabs{
+    display:flex; gap:8px;
+    margin:14px 0 10px;
   }
-  .menu-section-header-label{display:flex; align-items:center; gap:7px;}
-  .menu-section-header-label .dot{
-    width:5px; height:5px; border-radius:50%;
-    background:var(--gold);
-    display:inline-block;
-    flex-shrink:0;
-  }
-  .menu-section-title{
-    font-family:'Fraunces', serif;
-    font-weight:600;
+  .startstop-section-tabs .pick-section{
+    min-height:40px;
     font-size:13px;
-    letter-spacing:.16em;
-    text-transform:uppercase;
-    color:var(--section-head-text);
   }
+
+  /* обнуление старта/стопа текущего цеха — в отдельной плашке, а не мелкими
+     кнопками внутри заголовка, чтобы не терялись */
   .menu-section-resets{
-    display:flex; align-items:center; gap:6px;
-    margin-left:auto; margin-right:10px;
+    display:flex; align-items:center; gap:8px;
+    background:var(--khaki-block-bg);
+    border:1px solid var(--khaki-block-border);
+    border-radius:13px;
+    padding:8px;
+    margin-bottom:12px;
   }
   .menu-section-reset{
-    display:flex; align-items:center; gap:4px;
+    flex:1;
+    display:flex; align-items:center; justify-content:center; gap:5px;
     border-radius:999px;
-    padding:4px 9px 4px 7px;
+    padding:7px 9px;
     font-family:'Manrope', sans-serif;
-    font-size:10.5px;
+    font-size:11.5px;
     font-weight:700;
     cursor:pointer;
     transition:filter .18s ease, opacity .18s ease;
   }
-  .menu-section-reset svg{width:11px; height:11px; stroke:currentColor; fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round;}
+  .menu-section-reset svg{width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round;}
   .menu-section-reset:active{filter:brightness(1.25);}
   .menu-section-reset[disabled]{opacity:.32; cursor:default;}
 
@@ -3595,14 +3591,6 @@
     background:var(--reset-stop-bg);
   }
 
-  .menu-section-chevron{
-    width:15px; height:15px;
-    stroke:var(--section-head-text); fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round;
-    transition:transform .2s ease;
-    transform:rotate(-90deg);
-  }
-  .menu-section.collapsed .menu-section-chevron{transform:rotate(90deg);}
-  .menu-section.collapsed .menu-rows{display:none;}
   .menu-rows{display:flex; flex-direction:column; gap:8px;}
   .menu-row{
     display:flex; align-items:center; justify-content:space-between; gap:10px;
@@ -4432,27 +4420,20 @@
               <input type="text" id="ingredientSearchInput" placeholder="Ингредиент">
             </div>
           </div>
-          <div class="ingredient-results" id="ingredientResults" hidden>
-            <div class="menu-section-title">Совпадения по ингредиенту</div>
-            <div class="menu-rows" id="ingredientResultsList"></div>
+          <div class="startstop-section-tabs" id="startstopSections">
+            <button class="pick-section" data-startstop-section="bar">Бар</button>
+            <button class="pick-section" data-startstop-section="kitchen">Кухня</button>
           </div>
 
-          <div class="menu-section">
-            <div class="menu-section-header" role="button" tabindex="0">
-              <span class="menu-section-header-label"><span class="dot"></span><span class="menu-section-title">Бар</span></span>
-              <span class="menu-section-resets"><button class="menu-section-reset reset-start" data-reset="bar" data-reset-mode="start"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>Старт</button><button class="menu-section-reset reset-stop" data-reset="bar" data-reset-mode="stop"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>Стоп</button></span>
-              <svg class="menu-section-chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
-            </div>
-            <div class="menu-rows" id="menuRowsBar"></div>
+          <div class="menu-section-resets" id="startstopResets">
+            <button class="menu-section-reset reset-start" data-reset-mode="start"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>Старт</button>
+            <button class="menu-section-reset reset-stop" data-reset-mode="stop"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>Стоп</button>
           </div>
-          <div class="menu-section">
-            <div class="menu-section-header" role="button" tabindex="0">
-              <span class="menu-section-header-label"><span class="dot"></span><span class="menu-section-title">Кухня</span></span>
-              <span class="menu-section-resets"><button class="menu-section-reset reset-start" data-reset="kitchen" data-reset-mode="start"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>Старт</button><button class="menu-section-reset reset-stop" data-reset="kitchen" data-reset-mode="stop"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>Стоп</button></span>
-              <svg class="menu-section-chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
-            </div>
-            <div class="menu-rows" id="menuRowsKitchen"></div>
-          </div>
+
+          <div class="zone-tabs pick-folders" id="startstopFolders"></div>
+
+          <div class="menu-rows" id="menuRowsActive"></div>
+          <div class="table-empty" id="menuEmpty" hidden>Ничего не найдено</div>
 
           <div class="info-note" id="infoNote">
             <button class="info-note-header">
@@ -6320,9 +6301,10 @@
     const open = document.querySelector('.shift-detail:not([hidden])');
     if (!open) return shiftList.hidden ? null : { detail:null };
     const rec = { detail:open.dataset.detail };
-    if (rec.detail === 'order' || rec.detail === 'history') {
-      rec.table = currentTable ? currentTable.num : null;
-    }
+    if (rec.detail === 'order') rec.table = currentTable ? currentTable.num : null;
+    /* история открывается и по закрытому (свободному) столу — не только по
+       currentTable, поэтому у неё свой указатель, см. openHistory */
+    if (rec.detail === 'history') rec.table = historyTableNum;
     if (rec.detail === 'precheck') rec.guest = precheckGuest;
     if (rec.detail === 'cashier') rec.tag = currentCashierTag;
     if (rec.detail === 'guests') rec.table = pendingTable ? pendingTable.num : null;
@@ -6496,11 +6478,14 @@
   /* mins в данных — стартовое значение; дальше время идёт от openedAt */
   tables.forEach(t => { if (t.mins !== undefined) t.openedAt = Date.now() - t.mins * 60000; });
 
-  const elapsedMin = t => t.openedAt === undefined ? 0
-    : Math.max(0, Math.floor((Date.now() - t.openedAt) / 60000));
+  /* asOf — момент, на который считаем «сколько за столом»; для снимка
+     закрытого стола это время закрытия, а не текущее (иначе счётчик рос бы
+     бесконечно уже после оплаты) */
+  const elapsedMin = (t, asOf) => t.openedAt === undefined ? 0
+    : Math.max(0, Math.floor(((asOf || Date.now()) - t.openedAt) / 60000));
 
-  function openedText(t) {
-    const m = elapsedMin(t);
+  function openedText(t, asOf) {
+    const m = elapsedMin(t, asOf);
     return m < 60 ? m + ' мин' : Math.floor(m / 60) + ' ч ' + String(m % 60).padStart(2, '0');
   }
 
@@ -6706,6 +6691,9 @@
 
   let currentZone = 'all';   // по умолчанию — «Все залы», зал не выбран
   let currentTable = null;
+  /* стол, чью историю сейчас смотрят — не всегда совпадает с currentTable:
+     закрытый (свободный) стол открывают в историю прямо с плитки, минуя заказ */
+  let historyTableNum = null;
   const filters = { state:new Set(), waiter:new Set(), sort:new Set() };
   /* «Заказы»: общий список ⇄ список, разбитый на секции по официантам —
      переключается свайпом влево/вправо по экрану, без похода в фильтры */
@@ -6959,8 +6947,22 @@
       '<span class="table-card-num-digit">' + t.zoneNum + '</span>' +
     '</span>';
 
+  const ICON_BILL = '<svg viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6"/><path d="M9 12h6"/></svg>';
+
   function tableCardTemplate(t) {
     if (t.status === 'free') {
+      /* стол только что закрыт кассиром — доступен менеджеру/кассиру/
+         управляющему посмотреть историю; остальным — обычная свободная
+         плитка, можно сразу сажать новых гостей (см. canCorrect) */
+      if (t.hadClosedOrder && canCorrect()) {
+        const snap = t.closedHistory || {};
+        return '<div class="table-card is-open is-closed-table" data-closed="' + t.num + '" role="button" tabindex="0">' +
+          '<span class="table-card-bill-icon">' + ICON_BILL + '</span>' +
+          tableNumHtml(t) +
+          '<span class="table-card-waiter">' + (snap.waiter || '') + '</span>' +
+          '<span class="table-card-sum">' + money(tableSum(snap)) + '</span>' +
+        '</div>';
+      }
       const k = t.seats || 2;
       return '<button class="table-card is-free" data-free="' + t.num + '">' +
         tableNumHtml(t) +
@@ -6977,7 +6979,7 @@
     const waiting = !!t.pendingUnsent || !!t.pendingEmptyKept;
     /* счёт этого стола целиком выбит и ждёт кассира — иконка чека в углу */
     const billIcon = tableActiveBill(t)
-      ? '<span class="table-card-bill-icon"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6"/><path d="M9 12h6"/></svg></span>'
+      ? '<span class="table-card-bill-icon">' + ICON_BILL + '</span>'
       : '';
     return '<div class="table-card is-open' + (t.calling ? ' is-calling' : '') +
         (isSource ? ' is-move-source' : '') +
@@ -6996,7 +6998,7 @@
      а не в заказ */
   function billCardTemplate(bill, parent) {
     return '<div class="table-card is-open is-bill-tile" data-bill="' + bill.tag + '" role="button" tabindex="0">' +
-      '<span class="table-card-bill-icon"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6"/><path d="M9 12h6"/></svg></span>' +
+      '<span class="table-card-bill-icon">' + ICON_BILL + '</span>' +
       '<span class="table-card-num"><span class="table-card-name-text">' + ZONE_LABEL[parent.zone] + '</span>' +
         '<span class="table-card-num-digit">' + bill.tag + '</span></span>' +
       '<span class="table-card-waiter">' + guestLabel(parent, bill.guest) + '</span>' +
@@ -7078,6 +7080,14 @@
     });
     tableGridEl.querySelectorAll('.table-card[data-bill]').forEach(card => {
       card.addEventListener('click', () => { openCashier(card.dataset.bill); setRoute('мн-24'); });
+    });
+    tableGridEl.querySelectorAll('.table-card[data-closed]').forEach(card => {
+      card.addEventListener('click', () => {
+        const t = tables.find(x => x.num === parseInt(card.dataset.closed, 10));
+        if (!t) return;
+        openHistory(t);
+        setRoute('мн-22');
+      });
     });
     tableGridEl.querySelectorAll('.table-card[data-free]').forEach(card => {
       card.addEventListener('click', () => {
@@ -7958,7 +7968,7 @@
     const t = tables.find(x => x.num === num);
     if (!t || t.status !== 'free') return;
     Object.assign(t, {
-      status:'open', calling:false, precheck:false, split:false,
+      status:'open', calling:false, precheck:false, split:false, hadClosedOrder:false,
       guests:1, mins:0, openedAt:Date.now(), waiter:CURRENT_WAITER, items:[]
     });
     t.log = [];
@@ -7990,7 +8000,7 @@
   guestsConfirmEl.addEventListener('click', () => {
     if (!pendingTable || !pendingGuests) return;
     Object.assign(pendingTable, {
-      status:'open', calling:false, precheck:false, split:false,
+      status:'open', calling:false, precheck:false, split:false, hadClosedOrder:false,
       guests:pendingGuests, mins:0, openedAt:Date.now(), waiter:CURRENT_WAITER, items:[]
     });
     currentTable = pendingTable;
@@ -8430,7 +8440,17 @@
     if (parent) {
       logAction(parent, 'bill', 'Счёт рассчитан · ' + METHOD_LABEL[method],
         (bill.guest === null ? 'Весь стол' : guestLabel(parent, bill.guest)) + ' · ' + money(bill.total) + ' · ' + bill.tag);
-      if (bill.guest === null) releaseTable(parent);   // весь стол оплачен — освобождаем
+      if (bill.guest === null) {
+        /* весь стол оплачен — освобождаем, но сохраняем снимок для истории:
+           releaseTable стирает waiter/openedAt/items с живого стола, а
+           hadClosedOrder/closedHistory он не трогает (см. openHistory) */
+        parent.hadClosedOrder = true;
+        parent.closedHistory = {
+          waiter:parent.waiter, openedAt:parent.openedAt, guests:parent.guests,
+          items:parent.items, closedAt:Date.now()
+        };
+        releaseTable(parent);
+      }
     }
     renderTables();
     renderFinance();
@@ -8575,7 +8595,7 @@
         const dest = tables.find(x => x.num === target && x.status === 'free');
         if (dest) {
           Object.assign(dest, {
-            status:'open', calling:false, precheck:t.precheck, locked:t.locked,
+            status:'open', calling:false, precheck:t.precheck, locked:t.locked, hadClosedOrder:false,
             guests:t.guests, mins:t.mins, openedAt:t.openedAt, waiter:t.waiter, items:t.items
           });
           bills.forEach(b => { if (b.table === t.num) b.table = dest.num; });
@@ -10323,15 +10343,20 @@
 
   function openHistory(t) {
     if (!t) return;
+    historyTableNum = t.num;
+    /* закрытый стол уже освобождён — releaseTable стёр живые waiter/openedAt/
+       items, но снимок на момент оплаты остался в closedHistory (см. payBill) */
+    const closed = t.status === 'free' && t.closedHistory;
+    const snap = closed ? t.closedHistory : t;
     const log = (t.log || []).slice().sort((a, b) => a.at - b.at);
     document.getElementById('historyTitle').textContent = tableLabel(t);
 
-    const served = (t.items || []).filter(i => i.servedAt).length;
+    const served = (snap.items || []).filter(i => i.servedAt).length;
     document.getElementById('historyMeta').innerHTML =
-      '<span>Открыт<strong>' + clockText(t) + '</strong></span>' +
-      '<span>За столом<strong>' + openedText(t) + '</strong></span>' +
-      '<span>Официант<strong>' + t.waiter + '</strong></span>' +
-      '<span>Сумма<strong>' + money(tableSum(t)) + '</strong></span>' +
+      '<span>Открыт<strong>' + clockText(snap) + '</strong></span>' +
+      '<span>За столом<strong>' + openedText(snap, closed ? snap.closedAt : undefined) + '</strong></span>' +
+      '<span>Официант<strong>' + (snap.waiter || '—') + '</strong></span>' +
+      '<span>Сумма<strong>' + money(tableSum(snap)) + '</strong></span>' +
       '<span>Отдано<strong>' + served + '</strong></span>' +
       '<span>Событий<strong>' + log.length + '</strong></span>';
 
@@ -11126,18 +11151,22 @@
 
   renderDishList();
 
-  /* ---------- Смена: полное меню (поиск + Старт/Стоп по каждому блюду) ---------- */
-  const menuRowsBarEl = document.getElementById('menuRowsBar');
-  const menuRowsKitchenEl = document.getElementById('menuRowsKitchen');
+  /* ---------- Смена: полное меню (поиск + Старт/Стоп по каждому блюду) ----------
+     Бар и Кухня — рядом, как переключатель цеха в меню заказа (см. pickSection):
+     нажатие показывает весь цех, ниже прокручиваются его папки. Оба поиска
+     работают внутри выбранного цеха и, пока не начали печатать, ещё и папки —
+     как только что-то введено, папка перестаёт сужать выборку (та же логика,
+     что у renderPick). */
+  const menuRowsActiveEl = document.getElementById('menuRowsActive');
+  const menuEmptyEl = document.getElementById('menuEmpty');
   const menuSearchInput = document.getElementById('menuSearchInput');
   const ingredientSearchInput = document.getElementById('ingredientSearchInput');
-  const ingredientResultsEl = document.getElementById('ingredientResults');
-  const ingredientResultsListEl = document.getElementById('ingredientResultsList');
+  let startstopSection = 'bar';
+  let startstopFolder = null;
 
-  function menuRowTemplate(item, showSection) {
-    const sectionTag = showSection ? ' <span class="menu-row-section-tag">· ' + (item.section === 'bar' ? 'Бар' : 'Кухня') + '</span>' : '';
+  function menuRowTemplate(item) {
     return '<div class="menu-row" data-id="' + item.id + '">' +
-      '<span class="menu-row-name">' + item.name + sectionTag + '</span>' +
+      '<span class="menu-row-name">' + item.name + '</span>' +
       '<div class="menu-row-toggle">' +
         '<button class="mini-toggle-btn start-btn' + (item.status === 'start' ? ' is-active' : '') + '" data-action="start">Старт</button>' +
         '<button class="mini-toggle-btn stop-btn' + (item.status === 'stop' ? ' is-active' : '') + '" data-action="stop">Стоп</button>' +
@@ -11154,74 +11183,77 @@
         const action = btn.dataset.action;
         item.status = item.status === action ? null : action;
         markListChanged(action);
-        renderMenu();
+        renderStartStop();
         renderDishList();
-        renderIngredientResults();
-        syncResetButtons();
       });
     });
   }
 
-  function renderMenu() {
-    const query = (menuSearchInput.value || '').trim().toLowerCase();
-    [['bar', menuRowsBarEl], ['kitchen', menuRowsKitchenEl]].forEach(([section, container]) => {
-      const items = menuItems.filter(i => i.section === section && i.name.toLowerCase().includes(query));
-      container.innerHTML = items.map(item => menuRowTemplate(item)).join('');
-      container.closest('.menu-section').classList.toggle('section-empty', items.length === 0);
-      attachToggleHandlers(container);
-    });
+  function renderStartStop() {
+    const q = (menuSearchInput.value || '').trim().toLowerCase();
+    const ing = (ingredientSearchInput.value || '').trim().toLowerCase();
+    const searching = !!q || !!ing;
+    const matches = i => i.name.toLowerCase().includes(q) &&
+      (!ing || (i.ingredients || []).some(x => x.toLowerCase().includes(ing)));
+    /* поиск не выходит за пределы выбранного цеха, но папку игнорирует —
+       и оба поиска, и папки завязаны на один и тот же цех */
+    const inScope = i => i.section === startstopSection &&
+      (searching || startstopFolder === null || i.cat === startstopFolder);
+
+    document.querySelectorAll('#startstopSections .pick-section').forEach(b =>
+      b.classList.toggle('active', b.dataset.startstopSection === startstopSection));
+    document.getElementById('startstopFolders').innerHTML = MENU_FOLDERS
+      .filter(f => f.section === startstopSection)
+      .map(f => '<button class="zone-tab' + (f.id === startstopFolder ? ' active' : '') +
+        '" data-startstop-folder="' + f.id + '">' + f.label +
+        '<span class="pick-folder-count">' + menuItems.filter(i => i.cat === f.id).length +
+        '</span></button>').join('');
+
+    const items = menuItems.filter(i => inScope(i) && matches(i));
+    menuRowsActiveEl.innerHTML = items.map(item => menuRowTemplate(item)).join('');
+    menuEmptyEl.hidden = !!items.length;
+    attachToggleHandlers(menuRowsActiveEl);
+    syncResetButtons();
   }
 
-  function renderIngredientResults() {
-    const query = (ingredientSearchInput.value || '').trim().toLowerCase();
-    if (!query) {
-      ingredientResultsEl.hidden = true;
-      return;
-    }
-    const matches = menuItems.filter(i => i.ingredients && i.ingredients.some(ing => ing.includes(query)));
-    ingredientResultsEl.hidden = false;
-    if (matches.length === 0) {
-      ingredientResultsListEl.innerHTML = '<div class="ingredient-empty">Ничего не найдено по ингредиенту «' + query + '»</div>';
-      return;
-    }
-    ingredientResultsListEl.innerHTML = matches.map(item => menuRowTemplate(item, true)).join('');
-    attachToggleHandlers(ingredientResultsListEl);
-  }
-
-  syncResetButtons();
-  menuSearchInput.addEventListener('input', renderMenu);
-  ingredientSearchInput.addEventListener('input', renderIngredientResults);
-  renderMenu();
-
-  document.querySelectorAll('.menu-section-header').forEach(header => {
-    const toggle = () => header.closest('.menu-section').classList.toggle('collapsed');
-    header.addEventListener('click', toggle);
-    header.addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
-    });
+  document.getElementById('startstopSections').addEventListener('click', e => {
+    const btn = e.target.closest('[data-startstop-section]');
+    if (!btn) return;
+    startstopSection = btn.dataset.startstopSection;
+    startstopFolder = null;   // весь цех целиком, пока не выбрали папку
+    renderStartStop();
   });
 
-  /* Обнулить Старт или Стоп у всех позиций раздела — по отдельности */
+  document.getElementById('startstopFolders').addEventListener('click', e => {
+    const btn = e.target.closest('[data-startstop-folder]');
+    if (!btn) return;
+    startstopFolder = btn.dataset.startstopFolder;
+    renderStartStop();
+  });
+
+  menuSearchInput.addEventListener('input', renderStartStop);
+  ingredientSearchInput.addEventListener('input', renderStartStop);
+  renderStartStop();
+
+  /* Обнулить Старт или Стоп у всех позиций текущего цеха — по отдельности */
   function syncResetButtons() {
-    document.querySelectorAll('.menu-section-reset').forEach(btn => {
+    document.querySelectorAll('#startstopResets .menu-section-reset').forEach(btn => {
       const has = menuItems.some(i =>
-        i.section === btn.dataset.reset && i.status === btn.dataset.resetMode);
+        i.section === startstopSection && i.status === btn.dataset.resetMode);
       btn.disabled = !has;
     });
   }
 
-  document.querySelectorAll('.menu-section-reset').forEach(btn => {
+  document.querySelectorAll('#startstopResets .menu-section-reset').forEach(btn => {
     btn.addEventListener('click', e => {
       e.stopPropagation();
       const mode = btn.dataset.resetMode;
       menuItems.forEach(i => {
-        if (i.section === btn.dataset.reset && i.status === mode) i.status = null;
+        if (i.section === startstopSection && i.status === mode) i.status = null;
       });
       markListChanged(mode);
-      renderMenu();
+      renderStartStop();
       renderDishList();
-      renderIngredientResults();
-      syncResetButtons();
     });
   });
 
