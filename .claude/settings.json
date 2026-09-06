@@ -1,5 +1,18 @@
 {
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "bash",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && git fetch origin 2>&1 && git pull --no-edit 2>&1 || echo 'Автосинхронизация: не удалось выполнить git pull (возможен конфликт или расхождение) — разрешите вручную'",
+            "timeout": 60,
+            "statusMessage": "Синхронизирую с GitHub..."
+          }
+        ]
+      }
+    ],
     "PreCompact": [
       {
         "matcher": "auto",
