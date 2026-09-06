@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "ruka-app",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["C:\\Users\\repub\\AppData\\Local\\Temp\\claude\\C--Users-repub-OneDrive-Desktop------------\\610663ef-bc50-46c8-9073-9203d3bf4cb9\\scratchpad\\static_server.js"],
+      "port": 8934
+    }
+  ]
+}
