@@ -1,8 +1,8 @@
 {
   "artboards": [
-    { "file": "Main.dc.html", "title": "A. Минимализм", "x": 0, "y": 0, "w": 390, "h": 1000 },
-    { "file": "DirectionB.dc.html", "title": "B. Тёмный неон", "x": 490, "y": 0, "w": 390, "h": 1000 },
-    { "file": "DirectionC.dc.html", "title": "C. Тёплый бутик", "x": 980, "y": 0, "w": 390, "h": 1000 }
+    { "file": "Main.dc.html", "title": "A. Минимализм", "x": 0, "y": 0, "w": 390, "h": 1100 },
+    { "file": "DirectionB.dc.html", "title": "B. Тёмный неон", "x": 490, "y": 0, "w": 390, "h": 1100 },
+    { "file": "DirectionC.dc.html", "title": "C. Тёплый бутик", "x": 980, "y": 0, "w": 390, "h": 1100 }
   ],
   "annotations": [
     { "id": "note-a", "x": 0, "y": -140, "w": 390, "text": "A. Плоский минимализм\nБелый фон, один акцент (терракот), без теней — фокус на цифрах и данных." },
