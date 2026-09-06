@@ -4199,6 +4199,207 @@
     color:var(--leather);
   }
 
+  /* ---------- МН-27/28/29/32: регистрация, вход, устаревший код, регистрация ресторана ----------
+     Та же нейтральная палитра, что у приветствия, не зависит от темы. */
+  .auth-screen{
+    position:absolute; inset:0;
+    z-index:50;
+    overflow-y:auto;
+    background:
+      radial-gradient(120% 60% at 50% -8%, rgba(233,203,126,0.4), transparent 62%),
+      linear-gradient(165deg, #F7F1E3 0%, #EEE0C4 44%, #D8C69B 76%, #A6926B 100%);
+  }
+  .auth-screen[hidden]{display:none;}
+  .auth-scroll{
+    min-height:100%;
+    display:flex; flex-direction:column;
+    padding:16px 28px calc(20px + env(safe-area-inset-bottom));
+  }
+  .auth-back-btn{
+    width:32px; height:32px;
+    border-radius:11px;
+    border:1.5px solid rgba(110,74,52,0.3);
+    background:rgba(255,255,255,0.4);
+    display:flex; align-items:center; justify-content:center;
+    margin-top:6px;
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  .auth-back-btn svg{width:16px; height:16px; stroke:var(--leather); fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round;}
+
+  .auth-head{
+    display:flex; flex-direction:column; align-items:center;
+    text-align:center;
+    margin-top:4px;
+    margin-bottom:10px;
+  }
+  .auth-mark{
+    width:40px; height:40px;
+    border-radius:12px;
+    overflow:hidden;
+    margin-bottom:8px;
+    box-shadow:0 14px 24px -14px rgba(110,74,52,0.5), 0 0 0 1px rgba(198,153,47,0.35);
+  }
+  .auth-mark svg{display:block; width:100%; height:100%;}
+  .auth-title{
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    font-size:20px;
+    color:#3B2A18;
+    margin-bottom:4px;
+  }
+  .auth-sub{
+    font-size:11.5px;
+    font-weight:600;
+    color:var(--leather);
+    max-width:260px;
+    line-height:1.3;
+  }
+
+  .auth-field{
+    display:flex; flex-direction:column; gap:4px;
+    margin-bottom:7px;
+  }
+  .auth-field-label{
+    font-size:10px; font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:var(--leather);
+    opacity:.85;
+  }
+  .auth-field-input{
+    width:100%;
+    background:rgba(255,255,255,0.55);
+    border:1.5px solid rgba(110,74,52,0.22);
+    border-radius:12px;
+    padding:9px 14px;
+    font-family:'Manrope', sans-serif;
+    font-size:13px;
+    font-weight:600;
+    color:#3B2A18;
+    appearance:none;
+    -webkit-appearance:none;
+  }
+  .auth-field-input::placeholder{color:#8a7a5f; font-weight:500;}
+  select.auth-field-input{
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M6 9l6 6 6-6' fill='none' stroke='%236E4A34' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    background-repeat:no-repeat;
+    background-position:right 12px center;
+    background-size:15px;
+    padding-right:34px;
+  }
+  .auth-field-row{display:flex; gap:10px;}
+  .auth-field-row .auth-field{flex:1; min-width:0;}
+  .auth-field-note{
+    font-size:9.5px;
+    color:var(--leather);
+    opacity:.75;
+    margin:-2px 0 7px;
+    line-height:1.3;
+  }
+  .auth-note-box{
+    display:flex; align-items:flex-start; gap:7px;
+    background:rgba(255,255,255,0.35);
+    border:1px dashed rgba(110,74,52,0.35);
+    border-radius:13px;
+    padding:9px 11px;
+    margin-bottom:10px;
+  }
+  .auth-note-box svg{width:14px; height:14px; stroke:var(--leather); fill:none; stroke-width:2; flex-shrink:0; margin-top:1px;}
+  .auth-note-box-text{font-size:11px; color:var(--leather); line-height:1.4; font-weight:600;}
+
+  .auth-link-row{display:flex; justify-content:flex-end; margin:-3px 0 10px;}
+  .auth-link{font-size:12px; font-weight:700; color:var(--leather); text-decoration:underline; background:none; border:none; cursor:pointer; font-family:'Manrope', sans-serif; padding:0;}
+
+  .auth-spacer{flex:1;}
+  .auth-btn{
+    width:100%;
+    border:none; cursor:pointer;
+    border-radius:16px;
+    padding:13px;
+    font-family:'Manrope', sans-serif;
+    font-size:14px; font-weight:700;
+    margin-top:4px;
+    flex-shrink:0;
+  }
+  .auth-btn-primary{
+    background:linear-gradient(160deg, var(--gold-light), var(--gold));
+    color:#3B2413;
+    box-shadow:0 16px 30px -14px rgba(110,74,52,0.55);
+  }
+  .auth-switch{
+    text-align:center;
+    margin-top:8px;
+    font-size:12px;
+    font-weight:600;
+    color:var(--leather);
+    flex-shrink:0;
+  }
+  .auth-switch button{background:none; border:none; cursor:pointer; font:inherit; color:#3B2413; text-decoration:underline; font-weight:700; padding:0;}
+  .auth-switch-secondary{margin-top:6px;}
+
+  .auth-splash-mid{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;}
+  .auth-splash-icon{
+    width:72px; height:72px;
+    border-radius:22px;
+    background:linear-gradient(160deg, var(--gold-light), var(--gold));
+    display:flex; align-items:center; justify-content:center;
+    margin-bottom:22px;
+    box-shadow:0 18px 32px -16px rgba(110,74,52,0.5);
+  }
+  .auth-splash-icon svg{width:34px; height:34px; stroke:#3B2413; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+  .auth-splash-meta{font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:#8a7a5f; margin-bottom:4px;}
+
+  /* ---------- Мессенджер: заявка на должность и блокировка вкладок до подтверждения ---------- */
+  .pending-banner{
+    display:flex; align-items:center; gap:8px;
+    background:rgba(198,153,47,0.16);
+    border:1px solid rgba(110,74,52,0.18);
+    border-radius:14px;
+    padding:9px 12px;
+    margin-bottom:12px;
+    font-size:11.5px; font-weight:700;
+    color:var(--leather);
+  }
+  .pending-banner[hidden]{display:none;}
+  .pending-banner svg{width:14px; height:14px; stroke:var(--leather); fill:none; stroke-width:2.2; flex-shrink:0;}
+
+  .msg-card{
+    align-self:flex-start;
+    max-width:82%;
+    background:var(--surface);
+    border:1px solid var(--card-border);
+    border-left:3px solid var(--gold);
+    border-radius:16px;
+    padding:12px 13px;
+  }
+  .msg-card-label{font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); margin-bottom:5px;}
+  .msg-card-role{font-size:14px; font-weight:700; color:var(--text-primary); margin-bottom:2px;}
+  .msg-card-note{font-size:12px; color:var(--text-soft); margin-bottom:9px;}
+  .msg-card-status{
+    display:inline-flex; align-items:center; gap:6px;
+    border-radius:20px;
+    padding:5px 10px;
+    font-size:11px; font-weight:700;
+  }
+  .msg-card-status-dot{width:6px; height:6px; border-radius:50%;}
+  .msg-card-status.is-pending{background:rgba(166,146,107,0.22); color:var(--text-soft);}
+  .msg-card-status.is-pending .msg-card-status-dot{background:var(--khaki);}
+  .msg-card-status.is-approved{background:rgba(198,153,47,0.22); color:var(--leather);}
+  .msg-card-status.is-approved .msg-card-status-dot{background:var(--gold);}
+
+  .nav-lock-badge{
+    display:none;
+    position:absolute; top:-4px; right:-2px;
+    width:13px; height:13px; border-radius:50%;
+    background:var(--leather);
+    align-items:center; justify-content:center;
+  }
+  .nav-lock-badge svg{width:8px; height:8px; stroke:var(--cream); fill:none; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round;}
+  .screen.pending-approval .nav-btn-lockable{color:rgba(110,74,52,0.45);}
+  .screen.dark.pending-approval .nav-btn-lockable{color:rgba(233,203,126,0.32);}
+  .screen.pending-approval .nav-btn-lockable .nav-lock-badge{display:flex;}
+
 </style>
 </head>
 <body>
@@ -4258,11 +4459,32 @@
       <section class="panel" data-panel="map">
         <p class="map-intro">Служебный экран прототипа. Все экраны файла с их ID. Переход — по клику или по хеш-роуту в адресной строке, например <strong>#мн-04</strong>.</p>
         <button class="map-reset" id="draftReset">Сбросить черновики и демо-данные</button>
+        <button class="map-reset" id="pendingApprovalToggle">Демо: заявка на должность ожидает подтверждения</button>
 
         <div class="map-group-title">Вход</div>
         <button class="map-row" data-goto="мн-26">
           <span class="map-id">МН-26</span>
           <span class="map-name">Приветствие<span class="map-note">Экран перед регистрацией и входом</span></span>
+          <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <button class="map-row" data-goto="мн-27">
+          <span class="map-id">МН-27</span>
+          <span class="map-name">Регистрация сотрудника<span class="map-note">Должность отправляется на подтверждение</span></span>
+          <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <button class="map-row" data-goto="мн-28">
+          <span class="map-id">МН-28</span>
+          <span class="map-name">Вход<span class="map-note">Телефон/email и пароль</span></span>
+          <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <button class="map-row" data-goto="мн-29">
+          <span class="map-id">МН-29</span>
+          <span class="map-name">Код устарел<span class="map-note">Ссылка-приглашение просрочена</span></span>
+          <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <button class="map-row" data-goto="мн-32">
+          <span class="map-id">МН-32</span>
+          <span class="map-name">Регистрация ресторана<span class="map-note">Самый первый руководитель, без подтверждения</span></span>
           <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
         </button>
 
@@ -5182,6 +5404,10 @@
 
       <!-- ===== МН-05 · МЕССЕНДЖЕР ===== -->
       <section class="panel" data-panel="messenger" hidden>
+        <div class="pending-banner" id="pendingBanner" hidden>
+          <svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+          Остальные разделы откроются после подтверждения должности
+        </div>
         <div class="folder-tabs" id="folderTabs">
           <button class="folder-tab active" data-folder="all">Все</button>
           <button class="folder-tab" data-folder="kitchen">Кухня</button>
@@ -5506,24 +5732,24 @@
     </button>
 
     <nav class="bottom-nav" id="bottomNav">
-      <button class="nav-btn active" data-tab="home">
-        <span class="icon-wrap"><svg viewBox="0 0 24 24"><path d="M4 11.5L12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h3v-5h4v5h3a1 1 0 0 0 1-1v-9"/></svg></span>
+      <button class="nav-btn nav-btn-lockable active" data-tab="home">
+        <span class="icon-wrap"><svg viewBox="0 0 24 24"><path d="M4 11.5L12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h3v-5h4v5h3a1 1 0 0 0 1-1v-9"/></svg><span class="nav-lock-badge"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span></span>
         Главная
       </button>
-      <button class="nav-btn" data-tab="shift">
-        <span class="icon-wrap"><svg viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.4"/><path d="M10.3 5.2h3.4"/><circle cx="12" cy="18.3" r="0.9"/></svg></span>
+      <button class="nav-btn nav-btn-lockable" data-tab="shift">
+        <span class="icon-wrap"><svg viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.4"/><path d="M10.3 5.2h3.4"/><circle cx="12" cy="18.3" r="0.9"/></svg><span class="nav-lock-badge"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span></span>
         Смена
       </button>
       <button class="nav-btn" data-tab="messenger">
         <span class="icon-wrap"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 6l9 7 9-7"/></svg></span>
         Мессенджер
       </button>
-      <button class="nav-btn" data-tab="planner">
-        <span class="icon-wrap"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="3" height="3" rx="0.6"/><path d="M9 6.5h12"/><rect x="3" y="11" width="3" height="3" rx="0.6"/><path d="M9 12.5h12"/><rect x="3" y="17" width="3" height="3" rx="0.6"/><path d="M9 18.5h12"/></svg></span>
+      <button class="nav-btn nav-btn-lockable" data-tab="planner">
+        <span class="icon-wrap"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="3" height="3" rx="0.6"/><path d="M9 6.5h12"/><rect x="3" y="11" width="3" height="3" rx="0.6"/><path d="M9 12.5h12"/><rect x="3" y="17" width="3" height="3" rx="0.6"/><path d="M9 18.5h12"/></svg><span class="nav-lock-badge"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span></span>
         Планировщик
       </button>
-      <button class="nav-btn" data-tab="profile">
-        <span class="icon-wrap"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg></span>
+      <button class="nav-btn nav-btn-lockable" data-tab="profile">
+        <span class="icon-wrap"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg><span class="nav-lock-badge"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span></span>
         Профиль
       </button>
       <button class="nav-btn nav-btn-extra" id="navDeptBtn" hidden>
@@ -5799,6 +6025,265 @@
     </div>
     </div>
 
+    <!-- ===== МН-27 · РЕГИСТРАЦИЯ СОТРУДНИКА ===== -->
+    <div class="auth-screen" id="signupScreen" hidden>
+      <div class="auth-scroll">
+        <button class="auth-back-btn" id="signupBackBtn" aria-label="Назад">
+          <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
+        <div class="auth-head">
+          <div class="auth-mark">
+            <svg viewBox="0 0 512 512" role="img" aria-label="РУКА"><defs><linearGradient id="rukaBgSignup" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b3050"/><stop offset="1" stop-color="#0e1c2e"/></linearGradient><clipPath id="rukaCardSignup"><rect x="16" y="16" width="480" height="480" rx="112"/></clipPath></defs><rect x="16" y="16" width="480" height="480" rx="112" fill="url(#rukaBgSignup)"/><g clip-path="url(#rukaCardSignup)"><rect x="92" y="206" width="46" height="194" rx="12" fill="#5b7ba6"/><rect x="156" y="158" width="46" height="242" rx="12" fill="#7c9bc2"/><rect x="220" y="116" width="46" height="284" rx="12" fill="#e6dabf"/><rect x="284" y="62" width="46" height="338" rx="12" fill="#efe6d2"/><path d="M 84,300 A 186,186 0 1 0 438,222 Z" fill="#c9a227"/><polyline points="105,378 222,252 278,306 392,200" fill="none" stroke="#12233a" stroke-width="56" stroke-linecap="round" stroke-linejoin="round"/><polyline points="105,378 222,252 278,306 392,200" fill="none" stroke="#f7efe1" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/></g><rect x="42" y="42" width="428" height="428" rx="92" fill="none" stroke="#c9a227" stroke-width="3" opacity="0.85"/></svg>
+          </div>
+          <div class="auth-title">Создание аккаунта</div>
+          <div class="auth-sub">Доступ к экранам настроится по вашей роли</div>
+        </div>
+
+        <div class="auth-note-box">
+          <svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg>
+          <span class="auth-note-box-text">Код приглашения от заведения уже проверен: «Ресторан «Депо»»</span>
+        </div>
+
+        <div class="auth-field-row">
+          <div class="auth-field">
+            <span class="auth-field-label">Имя</span>
+            <input class="auth-field-input" type="text" placeholder="Дарья">
+          </div>
+          <div class="auth-field">
+            <span class="auth-field-label">Фамилия</span>
+            <input class="auth-field-input" type="text" placeholder="Волкова">
+          </div>
+        </div>
+
+        <div class="auth-field-row">
+          <div class="auth-field">
+            <span class="auth-field-label">Должность</span>
+            <select class="auth-field-input" id="signupRoleSelect">
+              <optgroup label="Зал">
+                <option>Менеджер</option>
+                <option selected>Хостес</option>
+                <option>Старший хостес</option>
+                <option>Официант</option>
+                <option>Старший официант</option>
+                <option>Раннер</option>
+              </optgroup>
+              <optgroup label="Кухня">
+                <option>Бренд-шеф</option>
+                <option>Шеф-повар</option>
+                <option>Шеф</option>
+                <option>Су-шеф</option>
+                <option>Повар</option>
+                <option>Кондитер</option>
+                <option>Заготовщик</option>
+              </optgroup>
+              <optgroup label="Бар">
+                <option>Бар-менеджер</option>
+                <option>Старший бармен</option>
+                <option>Бармен</option>
+                <option>Барбек</option>
+                <option>Бариста</option>
+                <option>Сомелье</option>
+                <option>Помощник сомелье</option>
+              </optgroup>
+              <optgroup label="Бухгалтерия">
+                <option>Главный бухгалтер</option>
+                <option>Бухгалтер</option>
+                <option>Калькулятор</option>
+                <option>Старший кассир</option>
+                <option>Кассир</option>
+              </optgroup>
+              <optgroup label="Кальянные мастера">
+                <option>Кальянный менеджер</option>
+                <option>Кальянный мастер (кальянщик)</option>
+              </optgroup>
+              <optgroup label="Банкетные мероприятия">
+                <option>Банкетный менеджер</option>
+                <option>Координатор банкетов</option>
+              </optgroup>
+              <optgroup label="Арт-отдел">
+                <option>Арт-директор</option>
+                <option>Звукорежиссёр</option>
+                <option>Диджей</option>
+                <option>Ведущий</option>
+                <option>Светооператор</option>
+              </optgroup>
+              <optgroup label="Склад и снабжение">
+                <option>Заведующий складом</option>
+                <option>Кладовщик</option>
+                <option>Закупщик</option>
+              </optgroup>
+              <optgroup label="Охрана">
+                <option>Руководитель охраны</option>
+                <option>Старший смены</option>
+                <option>Охранник</option>
+              </optgroup>
+              <optgroup label="Клининг и техперсонал">
+                <option>Хаус-мастер</option>
+                <option>Золушка/фея</option>
+                <option>Посудомойщик</option>
+                <option>Грузчик (разнорабочий)</option>
+              </optgroup>
+              <optgroup label="Другое">
+                <option>Менеджер по работе с гостями</option>
+                <option>Кино-менеджер</option>
+                <option>Кадровик</option>
+                <option>Маркетолог</option>
+                <option>IT-администратор</option>
+                <option>Гардеробщик</option>
+                <option>Парковщик</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="auth-field">
+            <span class="auth-field-label">Уточнение</span>
+            <input class="auth-field-input" type="text" placeholder="например: старшая хостес">
+          </div>
+        </div>
+        <div class="auth-field-note">Должность и уточнение уйдут руководителю на подтверждение. Так же для поваров: должность — «Повар», а цех — уточнением, например «холодный цех»</div>
+
+        <div class="auth-field">
+          <span class="auth-field-label">Телефон</span>
+          <input class="auth-field-input" type="tel" placeholder="+7 999 123-45-67">
+        </div>
+        <div class="auth-field">
+          <span class="auth-field-label">Email</span>
+          <input class="auth-field-input" type="email" placeholder="d.volkova@depo-rest.ru">
+        </div>
+        <div class="auth-field">
+          <span class="auth-field-label">Пароль</span>
+          <input class="auth-field-input" type="password" placeholder="••••••••">
+        </div>
+
+        <div class="auth-spacer"></div>
+
+        <button class="auth-btn auth-btn-primary" id="signupSubmitBtn">Создать аккаунт</button>
+        <div class="auth-switch">Уже есть аккаунт? <button id="signupToLoginBtn">Войти</button></div>
+        <div class="auth-switch auth-switch-secondary">Регистрируете ресторан впервые? <button id="signupToOwnerBtn">Создать ресторан</button></div>
+      </div>
+    </div>
+
+    <!-- ===== МН-28 · ВХОД ===== -->
+    <div class="auth-screen" id="loginScreen" hidden>
+      <div class="auth-scroll">
+        <button class="auth-back-btn" id="loginBackBtn" aria-label="Назад">
+          <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
+        <div class="auth-head">
+          <div class="auth-mark">
+            <svg viewBox="0 0 512 512" role="img" aria-label="РУКА"><defs><linearGradient id="rukaBgLogin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b3050"/><stop offset="1" stop-color="#0e1c2e"/></linearGradient><clipPath id="rukaCardLogin"><rect x="16" y="16" width="480" height="480" rx="112"/></clipPath></defs><rect x="16" y="16" width="480" height="480" rx="112" fill="url(#rukaBgLogin)"/><g clip-path="url(#rukaCardLogin)"><rect x="92" y="206" width="46" height="194" rx="12" fill="#5b7ba6"/><rect x="156" y="158" width="46" height="242" rx="12" fill="#7c9bc2"/><rect x="220" y="116" width="46" height="284" rx="12" fill="#e6dabf"/><rect x="284" y="62" width="46" height="338" rx="12" fill="#efe6d2"/><path d="M 84,300 A 186,186 0 1 0 438,222 Z" fill="#c9a227"/><polyline points="105,378 222,252 278,306 392,200" fill="none" stroke="#12233a" stroke-width="56" stroke-linecap="round" stroke-linejoin="round"/><polyline points="105,378 222,252 278,306 392,200" fill="none" stroke="#f7efe1" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/></g><rect x="42" y="42" width="428" height="428" rx="92" fill="none" stroke="#c9a227" stroke-width="3" opacity="0.85"/></svg>
+          </div>
+          <div class="auth-title">Вход в аккаунт</div>
+          <div class="auth-sub">Введите телефон или email и пароль</div>
+        </div>
+
+        <div class="auth-field">
+          <span class="auth-field-label">Телефон или email</span>
+          <input class="auth-field-input" type="text" placeholder="d.volkova@depo-rest.ru">
+        </div>
+        <div class="auth-field">
+          <span class="auth-field-label">Пароль</span>
+          <input class="auth-field-input" type="password" placeholder="••••••••">
+        </div>
+        <div class="auth-link-row"><button class="auth-link">Забыли пароль?</button></div>
+
+        <div class="auth-spacer"></div>
+
+        <button class="auth-btn auth-btn-primary" id="loginSubmitBtn">Войти</button>
+        <div class="auth-switch">Нет аккаунта? <button id="loginToSignupBtn">Зарегистрироваться</button></div>
+      </div>
+    </div>
+
+    <!-- ===== МН-29 · КОД УСТАРЕЛ ===== -->
+    <div class="auth-screen" id="expiredScreen" hidden>
+      <div class="auth-scroll">
+        <button class="auth-back-btn" id="expiredBackBtn" aria-label="Назад">
+          <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
+        <div class="auth-splash-mid">
+          <div class="auth-splash-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></div>
+          <div class="auth-title">Ссылка устарела</div>
+          <div class="auth-sub">Код приглашения для «Ресторан «Депо»» больше не действует</div>
+          <div class="auth-splash-meta">Действовал до 3 сентября, 18:00</div>
+        </div>
+        <button class="auth-btn auth-btn-primary" id="expiredRequestBtn">Запросить новую ссылку</button>
+        <div class="auth-switch">Ваш номер уйдёт руководителю во внутренний мессенджер — он отправит новую ссылку лично вам</div>
+      </div>
+    </div>
+
+    <!-- ===== МН-32 · РЕГИСТРАЦИЯ ПЕРВОГО РУКОВОДИТЕЛЯ (РЕСТОРАН) ===== -->
+    <div class="auth-screen" id="ownerSignupScreen" hidden>
+      <div class="auth-scroll">
+        <button class="auth-back-btn" id="ownerBackBtn" aria-label="Назад">
+          <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
+        <div class="auth-head">
+          <div class="auth-mark">
+            <svg viewBox="0 0 512 512" role="img" aria-label="РУКА"><defs><linearGradient id="rukaBgOwner" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b3050"/><stop offset="1" stop-color="#0e1c2e"/></linearGradient><clipPath id="rukaCardOwner"><rect x="16" y="16" width="480" height="480" rx="112"/></clipPath></defs><rect x="16" y="16" width="480" height="480" rx="112" fill="url(#rukaBgOwner)"/><g clip-path="url(#rukaCardOwner)"><rect x="92" y="206" width="46" height="194" rx="12" fill="#5b7ba6"/><rect x="156" y="158" width="46" height="242" rx="12" fill="#7c9bc2"/><rect x="220" y="116" width="46" height="284" rx="12" fill="#e6dabf"/><rect x="284" y="62" width="46" height="338" rx="12" fill="#efe6d2"/><path d="M 84,300 A 186,186 0 1 0 438,222 Z" fill="#c9a227"/><polyline points="105,378 222,252 278,306 392,200" fill="none" stroke="#12233a" stroke-width="56" stroke-linecap="round" stroke-linejoin="round"/><polyline points="105,378 222,252 278,306 392,200" fill="none" stroke="#f7efe1" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/></g><rect x="42" y="42" width="428" height="428" rx="92" fill="none" stroke="#c9a227" stroke-width="3" opacity="0.85"/></svg>
+          </div>
+          <div class="auth-title">Регистрация ресторана</div>
+          <div class="auth-sub">Вы станете первым администратором заведения</div>
+        </div>
+
+        <div class="auth-field">
+          <span class="auth-field-label">Название ресторана</span>
+          <input class="auth-field-input" type="text" placeholder="Ресторан «Депо»">
+        </div>
+        <div class="auth-field-row">
+          <div class="auth-field">
+            <span class="auth-field-label">Город</span>
+            <input class="auth-field-input" type="text" placeholder="Москва">
+          </div>
+          <div class="auth-field">
+            <span class="auth-field-label">Адрес</span>
+            <input class="auth-field-input" type="text" placeholder="ул. Ленина, 5">
+          </div>
+        </div>
+        <div class="auth-field">
+          <span class="auth-field-label">ИНН</span>
+          <input class="auth-field-input" type="text" inputmode="numeric" placeholder="7701234567">
+        </div>
+        <div class="auth-field-note">Отличают ресторан от однофамильцев — название может повторяться</div>
+
+        <div class="auth-field">
+          <span class="auth-field-label">Ваша должность</span>
+          <select class="auth-field-input">
+            <option>Владелец</option>
+            <option>Управляющий</option>
+            <option>Операционный директор</option>
+          </select>
+        </div>
+        <div class="auth-field-note">Подтверждать не у кого — доступ открывается сразу в полном объёме</div>
+
+        <div class="auth-field-row">
+          <div class="auth-field">
+            <span class="auth-field-label">Имя</span>
+            <input class="auth-field-input" type="text" placeholder="Игорь">
+          </div>
+          <div class="auth-field">
+            <span class="auth-field-label">Фамилия</span>
+            <input class="auth-field-input" type="text" placeholder="Соколов">
+          </div>
+        </div>
+        <div class="auth-field">
+          <span class="auth-field-label">Телефон</span>
+          <input class="auth-field-input" type="tel" placeholder="+7 999 700-12-34">
+        </div>
+        <div class="auth-field">
+          <span class="auth-field-label">Email</span>
+          <input class="auth-field-input" type="email" placeholder="i.sokolov@depo-rest.ru">
+        </div>
+        <div class="auth-field">
+          <span class="auth-field-label">Пароль</span>
+          <input class="auth-field-input" type="password" placeholder="••••••••">
+        </div>
+
+        <div class="auth-spacer"></div>
+
+        <button class="auth-btn auth-btn-primary" id="ownerSubmitBtn">Создать ресторан и аккаунт</button>
+        <div class="auth-switch">Уже есть аккаунт? <button id="ownerToLoginBtn">Войти</button></div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -5880,6 +6365,12 @@
      для демонстрации доступа к «Чек-коррекции» на экране кассира (МН-24) */
   let demoRole = 'cashier';
   const canCorrect = () => demoRole === 'cashier' || isManagerRole;
+
+  /* МН-27: заявка на должность отправлена, руководитель ещё не подтвердил —
+     нижнее меню, кроме Мессенджера, заблокировано. Переключатель на карте
+     экранов позволяет включать/выключать это состояние для показа обеих
+     версий, не проходя регистрацию заново */
+  let pendingApproval = false;
 
   const staffFullName = s => (s.firstName + ' ' + s.lastName).trim();
   const staffInitials = s =>
@@ -11438,6 +11929,11 @@
 
   /* ---------- Мессенджер: папки + чаты ---------- */
   const chatData = [
+    { id: 'hr', name: 'Ресторан «Депо» · Руководитель', preview: 'Заявка на должность отправлена', time: '9:40', unread: 1, folder: ['hall'], avatarText: 'РД', avatarClass: 'avatar-gold',
+      messages: [
+        { from: 'card', role: 'Хостес', note: 'Уточнение: старшая хостес', time: '9:40' },
+        { from: 'me', text: 'Отправила заявку, жду подтверждения' }
+      ] },
     { id: 'c1', name: 'Смена — общий чат', preview: 'Стол 7 ждёт расчёт', time: '18:42', unread: 3, folder: ['hall'], avatarText: 'СЧ', avatarClass: 'avatar-navy',
       messages: [
         { from: 'them', text: 'Кто закрывает стол 5?' },
@@ -11534,12 +12030,62 @@
     threadAvatar.className = 'chat-avatar ' + chat.avatarClass;
     threadAvatar.textContent = chat.avatarText;
     threadName.textContent = chat.name;
-    chatMessagesEl.innerHTML = chat.messages.map(m =>
-      '<div class="msg-bubble msg-' + m.from + '">' + m.text + '</div>'
-    ).join('');
+    chatMessagesEl.innerHTML = chat.messages.map(renderChatMessage).join('');
     titleEl.textContent = chat.name;
     subEl.textContent = 'Переписка';
   }
+
+  /* заявка на должность (МН-27) рисуется отдельной карточкой, а не обычным
+     пузырём — статус зависит от demo-переключателя pendingApproval, поэтому
+     собирается при каждом рендере, а не хранится готовой строкой в chatData */
+  function renderChatMessage(m) {
+    if (m.from === 'card') {
+      const statusClass = pendingApproval ? 'is-pending' : 'is-approved';
+      const statusText = pendingApproval ? 'Ожидает подтверждения' : 'Подтверждено';
+      return '<div class="msg-card">' +
+        '<div class="msg-card-label">Заявка на должность</div>' +
+        '<div class="msg-card-role">' + m.role + '</div>' +
+        '<div class="msg-card-note">' + m.note + '</div>' +
+        '<div class="msg-card-status ' + statusClass + '"><span class="msg-card-status-dot"></span>' + statusText + '</div>' +
+      '</div>';
+    }
+    return '<div class="msg-bubble msg-' + m.from + '">' + m.text + '</div>';
+  }
+
+  const pendingBannerEl = document.getElementById('pendingBanner');
+  const pendingApprovalToggleBtn = document.getElementById('pendingApprovalToggle');
+
+  /* переключает демо-состояние «заявка ожидает подтверждения» — блокирует
+     нижнее меню кроме Мессенджера, красит статус заявки и баннер сверху.
+     Карта экранов при этом продолжает открывать любой экран напрямую: замок
+     останавливает только настоящий тап пользователя по нижнему меню (см.
+     capture-перехватчик ниже, срабатывает лишь на e.isTrusted) */
+  function applyPendingApprovalUI() {
+    screenEl.classList.toggle('pending-approval', pendingApproval);
+    pendingBannerEl.hidden = !pendingApproval;
+    pendingApprovalToggleBtn.textContent = pendingApproval
+      ? 'Демо: подтвердить должность и снять блокировку'
+      : 'Демо: заявка на должность ожидает подтверждения';
+    if (currentChatId === 'hr') openChat('hr');
+  }
+
+  pendingApprovalToggleBtn.addEventListener('click', () => {
+    pendingApproval = !pendingApproval;
+    applyPendingApprovalUI();
+  });
+
+  /* заявка ещё не подтверждена — тап по нижнему меню (кроме Мессенджера)
+     ничего не переключает; перехват в capture-фазе, как у диалога
+     непробитого заказа выше. e.isTrusted отсекает синтетические клики
+     из gotoTab() — «Карта экранов» и хеш-роуты обходят блокировку, как и
+     любой другой переход в прототипе */
+  buttons.forEach(btn => {
+    btn.addEventListener('click', e => {
+      if (pendingApproval && e.isTrusted && btn.dataset.tab !== 'messenger') {
+        e.stopImmediatePropagation();
+      }
+    }, true);
+  });
 
   newChatFab.addEventListener('click', () => {
     folderTabsEl.hidden = true;
@@ -11709,15 +12255,66 @@
       if (tag) openCashier(tag);
     },
     'мн-25': () => { gotoTab('shift'); renderClosedOrders(); showDetail('closed', 'Закрытые заказы', 'Рассчитанные счета за смену'); },
-    'мн-26': () => { welcomeScreenEl.hidden = false; }
+    'мн-26': () => showAuthScreen('welcome'),
+    'мн-27': () => showAuthScreen('signup'),
+    'мн-28': () => showAuthScreen('login'),
+    'мн-29': () => showAuthScreen('expired'),
+    'мн-32': () => showAuthScreen('owner')
   };
 
-  /* ---------- МН-26: Приветствие — кнопки входа/регистрации закрывают
-     оверлей поверх карты экранов; полноценной авторизации в прототипе нет,
-     поэтому обе ведут в приложение одинаково */
-  const welcomeScreenEl = document.getElementById('welcomeScreen');
-  document.getElementById('welcomeSignupBtn').addEventListener('click', () => { welcomeScreenEl.hidden = true; });
-  document.getElementById('welcomeLoginBtn').addEventListener('click', () => { welcomeScreenEl.hidden = true; });
+  /* ---------- МН-26/27/28/29/32: приветствие, регистрация, вход, устаревший
+     код, регистрация ресторана — пять взаимоисключающих полноэкранных
+     оверлеев поверх любого экрана прототипа. Полноценной авторизации нет:
+     кнопки просто переключают, какой из пяти показан, без проверки полей */
+  const authScreens = {
+    welcome: document.getElementById('welcomeScreen'),
+    signup: document.getElementById('signupScreen'),
+    login: document.getElementById('loginScreen'),
+    expired: document.getElementById('expiredScreen'),
+    owner: document.getElementById('ownerSignupScreen')
+  };
+  function showAuthScreen(name) {
+    Object.values(authScreens).forEach(el => { el.hidden = true; });
+    authScreens[name].hidden = false;
+  }
+
+  document.getElementById('welcomeSignupBtn').addEventListener('click', () => showAuthScreen('signup'));
+  document.getElementById('welcomeLoginBtn').addEventListener('click', () => showAuthScreen('login'));
+
+  document.getElementById('signupBackBtn').addEventListener('click', () => showAuthScreen('welcome'));
+  document.getElementById('signupToLoginBtn').addEventListener('click', () => showAuthScreen('login'));
+  document.getElementById('signupToOwnerBtn').addEventListener('click', () => showAuthScreen('owner'));
+  document.getElementById('signupSubmitBtn').addEventListener('click', () => {
+    authScreens.signup.hidden = true;
+    pendingApproval = true;
+    applyPendingApprovalUI();
+    gotoTab('messenger');
+    openChat('hr');
+  });
+
+  document.getElementById('loginBackBtn').addEventListener('click', () => showAuthScreen('welcome'));
+  document.getElementById('loginToSignupBtn').addEventListener('click', () => showAuthScreen('signup'));
+  document.getElementById('loginSubmitBtn').addEventListener('click', () => {
+    authScreens.login.hidden = true;
+    pendingApproval = false;
+    applyPendingApprovalUI();
+    gotoTab('home');
+  });
+
+  document.getElementById('ownerBackBtn').addEventListener('click', () => showAuthScreen('welcome'));
+  document.getElementById('ownerToLoginBtn').addEventListener('click', () => showAuthScreen('login'));
+  document.getElementById('ownerSubmitBtn').addEventListener('click', () => {
+    authScreens.owner.hidden = true;
+    pendingApproval = false;
+    applyPendingApprovalUI();
+    gotoTab('home');
+  });
+
+  document.getElementById('expiredBackBtn').addEventListener('click', () => showAuthScreen('welcome'));
+  document.getElementById('expiredRequestBtn').addEventListener('click', function () {
+    this.textContent = 'Запрос отправлен руководителю';
+    this.disabled = true;
+  });
 
   /* ---------- «Назад» в шапке: делегирует нажатие текущему экрану ---------- */
   const headerBackEl = document.getElementById('headerBack');
