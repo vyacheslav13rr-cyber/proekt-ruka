@@ -1,0 +1,300 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  *{box-sizing:border-box;}
+  body{margin:0;}
+  a{color:#E9CB7E; text-decoration:none;}
+  a:hover{color:#C6992F;}
+</style>
+</helmet>
+
+<div style="width:1440px; background:#EEE0C4; font-family:'Manrope',sans-serif; color:#2B2418;">
+
+  <!-- ===== Top nav ===== -->
+  <div style="display:flex; align-items:center; justify-content:space-between; padding:0 64px; height:84px; background:#F7F1E3; border-bottom:1px solid rgba(110,74,52,0.16);">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <svg width="34" height="34" viewBox="0 0 512 512" role="img" aria-label="РУКА">
+        <defs>
+          <linearGradient id="navLogoBg" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#1b3050"/>
+            <stop offset="1" stop-color="#0e1c2e"/>
+          </linearGradient>
+          <clipPath id="navLogoCard"><rect x="16" y="16" width="480" height="480" rx="112"/></clipPath>
+        </defs>
+        <rect x="16" y="16" width="480" height="480" rx="112" fill="url(#navLogoBg)"/>
+        <g clip-path="url(#navLogoCard)">
+          <rect x="92" y="206" width="46" height="194" rx="12" fill="#5b7ba6"/>
+          <rect x="156" y="158" width="46" height="242" rx="12" fill="#7c9bc2"/>
+          <rect x="220" y="116" width="46" height="284" rx="12" fill="#e6dabf"/>
+          <rect x="284" y="62" width="46" height="338" rx="12" fill="#efe6d2"/>
+          <path d="M 84,300 A 186,186 0 1 0 438,222 Z" fill="#c9a227"/>
+          <polyline points="105,378 222,252 278,306 392,200" fill="none" stroke="#12233a" stroke-width="56" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="105,378 222,252 278,306 392,200" fill="none" stroke="#f7efe1" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+        <rect x="42" y="42" width="428" height="428" rx="92" fill="none" stroke="#c9a227" stroke-width="3" opacity="0.85"/>
+      </svg>
+      <span style="font-family:'Fraunces',serif; font-weight:600; font-size:22px; color:#1E3350;">РУКА</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:40px;">
+      <a href="#features" style="font-family:'Manrope',sans-serif; font-weight:600; font-size:14px; color:#6E4A34;">Возможности</a>
+      <a href="#messenger" style="font-family:'Manrope',sans-serif; font-weight:600; font-size:14px; color:#6E4A34;">Мессенджер</a>
+      <a href="#contact" style="font-family:'Manrope',sans-serif; font-weight:600; font-size:14px; color:#6E4A34;">Контакты</a>
+      <a href="#demo" style="display:inline-flex; align-items:center; padding:12px 24px; border-radius:999px; background:linear-gradient(160deg,#E9CB7E,#C6992F); color:#12233A; font-weight:700; font-size:14px;">Демо</a>
+    </div>
+  </div>
+
+  <!-- ===== Hero ===== -->
+  <div style="background:linear-gradient(155deg,#1E3350,#12233A); padding:96px 64px 112px;">
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:64px; align-items:center; max-width:1312px; margin:0 auto;">
+
+      <div style="display:flex; flex-direction:column; gap:24px;">
+        <span style="font-family:'Manrope',sans-serif; font-weight:700; font-size:13px; letter-spacing:0.14em; text-transform:uppercase; color:#E9CB7E;">Экосистема для ресторана</span>
+        <h1 style="font-family:'Fraunces',serif; font-weight:600; font-size:52px; line-height:1.16; color:#F7F1E3; max-width:560px; margin:0;">Управляйте сменой,<br>не открывая десять программ</h1>
+        <p style="font-family:'Manrope',sans-serif; font-weight:400; font-size:18px; line-height:1.55; color:rgba(247,241,227,0.78); max-width:500px; margin:0;">РУКА объединяет смену, финансы, стоп-лист и мессенджер с ассистентом в одном мобильном приложении — для владельцев, управляющих и их команды.</p>
+        <div style="display:flex; align-items:center; gap:28px;">
+          <a href="#demo" style="display:inline-flex; align-items:center; padding:16px 32px; border-radius:999px; background:linear-gradient(160deg,#E9CB7E,#C6992F); color:#12233A; font-family:'Manrope',sans-serif; font-weight:700; font-size:15px; box-shadow:0 16px 30px -12px rgba(198,153,47,0.5);">Запросить демо</a>
+          <a href="#features" style="font-family:'Manrope',sans-serif; font-weight:700; font-size:14px; color:#E9CB7E;">Как это работает →</a>
+        </div>
+      </div>
+
+      <!-- Phone mockup: экран «Смена» -->
+      <div style="display:flex; justify-content:center;">
+        <div style="width:390px; height:844px; background:linear-gradient(160deg,#24405f,#12233A); border-radius:54px; padding:14px; box-shadow:0 50px 90px -25px rgba(18,35,58,0.55), 0 0 0 1px rgba(0,0,0,0.15); position:relative; flex-shrink:0;">
+          <div style="width:100%; height:100%; background:#EEE0C4; border-radius:40px; overflow:hidden; position:relative; display:flex; flex-direction:column;">
+
+            <div style="position:absolute; top:14px; left:50%; transform:translateX(-50%); width:110px; height:26px; background:#000; border-radius:20px; z-index:20;"></div>
+
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:9px 28px 0; color:#F7F1E3; font-family:'IBM Plex Mono',monospace; font-size:13px;">
+              <span>9:41</span>
+              <div style="display:flex; align-items:center; gap:5px;">
+                <svg width="16" height="12" viewBox="0 0 16 12"><rect x="0" y="7" width="3" height="5" rx="0.5" fill="#F7F1E3"/><rect x="4.5" y="4.5" width="3" height="7.5" rx="0.5" fill="#F7F1E3"/><rect x="9" y="2" width="3" height="10" rx="0.5" fill="#F7F1E3"/></svg>
+                <svg width="22" height="12" viewBox="0 0 22 12"><rect x="0.5" y="0.5" width="18" height="11" rx="2.5" stroke="#F7F1E3" fill="none"/><rect x="2" y="2" width="13" height="8" rx="1.2" fill="#F7F1E3"/><rect x="19.5" y="4" width="1.5" height="4" rx="0.7" fill="#F7F1E3"/></svg>
+              </div>
+            </div>
+
+            <div style="background:linear-gradient(155deg,#1E3350,#12233A); padding:14px 24px 18px; position:relative;">
+              <div style="position:absolute; left:24px; right:24px; bottom:0; height:2px; background:linear-gradient(90deg, transparent, #C6992F, transparent); opacity:0.8;"></div>
+              <div style="font-family:'Fraunces',serif; font-weight:600; font-size:20px; color:#F7F1E3;">Смена</div>
+            </div>
+
+            <div style="flex:1; overflow:hidden; padding:16px 16px 130px; display:flex; flex-direction:column; gap:12px;">
+
+              <!-- Финансы -->
+              <div style="border-radius:18px; padding:16px 16px 14px; border:1px solid rgba(110,74,52,0.18); background:#E9DBB6; display:flex; flex-direction:column; gap:10px;">
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                  <span style="font-family:'Fraunces',serif; font-weight:600; font-size:20px; color:#6E4A34;">Финансы</span>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6E4A34" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:3px;">
+                  <div style="display:flex; justify-content:space-between; align-items:baseline; font-size:13px; color:#6E4A34;"><span>Выручка</span><strong style="font-family:'IBM Plex Mono',monospace; font-size:14px; color:#1E3350; font-weight:500;">184 600 ₽</strong></div>
+                  <div style="display:flex; justify-content:space-between; align-items:baseline; font-size:13px; color:#6E4A34;"><span>План</span><strong style="font-family:'IBM Plex Mono',monospace; font-size:14px; color:#1E3350; font-weight:500;">220 000 ₽</strong></div>
+                </div>
+                <div style="height:8px; border-radius:6px; background:rgba(110,74,52,0.15); overflow:hidden;">
+                  <div style="height:100%; width:84%; border-radius:6px; background:linear-gradient(90deg,#E9CB7E,#C6992F);"></div>
+                </div>
+                <div style="font-size:11px; font-weight:700; color:#1E3350; text-align:right;">84%</div>
+              </div>
+
+              <!-- Старт/Стоп лист -->
+              <div style="border-radius:18px; padding:16px; border:1px solid rgba(110,74,52,0.18); background:#E9DBB6; display:flex; flex-direction:column; gap:12px;">
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                  <span style="font-family:'Fraunces',serif; font-weight:600; font-size:20px; color:#6E4A34;">Старт/Стоп лист</span>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6E4A34" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+                </div>
+                <div style="display:flex; background:rgba(30,51,80,0.08); border-radius:12px; padding:4px; gap:4px;">
+                  <div style="flex:1; text-align:center; padding:8px 10px; border-radius:9px; background:linear-gradient(160deg,#8FBF8B,#4F8A5B); color:#F7F1E3; font-weight:700; font-size:13px;">Старт</div>
+                  <div style="flex:1; text-align:center; padding:8px 10px; border-radius:9px; color:#A6926B; font-weight:700; font-size:13px;">Стоп</div>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:9px;">
+                  <div style="display:flex; align-items:center; gap:10px; font-size:13px; color:#6E4A34;"><span style="width:7px; height:7px; border-radius:50%; background:#4F8A5B; flex-shrink:0;"></span>Стейк рибай</div>
+                  <div style="display:flex; align-items:center; gap:10px; font-size:13px; color:#6E4A34;"><span style="width:7px; height:7px; border-radius:50%; background:#4F8A5B; flex-shrink:0;"></span>Тартар из тунца</div>
+                  <div style="display:flex; align-items:center; gap:10px; font-size:13px; color:#6E4A34;"><span style="width:7px; height:7px; border-radius:50%; background:#4F8A5B; flex-shrink:0;"></span>Паста с трюфелем</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bottom nav -->
+            <div style="position:absolute; left:14px; right:14px; bottom:14px; background:#F7F1E3; border:1px solid rgba(110,74,52,0.16); border-radius:26px; padding:8px 6px; display:flex; justify-content:space-between; box-shadow:0 14px 28px rgba(43,36,24,0.22);">
+              <div style="display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px 10px 7px; color:#A6926B; font-size:10px; font-weight:600;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5L12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h3v-5h4v5h3a1 1 0 0 0 1-1v-9"/></svg>
+                Главная
+              </div>
+              <div style="display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px 10px 7px; border-radius:16px; color:#1E3350; font-size:10px; font-weight:600; position:relative;">
+                <span style="position:absolute; top:-2px; width:34px; height:34px; border-radius:50%; background:radial-gradient(circle,#E9CB7E,#C6992F); z-index:0;"></span>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#12233A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:relative; z-index:1;"><rect x="7" y="2.5" width="10" height="19" rx="2.4"/><path d="M10.3 5.2h3.4"/><circle cx="12" cy="18.3" r="0.9"/></svg>
+                <span style="position:relative; z-index:1;">Смена</span>
+              </div>
+              <div style="display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px 10px 7px; color:#A6926B; font-size:10px; font-weight:600;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 6l9 7 9-7"/></svg>
+                Мессенджер
+              </div>
+              <div style="display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px 10px 7px; color:#A6926B; font-size:10px; font-weight:600;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="3" height="3" rx="0.6"/><path d="M9 6.5h12"/><rect x="3" y="11" width="3" height="3" rx="0.6"/><path d="M9 12.5h12"/><rect x="3" y="17" width="3" height="3" rx="0.6"/><path d="M9 18.5h12"/></svg>
+                Планировщик
+              </div>
+              <div style="display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px 10px 7px; color:#A6926B; font-size:10px; font-weight:600;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>
+                Профиль
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== Features ===== -->
+  <div id="features" style="padding:96px 64px; background:#EEE0C4;">
+    <div style="max-width:1312px; margin:0 auto; display:flex; flex-direction:column; gap:56px;">
+      <div style="display:flex; flex-direction:column; gap:16px; max-width:640px;">
+        <span style="font-family:'Manrope',sans-serif; font-weight:700; font-size:13px; letter-spacing:0.14em; text-transform:uppercase; color:#C6992F;">Возможности</span>
+        <h2 style="font-family:'Fraunces',serif; font-weight:600; font-size:36px; color:#1E3350; margin:0;">Один рабочий инструмент для всей смены</h2>
+        <p style="font-family:'Manrope',sans-serif; font-size:16px; line-height:1.6; color:#6E4A34; margin:0;">Заменяет разрозненные чаты, блокноты и звонки между залом, баром и кухней.</p>
+      </div>
+
+      <div style="display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:24px;">
+
+        <div style="background:#F7F1E3; border:1px solid rgba(110,74,52,0.08); border-radius:18px; padding:28px; box-shadow:0 10px 24px rgba(30,51,80,0.12); display:flex; flex-direction:column; gap:16px;">
+          <div style="width:48px; height:48px; border-radius:50%; background:linear-gradient(160deg,#E9CB7E,#C6992F); display:flex; align-items:center; justify-content:center;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#12233A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="19" rx="2.4"/><path d="M10.3 5.2h3.4"/><circle cx="12" cy="18.3" r="0.9"/></svg>
+          </div>
+          <span style="font-family:'Fraunces',serif; font-weight:600; font-size:19px; color:#1E3350;">Финансы смены под рукой</span>
+          <span style="font-family:'Manrope',sans-serif; font-size:14px; line-height:1.55; color:#6E4A34;">Выручка, план и процент выполнения — в одном блоке, с переходом к среднему чеку, чаевым и возвратам.</span>
+        </div>
+
+        <div style="background:#F7F1E3; border:1px solid rgba(110,74,52,0.08); border-radius:18px; padding:28px; box-shadow:0 10px 24px rgba(30,51,80,0.12); display:flex; flex-direction:column; gap:16px;">
+          <div style="width:48px; height:48px; border-radius:50%; background:linear-gradient(160deg,#E9CB7E,#C6992F); display:flex; align-items:center; justify-content:center;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#12233A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="3" height="3" rx="0.6"/><path d="M9 6.5h12"/><rect x="3" y="11" width="3" height="3" rx="0.6"/><path d="M9 12.5h12"/><rect x="3" y="17" width="3" height="3" rx="0.6"/><path d="M9 18.5h12"/></svg>
+          </div>
+          <span style="font-family:'Fraunces',serif; font-weight:600; font-size:19px; color:#1E3350;">Стоп-лист синхронизирован с кухней и баром</span>
+          <span style="font-family:'Manrope',sans-serif; font-size:14px; line-height:1.55; color:#6E4A34;">Официант, бармен и повар видят одни и те же позиции — Старт зелёным, Стоп красным, без звонков и бумажек.</span>
+        </div>
+
+        <div style="background:#F7F1E3; border:1px solid rgba(110,74,52,0.08); border-radius:18px; padding:28px; box-shadow:0 10px 24px rgba(30,51,80,0.12); display:flex; flex-direction:column; gap:16px;">
+          <div style="width:48px; height:48px; border-radius:50%; background:linear-gradient(160deg,#E9CB7E,#C6992F); display:flex; align-items:center; justify-content:center;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#12233A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 6l9 7 9-7"/></svg>
+          </div>
+          <span style="font-family:'Fraunces',serif; font-weight:600; font-size:19px; color:#1E3350;">Мессенджер с ассистентом</span>
+          <span style="font-family:'Manrope',sans-serif; font-size:14px; line-height:1.55; color:#6E4A34;">Папки Кухня, Бар, Зал, Поставщики — и ассистент, который подскажет состав блюда прямо у стола гостя.</span>
+        </div>
+
+        <div style="background:#F7F1E3; border:1px solid rgba(110,74,52,0.08); border-radius:18px; padding:28px; box-shadow:0 10px 24px rgba(30,51,80,0.12); display:flex; flex-direction:column; gap:16px;">
+          <div style="width:48px; height:48px; border-radius:50%; background:linear-gradient(160deg,#E9CB7E,#C6992F); display:flex; align-items:center; justify-content:center;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#12233A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>
+          </div>
+          <span style="font-family:'Fraunces',serif; font-weight:600; font-size:19px; color:#1E3350;">Экран под каждую роль</span>
+          <span style="font-family:'Manrope',sans-serif; font-size:14px; line-height:1.55; color:#6E4A34;">От владельца до бармена — свой набор экранов и прав для каждой должности.</span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Мессенджер showcase ===== -->
+  <div id="messenger" style="padding:96px 64px; background:#F7F1E3;">
+    <div style="max-width:1312px; margin:0 auto; display:grid; grid-template-columns:1fr 1fr; gap:64px; align-items:center;">
+
+      <div style="background:#1E3350; border-radius:24px; padding:28px; box-shadow:0 20px 40px rgba(30,51,80,0.25); display:flex; flex-direction:column; gap:18px;">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-family:'Fraunces',serif; font-weight:600; font-size:19px; color:#F7F1E3;">Мессенджер</span>
+          <span style="font-family:'Manrope',sans-serif; font-weight:700; font-size:12px; color:#12233A; background:linear-gradient(160deg,#E9CB7E,#C6992F); padding:7px 14px; border-radius:999px;">Ассистент</span>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <span style="font-family:'Manrope',sans-serif; font-weight:700; font-size:12px; color:#12233A; background:linear-gradient(160deg,#E9CB7E,#C6992F); padding:8px 16px; border-radius:999px;">Все</span>
+          <span style="font-family:'Manrope',sans-serif; font-weight:600; font-size:12px; color:#C9B98C; background:rgba(255,255,255,0.06); padding:8px 16px; border-radius:999px;">Кухня</span>
+          <span style="font-family:'Manrope',sans-serif; font-weight:600; font-size:12px; color:#C9B98C; background:rgba(255,255,255,0.06); padding:8px 16px; border-radius:999px;">Бар</span>
+          <span style="font-family:'Manrope',sans-serif; font-weight:600; font-size:12px; color:#C9B98C; background:rgba(255,255,255,0.06); padding:8px 16px; border-radius:999px;">Зал</span>
+          <span style="font-family:'Manrope',sans-serif; font-weight:600; font-size:12px; color:#C9B98C; background:rgba(255,255,255,0.06); padding:8px 16px; border-radius:999px;">Поставщики</span>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:2px;">
+          <div style="display:flex; align-items:center; gap:12px; padding:14px 6px; border-bottom:1px solid rgba(233,203,126,0.12);">
+            <div style="width:38px; height:38px; border-radius:50%; background:linear-gradient(160deg,#8C733F,#6B5527); flex-shrink:0;"></div>
+            <div style="display:flex; flex-direction:column; gap:3px;">
+              <span style="font-family:'Manrope',sans-serif; font-weight:700; font-size:14px; color:#F5EFDF;">Кухня — общий чат</span>
+              <span style="font-family:'Manrope',sans-serif; font-size:12px; color:#C9B98C;">Стоп по тартару снят, можно ставить в стоп-лист заново</span>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:12px; padding:14px 6px;">
+            <div style="width:38px; height:38px; border-radius:50%; background:linear-gradient(160deg,#8C733F,#6B5527); flex-shrink:0;"></div>
+            <div style="display:flex; flex-direction:column; gap:3px;">
+              <span style="font-family:'Manrope',sans-serif; font-weight:700; font-size:14px; color:#F5EFDF;">Ассистент</span>
+              <span style="font-family:'Manrope',sans-serif; font-size:12px; color:#C9B98C;">В соусе для рибая — грибы, уточните у гостя аллергию</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:24px;">
+        <span style="font-family:'Manrope',sans-serif; font-weight:700; font-size:13px; letter-spacing:0.14em; text-transform:uppercase; color:#C6992F;">Мессенджер</span>
+        <h2 style="font-family:'Fraunces',serif; font-weight:600; font-size:34px; color:#1E3350; margin:0; max-width:460px;">Не групповой чат, а рабочий инструмент</h2>
+        <div style="display:flex; flex-direction:column; gap:14px;">
+          <div style="display:flex; align-items:flex-start; gap:12px;">
+            <span style="width:6px; height:6px; border-radius:50%; background:#C6992F; margin-top:8px; flex-shrink:0;"></span>
+            <span style="font-family:'Manrope',sans-serif; font-size:15px; line-height:1.55; color:#6E4A34;">Папки Все, Кухня, Бар, Зал, Поставщики — как в Telegram, но в цветах приложения.</span>
+          </div>
+          <div style="display:flex; align-items:flex-start; gap:12px;">
+            <span style="width:6px; height:6px; border-radius:50%; background:#C6992F; margin-top:8px; flex-shrink:0;"></span>
+            <span style="font-family:'Manrope',sans-serif; font-size:15px; line-height:1.55; color:#6E4A34;">Кнопка «Ассистент» в шапке отвечает каждому сотруднику по его работе — например, по составу блюд.</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== Footer ===== -->
+  <div id="contact" style="background:#12233A; padding:64px; display:flex; flex-direction:column; gap:40px;">
+    <div style="max-width:1312px; margin:0 auto; width:100%; display:flex; justify-content:space-between; align-items:flex-start; gap:40px;">
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <svg width="30" height="30" viewBox="0 0 512 512" role="img" aria-label="РУКА">
+            <defs>
+              <linearGradient id="footLogoBg" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#1b3050"/>
+                <stop offset="1" stop-color="#0e1c2e"/>
+              </linearGradient>
+              <clipPath id="footLogoCard"><rect x="16" y="16" width="480" height="480" rx="112"/></clipPath>
+            </defs>
+            <rect x="16" y="16" width="480" height="480" rx="112" fill="url(#footLogoBg)"/>
+            <g clip-path="url(#footLogoCard)">
+              <rect x="92" y="206" width="46" height="194" rx="12" fill="#5b7ba6"/>
+              <rect x="156" y="158" width="46" height="242" rx="12" fill="#7c9bc2"/>
+              <rect x="220" y="116" width="46" height="284" rx="12" fill="#e6dabf"/>
+              <rect x="284" y="62" width="46" height="338" rx="12" fill="#efe6d2"/>
+              <path d="M 84,300 A 186,186 0 1 0 438,222 Z" fill="#c9a227"/>
+              <polyline points="105,378 222,252 278,306 392,200" fill="none" stroke="#12233a" stroke-width="56" stroke-linecap="round" stroke-linejoin="round"/>
+              <polyline points="105,378 222,252 278,306 392,200" fill="none" stroke="#f7efe1" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+            </g>
+            <rect x="42" y="42" width="428" height="428" rx="92" fill="none" stroke="#c9a227" stroke-width="3" opacity="0.85"/>
+          </svg>
+          <span style="font-family:'Fraunces',serif; font-weight:600; font-size:20px; color:#F7F1E3;">РУКА</span>
+        </div>
+        <span style="font-family:'Manrope',sans-serif; font-size:14px; color:rgba(247,241,227,0.55); max-width:320px;">Экосистема для управления рестораном: приложение и мессенджер-ассистент в одном месте.</span>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:12px; align-items:flex-end;">
+        <span style="font-family:'Fraunces',serif; font-weight:600; font-size:16px; color:#E9CB7E;">Написать нам</span>
+        <span style="font-family:'Manrope',sans-serif; font-size:14px; color:#F5EFDF;">[ВАШ EMAIL]</span>
+        <span style="font-family:'Manrope',sans-serif; font-size:14px; color:#F5EFDF;">[ВАШ ТЕЛЕФОН]</span>
+      </div>
+    </div>
+    <div style="max-width:1312px; margin:0 auto; width:100%; height:1px; background:rgba(233,203,126,0.18);"></div>
+    <div style="max-width:1312px; margin:0 auto; width:100%; display:flex; justify-content:space-between;">
+      <span style="font-family:'Manrope',sans-serif; font-size:12px; color:rgba(247,241,227,0.45);">© 2026 РУКА. Экосистема для ресторанов.</span>
+      <span style="font-family:'Manrope',sans-serif; font-size:12px; color:rgba(247,241,227,0.45);">Сделано для владельцев и управляющих</span>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>
