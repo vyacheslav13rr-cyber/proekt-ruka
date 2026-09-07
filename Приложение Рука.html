@@ -3748,9 +3748,11 @@
   #optsOverlay .opts-chip.is-course{padding:4px 8px; min-width:37px;}
 
   /* ---------- Уведомление сотрудникам зала ---------- */
+  /* top выставляется в JS по фактической высоте шапки (positionListNotify),
+     как у баннера о непробитом заказе — иначе тост перекрывает шапку */
   .notify-toast{
     position:absolute;
-    left:14px; right:14px; top:12px;
+    left:14px; right:14px; top:0; margin-top:12px;
     display:flex; align-items:center; gap:10px;
     background:linear-gradient(160deg, #24405f, var(--navy-deep));
     border:1px solid rgba(233,203,126,0.35);
@@ -6585,6 +6587,7 @@
     listNotifyEl.style.transition = '';
     listNotifyEl.style.transform = '';
     listNotifyEl.style.opacity = '';
+    if (appHeaderEl) listNotifyEl.style.top = appHeaderEl.offsetHeight + 'px';
     listNotifyEl.hidden = false;
     notifyTimer = setTimeout(() => hideListNotify(true), 120000);   // 2 минуты — не забрали, уходит в копилку
   }
