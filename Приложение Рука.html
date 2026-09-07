@@ -3748,9 +3748,11 @@
   #optsOverlay .opts-chip.is-course{padding:4px 8px; min-width:37px;}
 
   /* ---------- Уведомление сотрудникам зала ---------- */
+  /* top выставляется в JS по фактической высоте шапки (positionListNotify),
+     как у баннера о непробитом заказе — иначе тост перекрывает шапку */
   .notify-toast{
     position:absolute;
-    left:14px; right:14px; top:12px;
+    left:14px; right:14px; top:0; margin-top:12px;
     display:flex; align-items:center; gap:10px;
     background:linear-gradient(160deg, #24405f, var(--navy-deep));
     border:1px solid rgba(233,203,126,0.35);
@@ -6572,28 +6574,80 @@
     return 'Стоп-лист изменён';
   }
 
+  let listNotifyPending = null;   // попадёт в копилку, если не ознакомились вовремя
+
   function showListNotify() {
     clearTimeout(notifyTimer);
-    document.getElementById('notifyTitle').textContent = changedListLabel();
-    document.getElementById('notifyNote').textContent = 'Обновление от менеджера · сотрудникам зала';
+    const title = changedListLabel();
+    const note = 'Обновление от менеджера · сотрудникам зала';
+    document.getElementById('notifyTitle').textContent = title;
+    document.getElementById('notifyNote').textContent = note;
+    listNotifyPending = { employee:'Зал', topic:'stoplist', title:title, note:note, at:Date.now() };
     listNotifyEl.classList.remove('leaving');
+    listNotifyEl.style.transition = '';
+    listNotifyEl.style.transform = '';
+    listNotifyEl.style.opacity = '';
+    if (appHeaderEl) listNotifyEl.style.top = appHeaderEl.offsetHeight + 'px';
     listNotifyEl.hidden = false;
-    notifyTimer = setTimeout(hideListNotify, 6000);
+    notifyTimer = setTimeout(() => hideListNotify(true), 120000);   // 2 минуты — не забрали, уходит в копилку
   }
 
-  function hideListNotify() {
+  /* pushToInbox — не ознакомились (таймаут или смахнули), кладём в копилку;
+     dismissAnimated — тост уже улетел сам (свайпом), обычное затухание вверх не нужно */
+  function hideListNotify(pushToInbox, dismissAnimated) {
     clearTimeout(notifyTimer);
-    listNotifyEl.classList.add('leaving');
+    if (pushToInbox && listNotifyPending) pushNotif(listNotifyPending);
+    listNotifyPending = null;
+    if (!dismissAnimated) listNotifyEl.classList.add('leaving');
     setTimeout(() => {
       listNotifyEl.hidden = true;
       listNotifyEl.classList.remove('leaving');
+      listNotifyEl.style.transition = '';
+      listNotifyEl.style.transform = '';
+      listNotifyEl.style.opacity = '';
     }, 280);
   }
 
   document.getElementById('notifyOpen').addEventListener('click', () => {
-    hideListNotify();
+    hideListNotify(false);
     location.hash = 'мн-04';
   });
+
+  /* смахнуть тост стоп-листа пальцем — не ознакомился, уходит в копилку */
+  (function enableListNotifySwipe() {
+    let dragging = false, startX = 0, startY = 0, dx = 0;
+    listNotifyEl.addEventListener('pointerdown', e => {
+      if (e.target.closest('#notifyOpen')) return;
+      dragging = true; startX = e.clientX; startY = e.clientY; dx = 0;
+      listNotifyEl.style.transition = 'none';
+      try { listNotifyEl.setPointerCapture(e.pointerId); } catch (err) {}
+    });
+    listNotifyEl.addEventListener('pointermove', e => {
+      if (!dragging) return;
+      dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      if (Math.abs(dy) > Math.abs(dx) * 1.2) return;
+      listNotifyEl.style.transform = 'translateX(' + dx + 'px)';
+      listNotifyEl.style.opacity = String(Math.max(0.15, 1 - Math.abs(dx) / 160));
+    });
+    function endDrag() {
+      if (!dragging) return;
+      dragging = false;
+      listNotifyEl.style.transition = 'transform .2s ease, opacity .2s ease';
+      if (Math.abs(dx) > 70) {
+        const dir = dx > 0 ? 1 : -1;
+        listNotifyEl.style.transform = 'translateX(' + dir * 400 + 'px)';
+        listNotifyEl.style.opacity = '0';
+        hideListNotify(true, true);
+      } else {
+        listNotifyEl.style.transform = '';
+        listNotifyEl.style.opacity = '';
+      }
+      dx = 0;
+    }
+    listNotifyEl.addEventListener('pointerup', endDrag);
+    listNotifyEl.addEventListener('pointercancel', endDrag);
+  })();
 
   /* «Назад» из Старт/Стоп листа спрашивает про сохранение */
   document.querySelector('.shift-detail[data-detail="startstop"] .back-btn')
@@ -10414,7 +10468,7 @@
   const notifEdgeBtn = document.getElementById('notifEdgeBtn');
   const notifOverlayEl = document.getElementById('notifOverlay');
   const notifPanelEl = document.getElementById('notifPanel');
-  const NOTIF_TOPIC_LABELS = { unsent:'Не отправлено', empty:'Незакрытый стол' };
+  const NOTIF_TOPIC_LABELS = { unsent:'Не отправлено', empty:'Незакрытый стол', stoplist:'Стоп-лист' };
 
   let notifInbox = [];
   let notifSeq = 0;
@@ -10656,6 +10710,11 @@
     notifInbox = notifInbox.filter(x => x.id !== id);
     updateNotifBell();
     renderNotifPanel();
+    if (n && n.topic === 'stoplist') {
+      toggleNotifPanel(false);
+      location.hash = 'мн-04';
+      return;
+    }
     if (n) {
       toggleNotifPanel(false);
       gotoTab('shift');
