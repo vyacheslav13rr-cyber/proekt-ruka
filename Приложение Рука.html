@@ -4562,6 +4562,38 @@
   .diff-value.is-short{color:var(--leather);}
   .diff-value.is-over{color:var(--accent);}
 
+  /* ---------- Бар: блоки только для бар-менеджера (МН-40..МН-44) ---------- */
+  .manager-divider{display:flex; align-items:center; gap:10px; margin:22px 0 10px;}
+  .manager-divider-line{flex:1; height:1px; background:linear-gradient(90deg, transparent, var(--gold), transparent);}
+  .manager-divider-label{
+    font-family:'Fraunces', serif; font-weight:600;
+    font-size:11px; text-transform:uppercase; letter-spacing:.07em;
+    color:var(--gold); white-space:nowrap;
+  }
+
+  .order-status-badge{font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:999px; background:var(--segment-track); color:var(--text-soft); white-space:nowrap;}
+  .order-status-badge.is-final{background:rgba(198,153,47,0.2); color:var(--leather);}
+
+  .task-progress-track{margin:8px 0 4px; height:7px; border-radius:5px; background:var(--khaki-block-track, rgba(110,74,52,0.15)); overflow:hidden;}
+  .task-progress-fill{height:100%; border-radius:5px; background:linear-gradient(90deg, var(--gold-light), var(--gold));}
+  .task-progress-label{font-size:11px; color:var(--text-soft); font-weight:700;}
+
+  .catalog-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px; max-height:280px; overflow-y:auto; padding:2px;}
+  .catalog-card{
+    display:flex; flex-direction:column; align-items:center; gap:4px;
+    border:1px solid var(--card-border);
+    border-radius:12px;
+    padding:10px 6px;
+    background:var(--surface);
+    cursor:pointer;
+    text-align:center;
+  }
+  .catalog-card.active{border-color:var(--gold); background:rgba(198,153,47,0.12);}
+  .catalog-card.is-disabled{opacity:.4; cursor:not-allowed;}
+  .catalog-card-icon{font-size:26px;}
+  .catalog-card-name{font-size:11px; font-weight:700; color:var(--text-primary);}
+  .catalog-card-price{font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--accent);}
+
 </style>
 </head>
 <body>
@@ -4751,6 +4783,31 @@
         <button class="map-row" data-goto="мн-39">
           <span class="map-id">МН-39</span>
           <span class="map-name">Бар — передача смены<span class="map-note">Подраздел МН-14</span></span>
+          <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <button class="map-row" data-goto="мн-40">
+          <span class="map-id">МН-40</span>
+          <span class="map-name">Бар — поставщики<span class="map-note">Подраздел МН-14 · только бар-менеджер</span></span>
+          <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <button class="map-row" data-goto="мн-41">
+          <span class="map-id">МН-41</span>
+          <span class="map-name">Бар — заявки поставщикам<span class="map-note">Подраздел МН-14 · только бар-менеджер</span></span>
+          <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <button class="map-row" data-goto="мн-42">
+          <span class="map-id">МН-42</span>
+          <span class="map-name">Бар — аналитика<span class="map-note">Подраздел МН-14 · только бар-менеджер</span></span>
+          <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <button class="map-row" data-goto="мн-43">
+          <span class="map-id">МН-43</span>
+          <span class="map-name">Бар — сотрудники<span class="map-note">Подраздел МН-14 · только бар-менеджер</span></span>
+          <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <button class="map-row" data-goto="мн-44">
+          <span class="map-id">МН-44</span>
+          <span class="map-name">Бар — мотивация и призы<span class="map-note">Подраздел МН-14 · только бар-менеджер</span></span>
           <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
         </button>
         <button class="map-row" data-goto="мн-15">
@@ -5576,6 +5633,14 @@
             </button>
           </div>
 
+          <div class="role-switch-row">
+            <span class="role-switch-label">Демо-роль</span>
+            <div class="role-switch" id="barRoleSwitch">
+              <button class="role-switch-btn" data-bar-role="bartender">Бармен</button>
+              <button class="role-switch-btn" data-bar-role="manager">Бар-менеджер</button>
+            </div>
+          </div>
+
           <div class="detail-section-title">Разделы</div>
           <div class="nav-rows">
             <button class="nav-row" data-barsub="stock">
@@ -5616,6 +5681,41 @@
             <button class="nav-row" data-barsub="handover">
               <svg class="nav-row-icon" viewBox="0 0 24 24"><path d="M7 7l-4 4 4 4"/><path d="M3 11h12"/><path d="M17 5l4 4-4 4"/><path d="M21 9H9"/></svg>
               <span class="nav-row-text"><span class="nav-row-name">Передача смены</span><span class="nav-row-note">Остатки, списания, задачи</span></span>
+              <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+
+          <div class="manager-divider" id="barManagerDivider" hidden>
+            <span class="manager-divider-line"></span>
+            <span class="manager-divider-label">Только для бар-менеджера</span>
+            <span class="manager-divider-line"></span>
+          </div>
+          <div class="nav-rows" id="barManagerRows" hidden>
+            <button class="nav-row" data-barsub="suppliers">
+              <svg class="nav-row-icon" viewBox="0 0 24 24"><path d="M3 7h11v10H3z"/><path d="M14 10h4l3 3v4h-7"/><circle cx="7" cy="19" r="1.6"/><circle cx="17.5" cy="19" r="1.6"/></svg>
+              <span class="nav-row-text"><span class="nav-row-name">Поставщики</span><span class="nav-row-note">Прайсы, условия оплаты</span></span>
+              <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+            </button>
+            <button class="nav-row" data-barsub="orders">
+              <svg class="nav-row-icon" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/><path d="M9.5 11.5h5"/><path d="M9.5 14.5h5"/></svg>
+              <span class="nav-row-text"><span class="nav-row-name">Заявки поставщикам</span><span class="nav-row-note">Статусы и оплата</span></span>
+              <span class="nav-row-value" id="barNavOrdersValue">—</span>
+              <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+            </button>
+            <button class="nav-row" data-barsub="analytics">
+              <svg class="nav-row-icon" viewBox="0 0 24 24"><path d="M4 20V10"/><path d="M11 20V4"/><path d="M18 20v-7"/></svg>
+              <span class="nav-row-text"><span class="nav-row-name">Аналитика бара</span><span class="nav-row-note">Выручка, фудкост, топ позиций</span></span>
+              <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+            </button>
+            <button class="nav-row" data-barsub="staff">
+              <svg class="nav-row-icon" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M2.8 20c0-3.3 2.7-5.6 6.2-5.6s6.2 2.3 6.2 5.6"/><circle cx="17" cy="8.5" r="2.4"/><path d="M15.5 14.6c2.6.3 4.5 2.2 4.5 4.6"/></svg>
+              <span class="nav-row-text"><span class="nav-row-name">Сотрудники</span><span class="nav-row-note">Выручка, дисциплина, мотивация</span></span>
+              <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+            </button>
+            <button class="nav-row" data-barsub="motivation">
+              <svg class="nav-row-icon" viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.6 6.1.7-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6-4.5-4.2 6.1-.7z"/></svg>
+              <span class="nav-row-text"><span class="nav-row-name">Мотивация и призы</span><span class="nav-row-note">Задачи, витрина, выдача</span></span>
+              <span class="nav-row-value" id="barNavMotivationValue">—</span>
               <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
             </button>
           </div>
@@ -5743,6 +5843,97 @@
           </div>
           <button class="modal-btn modal-btn-gold bar-full-btn" id="barHandoverSignBtn">Подписать (сдающий)</button>
           <button class="modal-btn modal-btn-ghost bar-full-btn" id="barHandoverConfirmBtn" disabled>Подтвердить приём смены</button>
+        </div>
+
+        <!-- МН-40 -->
+        <div class="shift-detail" data-detail="bar-suppliers" data-back="bar" data-title="Поставщики" data-subtitle="Прайсы и условия оплаты" hidden>
+          <button class="back-btn">
+            <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+            Назад
+          </button>
+          <div class="stock-rows" id="barSupplierRows"></div>
+        </div>
+
+        <div class="shift-detail" data-detail="bar-supplier-detail" data-back="bar-suppliers" data-title="Поставщик" data-subtitle="" hidden>
+          <button class="back-btn">
+            <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+            Назад
+          </button>
+          <div class="finance-rows" id="barSupplierInfo"></div>
+          <div class="detail-section-title">История поставок</div>
+          <div class="finance-rows" id="barSupplierDeliveries"></div>
+          <div class="detail-section-title">Прайс</div>
+          <div class="finance-rows" id="barSupplierPrice"></div>
+        </div>
+
+        <!-- МН-41 -->
+        <div class="shift-detail" data-detail="bar-orders" data-back="bar" data-title="Заявки поставщикам" data-subtitle="Статусы и оплата" hidden>
+          <button class="back-btn">
+            <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+            Назад
+          </button>
+          <button class="modal-btn modal-btn-gold bar-full-btn" id="barNewOrderBtn">Новая заявка</button>
+          <div class="finance-rows" id="barTodayDeliveryNote" style="margin-bottom:16px;"></div>
+          <div class="stock-rows" id="barOrderRows"></div>
+        </div>
+
+        <div class="shift-detail" data-detail="bar-order-detail" data-back="bar-orders" data-title="Заявка" data-subtitle="" hidden>
+          <button class="back-btn">
+            <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+            Назад
+          </button>
+          <div class="finance-rows" id="barOrderInfo"></div>
+          <div class="detail-section-title">Позиции</div>
+          <div class="finance-rows" id="barOrderLines"></div>
+          <button class="modal-btn modal-btn-gold bar-full-btn" id="barOrderAdvanceBtn" style="margin-top:16px;">Следующий статус</button>
+        </div>
+
+        <!-- МН-42 -->
+        <div class="shift-detail" data-detail="bar-analytics" data-back="bar" data-title="Аналитика бара" data-subtitle="Бар как точка продаж" hidden>
+          <button class="back-btn">
+            <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+            Назад
+          </button>
+          <div class="segmented" role="tablist" id="barAnalyticsPeriod">
+            <button class="segmented-btn active" data-period="shift">Смена</button>
+            <button class="segmented-btn" data-period="week">Неделя</button>
+            <button class="segmented-btn" data-period="month">Месяц</button>
+          </div>
+          <div class="finance-rows" id="barAnalyticsRows"></div>
+          <div class="detail-section-title">Топ позиций</div>
+          <div class="finance-rows" id="barAnalyticsTop"></div>
+          <div class="detail-section-title">Антитоп позиций</div>
+          <div class="finance-rows" id="barAnalyticsBottom"></div>
+        </div>
+
+        <!-- МН-43 -->
+        <div class="shift-detail" data-detail="bar-staff" data-back="bar" data-title="Сотрудники" data-subtitle="Бармены на смене" hidden>
+          <button class="back-btn">
+            <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+            Назад
+          </button>
+          <div class="stock-rows" id="barStaffRows"></div>
+        </div>
+
+        <div class="shift-detail" data-detail="bar-staff-detail" data-back="bar-staff" data-title="Сотрудник" data-subtitle="" hidden>
+          <button class="back-btn">
+            <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+            Назад
+          </button>
+          <div class="finance-rows" id="barStaffInfo"></div>
+          <div class="detail-section-title">Мотивация</div>
+          <div class="stock-rows" id="barStaffMotivation"></div>
+          <button class="modal-btn modal-btn-gold bar-full-btn" id="barStaffNewTaskBtn" style="margin-top:16px;">Поставить задачу</button>
+        </div>
+
+        <!-- МН-44 -->
+        <div class="shift-detail" data-detail="bar-motivation" data-back="bar" data-title="Мотивация и призы" data-subtitle="Задачи и витрина" hidden>
+          <button class="back-btn">
+            <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+            Назад
+          </button>
+          <button class="modal-btn modal-btn-gold bar-full-btn" id="barNewTaskBtn">Новая задача</button>
+          <div class="stock-rows" id="barTaskRows"></div>
         </div>
 
         <!-- МН-15 -->
@@ -6427,6 +6618,81 @@
         <div id="barMenuItemInfo"></div>
         <div class="modal-actions-single">
           <button class="modal-btn modal-btn-gold" id="barMenuItemClose">Закрыть</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Бар: новая заявка поставщику -->
+    <div class="modal-overlay" id="barNewOrderOverlay" hidden>
+      <div class="modal-box">
+        <div class="modal-title">Новая заявка</div>
+        <div class="opts-section">
+          <div class="opts-section-title">Поставщик</div>
+          <div class="bar-form-row">
+            <select class="bar-select" id="newOrderSupplierSelect"></select>
+          </div>
+        </div>
+        <div class="opts-section">
+          <div class="opts-section-title">Заканчивается — добавить одним тапом</div>
+          <div class="stock-check-list" id="newOrderSuggest"></div>
+        </div>
+        <div class="modal-note" id="newOrderSummary">Позиций: 0 · Сумма: 0 ₽</div>
+        <div class="modal-actions">
+          <button class="modal-btn modal-btn-ghost" id="newOrderCancel">Отмена</button>
+          <button class="modal-btn modal-btn-gold" id="newOrderCreate" disabled>Сформировать</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Бар: новая задача мотивации -->
+    <div class="modal-overlay" id="barTaskOverlay" hidden>
+      <div class="modal-box">
+        <div class="modal-title">Новая задача</div>
+        <div class="opts-section">
+          <div class="opts-section-title">Сотрудник</div>
+          <select class="bar-select" id="taskStaffSelect"></select>
+        </div>
+        <div class="opts-section">
+          <div class="opts-section-title">Описание</div>
+          <input class="bar-qty-input" style="width:100%;" type="text" id="taskDesc" placeholder="Например: продать 10 стейков за смену">
+        </div>
+        <div class="opts-section">
+          <div class="opts-section-title">Цель (число) и срок</div>
+          <div class="bar-form-row">
+            <input class="bar-qty-input" type="number" min="1" id="taskTarget" placeholder="Цель">
+            <input class="bar-qty-input" type="text" id="taskDeadline" placeholder="Срок, напр. сегодня 23:00">
+          </div>
+        </div>
+        <div class="opts-section">
+          <div class="opts-section-title">Номинал приза, ₽ (от 300 до 1 000 000)</div>
+          <input class="bar-qty-input" style="width:100%;" type="number" min="300" max="1000000" id="taskBudget" placeholder="Номинал">
+        </div>
+        <div class="opts-section">
+          <div class="opts-section-title">Товар-цель из витрины</div>
+          <div class="catalog-grid" id="taskCatalogGrid"></div>
+        </div>
+        <div class="opts-section">
+          <div class="opts-section-title">Способ выдачи</div>
+          <div class="void-reasons" id="taskGiveMethod">
+            <button class="void-reason" data-method="certificate">Сертификат Ozon на сумму приза</button>
+            <button class="void-reason" data-method="direct">Прямой заказ с аккаунта ресторана</button>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="modal-btn modal-btn-ghost" id="taskCancel">Отмена</button>
+          <button class="modal-btn modal-btn-gold" id="taskCreate" disabled>Поставить задачу</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Бар: подтверждение прямого заказа приза -->
+    <div class="modal-overlay" id="barTaskDirectOverlay" hidden>
+      <div class="modal-box">
+        <div class="modal-title">Прямой заказ приза</div>
+        <div class="modal-note" id="barTaskDirectNote">—</div>
+        <div class="modal-actions">
+          <button class="modal-btn modal-btn-ghost" id="taskDirectCancel">Отмена</button>
+          <button class="modal-btn modal-btn-gold" id="taskDirectConfirm">Подтвердить</button>
         </div>
       </div>
     </div>
@@ -12915,6 +13181,17 @@
     }
     const navInventory = document.getElementById('barNavInventoryValue');
     if (navInventory) navInventory.textContent = barInventories.length ? barInventories[0].date : '—';
+
+    const navOrders = document.getElementById('barNavOrdersValue');
+    if (navOrders) {
+      const openOrders = barSupplierOrders.filter(o => o.status !== 'принята').length;
+      navOrders.textContent = openOrders + '/' + barSupplierOrders.length;
+    }
+    const navMotivation = document.getElementById('barNavMotivationValue');
+    if (navMotivation) {
+      const activeTasks = barTasks.filter(t => !t.fulfilled).length;
+      navMotivation.textContent = String(activeTasks);
+    }
   }
 
   /* ---------- Остатки ---------- */
@@ -13506,8 +13783,11 @@
     openBarSub('receiving');
   });
 
-  /* ---------- навигация «Бар» (корень) → 7 подэкранов ---------- */
-  const BAR_SUB_ROUTE = { stock:'мн-33', writeoffs:'мн-34', preps:'мн-35', receiving:'мн-36', inventory:'мн-37', menu:'мн-38', handover:'мн-39' };
+  /* ---------- навигация «Бар» (корень) → 12 подэкранов ---------- */
+  const BAR_SUB_ROUTE = {
+    stock:'мн-33', writeoffs:'мн-34', preps:'мн-35', receiving:'мн-36', inventory:'мн-37', menu:'мн-38', handover:'мн-39',
+    suppliers:'мн-40', orders:'мн-41', analytics:'мн-42', staff:'мн-43', motivation:'мн-44'
+  };
   function showBarSub(key) {
     const name = 'bar-' + key;
     const detail = document.querySelector('.shift-detail[data-detail="' + name + '"]');
@@ -13523,6 +13803,436 @@
     el.addEventListener('click', () => showBarSub(el.dataset.barsub));
   });
 
+  /* ==================================================================
+     Бар — блоки только для бар-менеджера: Поставщики, Заявки
+     поставщикам, Аналитика бара, Сотрудники, Мотивация и призы.
+     Отделены золотой линией-разделителем и демо-тумблером роли.
+     ================================================================== */
+
+  /* демо-переключатель роли внутри «Бара» — тот же приём, что и demoRole
+     у кассира (см. выше): ролей и прав пока нет, только для показа */
+  let demoBarRole = 'manager';
+  /* здесь тумблер решает сам, без учёта isManagerRole: иначе, пока
+     единственный демо-профиль в прототипе — управляющая, переключение
+     на «Бармен» никогда бы не прятало блоки бар-менеджера */
+  const isBarManagerRole = () => demoBarRole === 'manager';
+  function applyBarRoleUI() {
+    const on = isBarManagerRole();
+    document.getElementById('barManagerDivider').hidden = !on;
+    document.getElementById('barManagerRows').hidden = !on;
+    document.querySelectorAll('#barRoleSwitch .role-switch-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.barRole === demoBarRole);
+    });
+  }
+  document.getElementById('barRoleSwitch').addEventListener('click', e => {
+    const btn = e.target.closest('[data-bar-role]');
+    if (!btn) return;
+    demoBarRole = btn.dataset.barRole;
+    applyBarRoleUI();
+  });
+
+  /* ---------- 8. Поставщики ---------- */
+  const BAR_SUPPLIERS = [
+    { id:'sup1', name:'АлкоТрейд', contact:'Игорь Петров', phone:'+7 916 200-11-22', days:'Пн, Чт', terms:'Отсрочка 14 дней', avgDeliveryDays:2,
+      deliveries:[ {date:'08.09', sum:14400}, {date:'01.09', sum:9800}, {date:'25.08', sum:12100} ],
+      price:[ {name:'Джин Bombay Sapphire', unit:'бут', price:1800}, {name:'Просекко', unit:'бут', price:950}, {name:'Виски Jameson', unit:'бут', price:2100} ] },
+    { id:'sup2', name:'ФрешБар', contact:'Наталья Орлова', phone:'+7 926 400-33-44', days:'Ежедневно', terms:'По факту', avgDeliveryDays:1,
+      deliveries:[ {date:'08.09', sum:2200}, {date:'07.09', sum:1950} ],
+      price:[ {name:'Лимоны', unit:'кг', price:220}, {name:'Мята свежая', unit:'уп', price:90} ] },
+    { id:'sup3', name:'ТараПак', contact:'Сергей Волков', phone:'+7 903 555-66-77', days:'Вт, Пт', terms:'Предоплата', avgDeliveryDays:3,
+      deliveries:[ {date:'05.09', sum:6100} ],
+      price:[ {name:'Соломинки бумажные', unit:'уп', price:250}, {name:'Бокалы для вина', unit:'шт', price:600} ] }
+  ];
+  function renderBarSuppliers() {
+    document.getElementById('barSupplierRows').innerHTML = BAR_SUPPLIERS.map(s =>
+      '<div class="stock-row" data-supplier-open="' + s.id + '" style="cursor:pointer;">' +
+        '<div class="stock-row-top"><span class="stock-row-name"><span>' + s.name + '</span></span>' +
+          '<svg class="chevron" viewBox="0 0 24 24" style="width:16px;height:16px;stroke:var(--text-muted);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><path d="M9 5l7 7-7 7"/></svg>' +
+        '</div>' +
+        '<div class="stock-row-meta">' + s.contact + ' · ' + s.phone + '</div>' +
+        '<div class="stock-row-meta">Поставки: ' + s.days + ' · ' + s.terms + '</div>' +
+      '</div>'
+    ).join('');
+  }
+  document.getElementById('barSupplierRows').addEventListener('click', e => {
+    const row = e.target.closest('[data-supplier-open]'); if (!row) return;
+    openSupplierDetail(row.dataset.supplierOpen);
+  });
+  function openSupplierDetail(id) {
+    const s = BAR_SUPPLIERS.find(x => x.id === id);
+    if (!s) return;
+    document.getElementById('barSupplierInfo').innerHTML =
+      '<div class="finance-row"><span class="value-highlight">' + s.name + '</span><strong class="value-highlight">' + s.avgDeliveryDays + ' дн.</strong></div>' +
+      '<div class="finance-row"><span>Контакт</span><strong>' + s.contact + '</strong></div>' +
+      '<div class="finance-row"><span>Телефон</span><strong>' + s.phone + '</strong></div>' +
+      '<div class="finance-row"><span>Дни поставки</span><strong>' + s.days + '</strong></div>' +
+      '<div class="finance-row"><span>Условия оплаты</span><strong>' + s.terms + '</strong></div>';
+    document.getElementById('barSupplierDeliveries').innerHTML = s.deliveries.length
+      ? s.deliveries.map(d => '<div class="finance-row"><span>' + d.date + '</span><strong>' + money(d.sum) + '</strong></div>').join('')
+      : '<div class="finance-row"><span>Поставок ещё не было</span><strong>—</strong></div>';
+    document.getElementById('barSupplierPrice').innerHTML = s.price.map(p =>
+      '<div class="finance-row"><span>' + p.name + ', ' + p.unit + '</span><strong>' + money(p.price) + '</strong></div>'
+    ).join('');
+    showDetail('bar-supplier-detail', s.name, 'Условия и прайс');
+  }
+
+  /* ---------- 9. Заявки поставщикам ---------- */
+  const SUPPLIER_ORDER_STATUSES = ['сформирована', 'отправлена', 'подтверждена поставщиком', 'счёт выставлен', 'ожидает оплаты', 'оплачена', 'отгружена', 'в пути', 'доставлена', 'принята'];
+  let barOrderSeq = 2;
+  let barSupplierOrders = [
+    { id:'so1', supplierId:'sup1', payMethod:'Безнал, отсрочка 14 дней', status:'в пути', shippedDate:'07.09', eta:'09.09, 14:00', deliveryId:null,
+      lines:[ {name:'Джин Bombay Sapphire', qty:6, unit:'бут', price:1800}, {name:'Просекко', qty:12, unit:'бут', price:950} ] },
+    { id:'so2', supplierId:'sup2', payMethod:'По факту', status:'сформирована', shippedDate:null, eta:null, deliveryId:null,
+      lines:[ {name:'Лимоны', qty:5, unit:'кг', price:220} ] }
+  ];
+  function orderSum(o) { return o.lines.reduce((a, l) => a + l.qty * l.price, 0); }
+  function orderPayStatus(o) {
+    const idx = SUPPLIER_ORDER_STATUSES.indexOf(o.status);
+    return idx >= SUPPLIER_ORDER_STATUSES.indexOf('оплачена') ? 'оплачена' : 'ожидает оплаты';
+  }
+  function nextOrderStatus(status) {
+    const idx = SUPPLIER_ORDER_STATUSES.indexOf(status);
+    return SUPPLIER_ORDER_STATUSES[Math.min(idx + 1, SUPPLIER_ORDER_STATUSES.length - 1)];
+  }
+  function renderBarOrders() {
+    document.getElementById('barOrderRows').innerHTML = barSupplierOrders.map(o => {
+      const s = BAR_SUPPLIERS.find(x => x.id === o.supplierId);
+      const isFinal = o.status === 'принята';
+      return '<div class="stock-row" data-order-open="' + o.id + '" style="cursor:pointer;">' +
+        '<div class="stock-row-top"><span class="stock-row-name"><span>' + (s ? s.name : '—') + '</span></span>' +
+          '<span class="order-status-badge' + (isFinal ? ' is-final' : '') + '">' + o.status + '</span>' +
+        '</div>' +
+        '<div class="stock-row-meta">Сумма ' + money(orderSum(o)) + ' · ' + orderPayStatus(o) + (o.eta ? ' · прибытие ' + o.eta : '') + '</div>' +
+      '</div>';
+    }).join('');
+    const todaySoon = barSupplierOrders.filter(o => (o.status === 'в пути' || o.status === 'отгружена') && o.eta);
+    const noteEl = document.getElementById('barTodayDeliveryNote');
+    noteEl.hidden = !todaySoon.length;
+    if (todaySoon.length) {
+      noteEl.innerHTML = todaySoon.map(o => {
+        const s = BAR_SUPPLIERS.find(x => x.id === o.supplierId);
+        return '<div class="finance-row"><span class="value-highlight">Сегодня поставка от ' + (s ? s.name : '—') + '</span><strong class="value-highlight">' + o.eta + '</strong></div>';
+      }).join('');
+    }
+  }
+  document.getElementById('barOrderRows').addEventListener('click', e => {
+    const row = e.target.closest('[data-order-open]'); if (!row) return;
+    openOrderDetail(row.dataset.orderOpen);
+  });
+  let currentOrderDetailId = null;
+  function openOrderDetail(id) {
+    currentOrderDetailId = id;
+    renderOrderDetail();
+    const o = barSupplierOrders.find(x => x.id === id);
+    const s = o ? BAR_SUPPLIERS.find(x => x.id === o.supplierId) : null;
+    showDetail('bar-order-detail', s ? s.name : 'Заявка', 'Статус: ' + (o ? o.status : ''));
+  }
+  function renderOrderDetail() {
+    const o = barSupplierOrders.find(x => x.id === currentOrderDetailId);
+    if (!o) return;
+    const s = BAR_SUPPLIERS.find(x => x.id === o.supplierId);
+    document.getElementById('barOrderInfo').innerHTML =
+      '<div class="finance-row"><span class="value-highlight">Статус</span><strong class="value-highlight">' + o.status + '</strong></div>' +
+      '<div class="finance-row"><span>Поставщик</span><strong>' + (s ? s.name : '—') + '</strong></div>' +
+      '<div class="finance-row"><span>Способ оплаты</span><strong>' + o.payMethod + '</strong></div>' +
+      '<div class="finance-row"><span>Статус оплаты</span><strong>' + orderPayStatus(o) + '</strong></div>' +
+      '<div class="finance-row"><span>Дата отгрузки</span><strong>' + (o.shippedDate || '—') + '</strong></div>' +
+      '<div class="finance-row"><span>Прибытие (ETA)</span><strong>' + (o.eta || '—') + '</strong></div>' +
+      '<div class="finance-row"><span class="value-highlight">Сумма</span><strong class="value-highlight">' + money(orderSum(o)) + '</strong></div>';
+    document.getElementById('barOrderLines').innerHTML = o.lines.map(l =>
+      '<div class="finance-row"><span>' + l.name + ' × ' + l.qty + ' ' + l.unit + '</span><strong>' + money(l.qty * l.price) + '</strong></div>'
+    ).join('');
+    const btn = document.getElementById('barOrderAdvanceBtn');
+    btn.disabled = o.status === 'принята';
+    btn.textContent = o.status === 'принята' ? 'Заявка закрыта' : 'Далее: ' + nextOrderStatus(o.status);
+  }
+  document.getElementById('barOrderAdvanceBtn').addEventListener('click', () => {
+    const o = barSupplierOrders.find(x => x.id === currentOrderDetailId);
+    if (!o || o.status === 'принята') return;
+    o.status = nextOrderStatus(o.status);
+    if (o.status === 'отгружена' && !o.shippedDate) o.shippedDate = barShortDate(Date.now());
+    if ((o.status === 'отгружена' || o.status === 'в пути') && !o.eta) o.eta = barShortDate(Date.now() + 86400000) + ', 14:00';
+    /* заявка «отгружена/в пути» автоматически появляется в «Приёмке» */
+    if ((o.status === 'отгружена' || o.status === 'в пути') && !o.deliveryId) {
+      const s = BAR_SUPPLIERS.find(x => x.id === o.supplierId);
+      const delivery = {
+        id:'d-' + o.id, supplier:s ? s.name : '—', time:o.eta || '—', status:'ожидается', open:false, returnFormed:false,
+        lines:o.lines.map(l => ({ name:l.name, unit:l.unit, ordered:l.qty, price:l.price, decision:null, fact:l.qty, rejectReason:null }))
+      };
+      barDeliveries.unshift(delivery);
+      o.deliveryId = delivery.id;
+      renderBarReceiving();
+    }
+    if (o.status === 'принята') {
+      const d = barDeliveries.find(x => x.id === o.deliveryId);
+      if (d) d.status = 'принято';
+    }
+    renderOrderDetail(); renderBarOrders(); renderBarRoot();
+  });
+  document.getElementById('barNewOrderBtn').addEventListener('click', () => {
+    const sel = document.getElementById('newOrderSupplierSelect');
+    sel.innerHTML = BAR_SUPPLIERS.map(s => '<option value="' + s.id + '">' + s.name + '</option>').join('');
+    const critical = barStock.filter(i => i.critical);
+    document.getElementById('newOrderSuggest').innerHTML = critical.length
+      ? critical.map(i => {
+          const suggestQty = Math.max(1, Math.round(i.calc - i.qty));
+          return '<label class="stock-check-row"><input type="checkbox" data-suggest-id="' + i.id + '" data-suggest-qty="' + suggestQty + '">' +
+            '<span>' + i.name + ' · предложено ' + suggestQty + ' ' + i.unit + '</span></label>';
+        }).join('')
+      : '<div class="stock-row-meta">Критичных позиций нет</div>';
+    syncNewOrderSummary();
+    document.getElementById('barNewOrderOverlay').hidden = false;
+  });
+  function syncNewOrderSummary() {
+    const checked = Array.from(document.querySelectorAll('#newOrderSuggest input:checked'));
+    let sum = 0;
+    checked.forEach(c => {
+      const item = barStock.find(i => i.id === c.dataset.suggestId);
+      if (item) sum += item.price * parseFloat(c.dataset.suggestQty);
+    });
+    document.getElementById('newOrderSummary').textContent = 'Позиций: ' + checked.length + ' · Сумма: ' + money(Math.round(sum));
+    document.getElementById('newOrderCreate').disabled = checked.length === 0;
+  }
+  document.getElementById('newOrderSuggest').addEventListener('change', syncNewOrderSummary);
+  document.getElementById('newOrderCancel').addEventListener('click', () => { document.getElementById('barNewOrderOverlay').hidden = true; });
+  document.getElementById('newOrderCreate').addEventListener('click', () => {
+    const supplierId = document.getElementById('newOrderSupplierSelect').value;
+    const checked = Array.from(document.querySelectorAll('#newOrderSuggest input:checked'));
+    if (!checked.length) return;
+    const lines = checked.map(c => {
+      const item = barStock.find(i => i.id === c.dataset.suggestId);
+      return { name:item.name, qty:parseFloat(c.dataset.suggestQty), unit:item.unit, price:item.price };
+    });
+    barOrderSeq++;
+    barSupplierOrders.unshift({ id:'so' + barOrderSeq, supplierId:supplierId, payMethod:'По факту', status:'сформирована', shippedDate:null, eta:null, deliveryId:null, lines:lines });
+    document.getElementById('barNewOrderOverlay').hidden = true;
+    renderBarOrders(); renderBarRoot();
+  });
+
+  /* ---------- 10. Аналитика бара ---------- */
+  const BAR_ANALYTICS = {
+    shift: { revenue:61300, share:34, avgCheck:1057, checks:58, foodCostPct:23, cost:14100, margin:77, writeoffs:1440, pour:820 },
+    week:  { revenue:398000, share:31, avgCheck:1090, checks:365, foodCostPct:24, cost:95500, margin:76, writeoffs:8600, pour:5200 },
+    month: { revenue:1720000, share:33, avgCheck:1105, checks:1556, foodCostPct:24, cost:412800, margin:76, writeoffs:36400, pour:21800 }
+  };
+  const BAR_TOP_ITEMS = ['Апероль шпритц', 'Мохито классический', 'Виски сауэр'];
+  const BAR_BOTTOM_ITEMS = ['Мартини Асти D.O.C.G.', 'Фиорино д’Оро Асти Спуманте'];
+  let barAnalyticsPeriod = 'shift';
+  function renderBarAnalytics() {
+    const a = BAR_ANALYTICS[barAnalyticsPeriod];
+    document.getElementById('barAnalyticsRows').innerHTML =
+      '<div class="finance-row"><span class="value-highlight">Выручка бара</span><strong class="value-highlight">' + money(a.revenue) + '</strong></div>' +
+      '<div class="finance-row"><span>Доля в общей выручке</span><strong>' + a.share + '%</strong></div>' +
+      '<div class="finance-row"><span>Средний чек</span><strong>' + money(a.avgCheck) + '</strong></div>' +
+      '<div class="finance-row"><span>Чеков</span><strong>' + a.checks + '</strong></div>' +
+      '<div class="finance-row"><span>Фудкост</span><strong>' + a.foodCostPct + '%</strong></div>' +
+      '<div class="finance-row"><span>Себестоимость</span><strong>' + money(a.cost) + '</strong></div>' +
+      '<div class="finance-row"><span>Маржа</span><strong>' + a.margin + '%</strong></div>' +
+      '<div class="finance-row"><span>Списания</span><strong>' + money(a.writeoffs) + ' · ' + (Math.round(a.writeoffs / a.revenue * 1000) / 10) + '%</strong></div>' +
+      '<div class="finance-row"><span>Пролив</span><strong>' + money(a.pour) + ' · ' + (Math.round(a.pour / a.revenue * 1000) / 10) + '%</strong></div>';
+    document.getElementById('barAnalyticsTop').innerHTML = BAR_TOP_ITEMS.map((n, i) =>
+      '<div class="finance-row"><span>' + (i + 1) + '. ' + n + '</span></div>'
+    ).join('');
+    document.getElementById('barAnalyticsBottom').innerHTML = BAR_BOTTOM_ITEMS.map((n, i) =>
+      '<div class="finance-row"><span>' + (i + 1) + '. ' + n + '</span></div>'
+    ).join('');
+  }
+  document.getElementById('barAnalyticsPeriod').addEventListener('click', e => {
+    const btn = e.target.closest('.segmented-btn'); if (!btn) return;
+    barAnalyticsPeriod = btn.dataset.period;
+    document.querySelectorAll('#barAnalyticsPeriod .segmented-btn').forEach(b => b.classList.toggle('active', b === btn));
+    renderBarAnalytics();
+  });
+
+  /* ---------- 11. Сотрудники ---------- */
+  const barStaffList = [
+    { id:'st1', name:'Игорь Соколов', revenue:34200, avgCheck:980, topItems:['Апероль шпритц', 'Мохито'], writeoffs:640, pour:210, prepsOnTime:true, invOnTime:true, plan:30000, fact:34200, bonus:2000 },
+    { id:'st2', name:'Марина Белова', revenue:27100, avgCheck:1120, topItems:['Виски сауэр', 'Джин-тоник'], writeoffs:800, pour:610, prepsOnTime:false, invOnTime:true, plan:28000, fact:27100, bonus:0 }
+  ];
+  function renderBarStaffList() {
+    document.getElementById('barStaffRows').innerHTML = barStaffList.map(s =>
+      '<div class="stock-row" data-staff-open="' + s.id + '" style="cursor:pointer;">' +
+        '<div class="stock-row-top"><span class="stock-row-name"><span>' + s.name + '</span></span><span class="stock-row-qty">' + money(s.revenue) + '</span></div>' +
+        '<div class="stock-row-meta">Средний чек ' + money(s.avgCheck) + ' · план ' + Math.round(s.fact / s.plan * 100) + '%</div>' +
+      '</div>'
+    ).join('');
+  }
+  document.getElementById('barStaffRows').addEventListener('click', e => {
+    const row = e.target.closest('[data-staff-open]'); if (!row) return;
+    openStaffDetail(row.dataset.staffOpen);
+  });
+  let currentStaffDetailId = null;
+  function openStaffDetail(id) {
+    currentStaffDetailId = id;
+    renderStaffDetail();
+    const s = barStaffList.find(x => x.id === id);
+    showDetail('bar-staff-detail', s ? s.name : 'Сотрудник', 'Показатели за смену');
+  }
+  function renderStaffDetail() {
+    const s = barStaffList.find(x => x.id === currentStaffDetailId);
+    if (!s) return;
+    const pct = Math.round(s.fact / s.plan * 100);
+    document.getElementById('barStaffInfo').innerHTML =
+      '<div class="finance-row"><span class="value-highlight">Выручка</span><strong class="value-highlight">' + money(s.revenue) + '</strong></div>' +
+      '<div class="finance-row"><span>Средний чек</span><strong>' + money(s.avgCheck) + '</strong></div>' +
+      '<div class="finance-row"><span>Топ позиций</span><strong>' + s.topItems.join(', ') + '</strong></div>' +
+      '<div class="finance-row"><span>Списания</span><strong>' + money(s.writeoffs) + '</strong></div>' +
+      '<div class="finance-row"><span>Пролив</span><strong>' + money(s.pour) + '</strong></div>' +
+      '<div class="finance-row"><span>Маркирует заготовки вовремя</span><strong>' + (s.prepsOnTime ? 'Да' : 'Нет') + '</strong></div>' +
+      '<div class="finance-row"><span>Инвентаризации вовремя</span><strong>' + (s.invOnTime ? 'Да' : 'Нет') + '</strong></div>' +
+      '<div class="finance-row"><span>План / факт</span><strong>' + money(s.plan) + ' / ' + money(s.fact) + '</strong></div>' +
+      '<div class="finance-row"><span>Выполнение плана</span><strong>' + pct + '%</strong></div>' +
+      '<div class="finance-row"><span>Бонус</span><strong>' + money(s.bonus) + '</strong></div>';
+    const tasks = barTasks.filter(t => t.staffId === s.id);
+    document.getElementById('barStaffMotivation').innerHTML = tasks.length
+      ? tasks.map(t => taskRowHtml(t)).join('')
+      : '<div class="stock-row"><div class="stock-row-meta">Активных задач нет</div></div>';
+  }
+
+  /* ---------- 12. Мотивация и призы ---------- */
+  const MOTIVATION_CATALOG = [
+    { id:'g1', name:'Термокружка Stanley', price:2990, icon:'☕' },
+    { id:'g2', name:'Наушники JBL', price:4990, icon:'🎧' },
+    { id:'g3', name:'Фирменный шарф', price:990, icon:'🧣' },
+    { id:'g4', name:'Сертификат на массаж', price:3500, icon:'💆' },
+    { id:'g5', name:'Powerbank Xiaomi', price:1990, icon:'🔋' }
+  ];
+  let barTaskSeq = 1;
+  let barTasks = [
+    { id:'t1', staffId:'st1', desc:'Продать 10 стейков за смену', target:10, now:6, deadline:'сегодня, 23:00', budget:3000, itemId:'g1', method:'certificate', fulfilled:false, code:null }
+  ];
+  function taskRowHtml(t) {
+    const s = barStaffList.find(x => x.id === t.staffId);
+    const item = MOTIVATION_CATALOG.find(i => i.id === t.itemId);
+    const pct = Math.min(100, Math.round(t.now / t.target * 100));
+    const done = t.now >= t.target;
+    let actionsHtml;
+    if (t.fulfilled) {
+      actionsHtml = '<div class="stock-row-meta">Выдано: ' + (t.method === 'certificate' ? 'сертификат ' + t.code : 'заказ подтверждён, едет сотруднику') + '</div>';
+    } else if (done) {
+      actionsHtml = '<div class="stock-row-badges"><button class="stock-badge bar-inline-btn" data-task-fulfill="' + t.id + '">' +
+        (t.method === 'certificate' ? 'Выпустить сертификат' : 'Оформить прямой заказ') + '</button></div>';
+    } else {
+      actionsHtml = '<div class="stock-row-badges"><button class="stock-badge bar-inline-btn" data-task-progress="' + t.id + '">+1 к цели</button></div>';
+    }
+    return '<div class="stock-row">' +
+      '<div class="stock-row-top"><span class="stock-row-name"><span>' + (s ? s.name : '—') + '</span></span></div>' +
+      '<div class="stock-row-meta">' + t.desc + ' · срок: ' + t.deadline + '</div>' +
+      '<div class="task-progress-track"><div class="task-progress-fill" style="width:' + pct + '%;"></div></div>' +
+      '<div class="task-progress-label">' + t.now + ' из ' + t.target + (done && !t.fulfilled ? ' — приз почти твой' : '') + '</div>' +
+      '<div class="stock-row-meta">Приз: ' + (item ? item.icon + ' ' + item.name : '—') + ' · номинал ' + money(t.budget) + ' · ' + (t.method === 'certificate' ? 'сертификат Ozon' : 'прямой заказ') + '</div>' +
+      actionsHtml +
+    '</div>';
+  }
+  function renderBarTasks() {
+    document.getElementById('barTaskRows').innerHTML = barTasks.length
+      ? barTasks.map(t => taskRowHtml(t)).join('')
+      : '<div class="stock-row"><div class="stock-row-meta">Задач пока нет</div></div>';
+  }
+  let currentTaskDirectId = null;
+  function bindTaskRowActions(containerId, afterRender) {
+    document.getElementById(containerId).addEventListener('click', e => {
+      const progressBtn = e.target.closest('[data-task-progress]');
+      if (progressBtn) {
+        const t = barTasks.find(x => x.id === progressBtn.dataset.taskProgress);
+        if (t) { t.now = Math.min(t.target, t.now + 1); afterRender(); }
+        return;
+      }
+      const fulfillBtn = e.target.closest('[data-task-fulfill]');
+      if (fulfillBtn) {
+        const t = barTasks.find(x => x.id === fulfillBtn.dataset.taskFulfill);
+        if (!t) return;
+        if (t.method === 'certificate') {
+          t.fulfilled = true;
+          t.code = 'OZ-' + Math.random().toString(36).slice(2, 8).toUpperCase();
+          afterRender();
+        } else {
+          currentTaskDirectId = t.id;
+          const s = barStaffList.find(x => x.id === t.staffId);
+          const item = MOTIVATION_CATALOG.find(i => i.id === t.itemId);
+          document.getElementById('barTaskDirectNote').textContent =
+            (item ? item.name : 'Приз') + ' · пункт выдачи: ПВЗ Ozon, ул. Центральная 1 · получатель: ' + (s ? s.name : '—');
+          document.getElementById('barTaskDirectOverlay').hidden = false;
+        }
+      }
+    });
+  }
+  bindTaskRowActions('barTaskRows', () => { renderBarTasks(); renderBarRoot(); });
+  bindTaskRowActions('barStaffMotivation', () => { renderStaffDetail(); renderBarRoot(); });
+  document.getElementById('taskDirectCancel').addEventListener('click', () => { document.getElementById('barTaskDirectOverlay').hidden = true; });
+  document.getElementById('taskDirectConfirm').addEventListener('click', () => {
+    const t = barTasks.find(x => x.id === currentTaskDirectId);
+    if (t) t.fulfilled = true;
+    document.getElementById('barTaskDirectOverlay').hidden = true;
+    renderBarTasks(); renderStaffDetail(); renderBarRoot();
+  });
+
+  let taskSelectedItemId = null;
+  function openTaskCreate(staffId) {
+    taskSelectedItemId = null;
+    const sel = document.getElementById('taskStaffSelect');
+    sel.innerHTML = barStaffList.map(s => '<option value="' + s.id + '">' + s.name + '</option>').join('');
+    if (staffId) sel.value = staffId;
+    document.getElementById('taskDesc').value = '';
+    document.getElementById('taskTarget').value = '';
+    document.getElementById('taskDeadline').value = '';
+    document.getElementById('taskBudget').value = '';
+    document.querySelectorAll('#taskGiveMethod .void-reason').forEach(b => b.classList.remove('active'));
+    renderTaskCatalog();
+    syncTaskCreate();
+    document.getElementById('barTaskOverlay').hidden = false;
+  }
+  function renderTaskCatalog() {
+    const budget = parseFloat(document.getElementById('taskBudget').value) || 0;
+    document.getElementById('taskCatalogGrid').innerHTML = MOTIVATION_CATALOG.map(item => {
+      const disabled = budget > 0 && item.price > budget;
+      return '<div class="catalog-card' + (item.id === taskSelectedItemId ? ' active' : '') + (disabled ? ' is-disabled' : '') + '" data-catalog-pick="' + item.id + '">' +
+        '<div class="catalog-card-icon">' + item.icon + '</div>' +
+        '<div class="catalog-card-name">' + item.name + '</div>' +
+        '<div class="catalog-card-price">' + money(item.price) + '</div>' +
+      '</div>';
+    }).join('');
+  }
+  document.getElementById('taskBudget').addEventListener('input', () => { renderTaskCatalog(); syncTaskCreate(); });
+  document.getElementById('taskCatalogGrid').addEventListener('click', e => {
+    const card = e.target.closest('[data-catalog-pick]');
+    if (!card || card.classList.contains('is-disabled')) return;
+    taskSelectedItemId = card.dataset.catalogPick === taskSelectedItemId ? null : card.dataset.catalogPick;
+    renderTaskCatalog(); syncTaskCreate();
+  });
+  document.getElementById('taskGiveMethod').addEventListener('click', e => {
+    const btn = e.target.closest('.void-reason'); if (!btn) return;
+    document.querySelectorAll('#taskGiveMethod .void-reason').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    syncTaskCreate();
+  });
+  ['taskDesc', 'taskTarget', 'taskDeadline'].forEach(id => document.getElementById(id).addEventListener('input', syncTaskCreate));
+  function syncTaskCreate() {
+    const desc = document.getElementById('taskDesc').value.trim();
+    const target = parseFloat(document.getElementById('taskTarget').value);
+    const deadline = document.getElementById('taskDeadline').value.trim();
+    const budget = parseFloat(document.getElementById('taskBudget').value);
+    const method = document.querySelector('#taskGiveMethod .void-reason.active');
+    const ok = desc && target > 0 && deadline && budget >= 300 && budget <= 1000000 && taskSelectedItemId && method;
+    document.getElementById('taskCreate').disabled = !ok;
+  }
+  document.getElementById('barNewTaskBtn').addEventListener('click', () => openTaskCreate(null));
+  document.getElementById('barStaffNewTaskBtn').addEventListener('click', () => openTaskCreate(currentStaffDetailId));
+  document.getElementById('taskCancel').addEventListener('click', () => { document.getElementById('barTaskOverlay').hidden = true; });
+  document.getElementById('taskCreate').addEventListener('click', () => {
+    const staffId = document.getElementById('taskStaffSelect').value;
+    const desc = document.getElementById('taskDesc').value.trim();
+    const target = parseFloat(document.getElementById('taskTarget').value) || 0;
+    const deadline = document.getElementById('taskDeadline').value.trim();
+    const budget = parseFloat(document.getElementById('taskBudget').value) || 0;
+    const method = document.querySelector('#taskGiveMethod .void-reason.active');
+    if (!staffId || !desc || !target || !deadline || !budget || !taskSelectedItemId || !method) return;
+    barTaskSeq++;
+    barTasks.unshift({ id:'t' + barTaskSeq, staffId:staffId, desc:desc, target:target, now:0, deadline:deadline, budget:budget, itemId:taskSelectedItemId, method:method.dataset.method, fulfilled:false, code:null });
+    document.getElementById('barTaskOverlay').hidden = true;
+    renderBarTasks(); renderStaffDetail(); renderBarRoot();
+  });
+
   /* первичная отрисовка данных раздела «Бар» */
   renderBarStock();
   renderBarWriteoffs();
@@ -13531,6 +14241,12 @@
   renderBarInventoryHistory();
   renderBarMenuList();
   renderBarHandover();
+  renderBarSuppliers();
+  renderBarOrders();
+  renderBarAnalytics();
+  renderBarStaffList();
+  renderBarTasks();
+  applyBarRoleUI();
   renderBarRoot();
 
   const ROUTES = {
@@ -13575,7 +14291,12 @@
     'мн-36': () => { gotoTab('shift'); openBarSub('receiving'); },
     'мн-37': () => { gotoTab('shift'); openBarSub('inventory'); },
     'мн-38': () => { gotoTab('shift'); openBarSub('menu'); },
-    'мн-39': () => { gotoTab('shift'); openBarSub('handover'); }
+    'мн-39': () => { gotoTab('shift'); openBarSub('handover'); },
+    'мн-40': () => { gotoTab('shift'); openBarSub('suppliers'); },
+    'мн-41': () => { gotoTab('shift'); openBarSub('orders'); },
+    'мн-42': () => { gotoTab('shift'); openBarSub('analytics'); },
+    'мн-43': () => { gotoTab('shift'); openBarSub('staff'); },
+    'мн-44': () => { gotoTab('shift'); openBarSub('motivation'); }
   };
 
   /* ---------- МН-26/27/28/29/32: приветствие, регистрация, вход, устаревший
@@ -13755,7 +14476,8 @@
   });
 
   const DETAIL_ROUTE = { finance:'мн-03', startstop:'мн-04', active:'мн-11', hall:'мн-12', reserves:'мн-13', bar:'мн-14', kitchen:'мн-15', order:'мн-16', guests:'мн-17', precheck:'мн-19', history:'мн-22', shiftlog:'мн-23', visitors:'мн-20', staff:'мн-21', cashier:'мн-24', closed:'мн-25',
-    'bar-stock':'мн-33', 'bar-writeoffs':'мн-34', 'bar-preps':'мн-35', 'bar-receiving':'мн-36', 'bar-inventory':'мн-37', 'bar-menu':'мн-38', 'bar-handover':'мн-39' };
+    'bar-stock':'мн-33', 'bar-writeoffs':'мн-34', 'bar-preps':'мн-35', 'bar-receiving':'мн-36', 'bar-inventory':'мн-37', 'bar-menu':'мн-38', 'bar-handover':'мн-39',
+    'bar-suppliers':'мн-40', 'bar-orders':'мн-41', 'bar-analytics':'мн-42', 'bar-staff':'мн-43', 'bar-motivation':'мн-44' };
 
   /* хеш всегда соответствует тому экрану, который реально открыт */
   window.syncRouteFromScreen = function () {
