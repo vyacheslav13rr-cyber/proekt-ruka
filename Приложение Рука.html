@@ -4402,6 +4402,166 @@
   .screen.dark.pending-approval .nav-btn-lockable{color:rgba(233,203,126,0.32);}
   .screen.pending-approval .nav-btn-lockable .nav-lock-badge{display:flex;}
 
+  /* ---------- Смена → Актив смены → Бар (МН-14, МН-33..МН-39) ---------- */
+  .bar-full-btn{width:100%; margin-bottom:16px;}
+
+  .bar-quick-actions{display:flex; gap:10px; margin:16px 0 20px;}
+  .bar-quick-btn{
+    flex:1;
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    background:var(--surface);
+    border:1px solid var(--card-border);
+    border-radius:14px;
+    padding:12px 4px;
+    font-family:'Manrope', sans-serif;
+    font-size:10.5px; font-weight:700;
+    color:var(--text-primary);
+    cursor:pointer;
+  }
+  .bar-quick-icon{
+    display:flex; align-items:center; justify-content:center;
+    width:34px; height:34px; border-radius:50%;
+    background:linear-gradient(160deg, var(--gold-light), var(--gold));
+    color:var(--navy-deep);
+  }
+  .bar-quick-icon svg{width:17px; height:17px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+
+  .search-scan-btn{
+    display:flex; align-items:center; justify-content:center;
+    width:32px; height:32px; flex-shrink:0;
+    border-radius:10px;
+    border:1px solid var(--card-border);
+    background:var(--content-bg);
+    color:var(--accent);
+    cursor:pointer;
+  }
+  .search-scan-btn svg{width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+
+  .stock-rows{
+    background:var(--surface);
+    border-radius:16px;
+    border:1px solid var(--card-border);
+    overflow:hidden;
+    margin-bottom:12px;
+  }
+  .stock-row{padding:12px 16px; border-bottom:1px solid var(--card-border);}
+  .stock-row:last-child{border-bottom:none;}
+  .stock-row.is-flagged{background:rgba(198,153,47,0.08);}
+  .stock-row-top{display:flex; justify-content:space-between; align-items:center; gap:8px;}
+  .stock-row-name{font-size:13px; font-weight:700; color:var(--text-primary); display:flex; align-items:center; gap:6px; min-width:0;}
+  .stock-row-name span{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .stock-critical-dot{width:7px; height:7px; border-radius:50%; background:var(--gold); flex-shrink:0;}
+  .stock-row-right{display:flex; align-items:center; gap:8px; flex-shrink:0;}
+  .stock-row-qty{font-family:'IBM Plex Mono', monospace; font-size:13px; color:var(--accent); white-space:nowrap;}
+  .stock-row-meta{font-size:11.5px; color:var(--text-soft); margin-top:3px;}
+  .stock-row-badges{display:flex; gap:6px; margin-top:7px; flex-wrap:wrap;}
+  .stock-badge{font-size:10.5px; font-weight:700; padding:3px 8px; border-radius:999px; background:rgba(198,153,47,0.18); color:var(--leather);}
+  button.stock-badge.bar-inline-btn{border:none; cursor:pointer; font-family:'Manrope', sans-serif;}
+  .stock-row-more{background:none; border:none; color:var(--text-muted); cursor:pointer; padding:4px; flex-shrink:0; display:flex;}
+  .stock-row-more svg{width:17px; height:17px;}
+  .stock-check-list{display:flex; flex-direction:column; gap:2px; max-height:260px; overflow-y:auto;}
+  .stock-check-row{display:flex; align-items:center; gap:9px; padding:7px 2px; font-size:12.5px; color:var(--text-primary);}
+  .stock-check-row input{width:16px; height:16px; accent-color:var(--gold);}
+
+  .prep-timer{font-family:'IBM Plex Mono', monospace; font-size:12.5px; color:var(--text-soft); white-space:nowrap;}
+  .prep-timer.is-warn{color:var(--leather); font-weight:700;}
+  .prep-timer.is-expired{color:var(--gold); font-weight:700;}
+
+  .bar-form-row{display:flex; gap:8px; align-items:center;}
+  .bar-select{
+    flex:1; min-width:0;
+    background:var(--surface);
+    border:1px solid var(--card-border);
+    border-radius:11px;
+    padding:10px 12px;
+    font-family:'Manrope', sans-serif;
+    font-size:13px;
+    color:var(--text-primary);
+  }
+  .bar-qty-input{
+    flex:1; min-width:0;
+    background:var(--surface);
+    border:1px solid var(--card-border);
+    border-radius:11px;
+    padding:10px 12px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:14px;
+    color:var(--text-primary);
+  }
+  .bar-unit-label{font-size:12px; color:var(--text-muted); flex-shrink:0;}
+
+  .bar-label-preview{
+    background:var(--cream);
+    border:1.5px dashed var(--khaki);
+    border-radius:12px;
+    padding:16px;
+    margin:14px 0;
+    text-align:left;
+  }
+  .bar-label-name{font-family:'Fraunces', serif; font-weight:600; font-size:15px; color:var(--ink); margin-bottom:8px;}
+  .bar-label-row{font-size:11.5px; color:var(--leather); margin-bottom:3px;}
+  .bar-label-qr{
+    width:52px; height:52px; margin:10px auto 0;
+    background:repeating-linear-gradient(45deg, var(--leather) 0 3px, transparent 3px 6px);
+    border-radius:4px;
+  }
+
+  .bar-scan-frame{
+    position:relative;
+    height:130px;
+    border-radius:14px;
+    border:2px dashed var(--gold);
+    background:rgba(198,153,47,0.08);
+    margin:14px 0;
+    overflow:hidden;
+  }
+  .bar-scan-line{
+    position:absolute; left:8%; right:8%; top:50%;
+    height:2px;
+    background:linear-gradient(90deg, transparent, var(--gold), transparent);
+    animation:barScanMove 1.6s ease-in-out infinite;
+  }
+  @keyframes barScanMove{ 0%{top:15%;} 50%{top:85%;} 100%{top:15%;} }
+
+  .writeoff-entry{padding:12px 16px; border-bottom:1px solid var(--card-border);}
+  .writeoff-entry:last-child{border-bottom:none;}
+  .writeoff-entry-top{display:flex; justify-content:space-between; align-items:baseline; gap:8px; font-size:13px; color:var(--text-primary);}
+  .writeoff-entry-top strong{font-family:'IBM Plex Mono', monospace; font-weight:500; color:var(--accent);}
+  .writeoff-entry-meta{font-size:11.5px; color:var(--text-muted); margin-top:3px;}
+
+  .delivery-row{padding:14px 16px; border-bottom:1px solid var(--card-border);}
+  .delivery-row:last-child{border-bottom:none;}
+  .delivery-head{display:flex; justify-content:space-between; align-items:center; gap:8px; cursor:pointer;}
+  .delivery-head-name{font-size:13px; font-weight:700; color:var(--text-primary);}
+  .delivery-head-meta{font-size:11.5px; color:var(--text-muted); margin-top:2px;}
+  .delivery-status{font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:999px; flex-shrink:0; white-space:nowrap;}
+  .delivery-status.is-waiting{background:var(--segment-track); color:var(--text-soft);}
+  .delivery-status.is-done{background:rgba(198,153,47,0.2); color:var(--leather);}
+  .delivery-body{margin-top:12px; display:flex; flex-direction:column; gap:12px;}
+  .delivery-line{border-top:1px solid var(--card-border); padding-top:10px;}
+  .delivery-line-top{display:flex; justify-content:space-between; gap:8px; font-size:12.5px; font-weight:700; color:var(--text-primary);}
+  .delivery-line-meta{font-size:11px; color:var(--text-muted); margin:2px 0 8px;}
+  .delivery-line-row{display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
+  .delivery-line-row .bar-select{flex:1 1 140px;}
+  .delivery-line-row .bar-qty-input{flex:0 1 90px;}
+  .delivery-scan-btn{
+    width:100%; margin-bottom:10px;
+    padding:9px; border-radius:11px;
+    border:1px solid var(--card-border);
+    background:var(--content-bg);
+    color:var(--accent);
+    font-family:'Manrope', sans-serif; font-size:12px; font-weight:700;
+    cursor:pointer;
+  }
+  .delivery-line.is-flashed{animation:deliveryFlash 1s ease;}
+  @keyframes deliveryFlash{ 0%{background:rgba(198,153,47,0.35);} 100%{background:transparent;} }
+  .delivery-actions{display:flex; gap:8px; margin-top:12px;}
+  .delivery-actions .modal-btn{padding:10px;}
+
+  .diff-value{font-weight:700;}
+  .diff-value.is-short{color:var(--leather);}
+  .diff-value.is-over{color:var(--accent);}
+
 </style>
 </head>
 <body>
@@ -4558,6 +4718,41 @@
           <span class="map-name">Бар<span class="map-note">Подраздел МН-11</span></span>
           <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
         </button>
+        <button class="map-row" data-goto="мн-33">
+          <span class="map-id">МН-33</span>
+          <span class="map-name">Бар — остатки<span class="map-note">Подраздел МН-14</span></span>
+          <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <button class="map-row" data-goto="мн-34">
+          <span class="map-id">МН-34</span>
+          <span class="map-name">Бар — списания<span class="map-note">Подраздел МН-14</span></span>
+          <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <button class="map-row" data-goto="мн-35">
+          <span class="map-id">МН-35</span>
+          <span class="map-name">Бар — заготовки и маркировка<span class="map-note">Подраздел МН-14</span></span>
+          <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <button class="map-row" data-goto="мн-36">
+          <span class="map-id">МН-36</span>
+          <span class="map-name">Бар — приёмка товара<span class="map-note">Подраздел МН-14</span></span>
+          <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <button class="map-row" data-goto="мн-37">
+          <span class="map-id">МН-37</span>
+          <span class="map-name">Бар — инвентаризация<span class="map-note">Подраздел МН-14</span></span>
+          <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <button class="map-row" data-goto="мн-38">
+          <span class="map-id">МН-38</span>
+          <span class="map-name">Бар — меню<span class="map-note">Подраздел МН-14</span></span>
+          <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <button class="map-row" data-goto="мн-39">
+          <span class="map-id">МН-39</span>
+          <span class="map-name">Бар — передача смены<span class="map-note">Подраздел МН-14</span></span>
+          <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
         <button class="map-row" data-goto="мн-15">
           <span class="map-id">МН-15</span>
           <span class="map-name">Кухня<span class="map-note">Подраздел МН-11</span></span>
@@ -4692,8 +4887,8 @@
               </button>
               <button class="active-tile" data-subblock="bar">
                 <svg class="active-tile-icon" viewBox="0 0 24 24"><path d="M4 4h16l-8 8v7"/><path d="M8 19h8"/></svg>
-                <span class="active-tile-label">Бар<span class="active-tile-sub">чеков / напитков</span></span>
-                <span class="active-tile-value">4/9</span>
+                <span class="active-tile-label">Бар<span class="active-tile-sub">выручка / критичных остатков</span></span>
+                <span class="active-tile-value" id="barTileValue">61 300 ₽ · 3</span>
                 <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
               </button>
               <button class="active-tile" data-subblock="kitchen">
@@ -4827,8 +5022,8 @@
             </button>
             <button class="nav-row" data-subblock="bar">
               <svg class="nav-row-icon" viewBox="0 0 24 24"><path d="M4 4h16l-8 8v7"/><path d="M8 19h8"/></svg>
-              <span class="nav-row-text"><span class="nav-row-name">Бар</span><span class="nav-row-note">Чеков / напитков в работе</span></span>
-              <span class="nav-row-value">4/9</span>
+              <span class="nav-row-text"><span class="nav-row-name">Бар</span><span class="nav-row-note">Выручка / критичных остатков</span></span>
+              <span class="nav-row-value" id="barActiveRowValue">61 300 ₽ · 3</span>
               <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
             </button>
             <button class="nav-row" data-subblock="kitchen">
@@ -5353,27 +5548,201 @@
         </div>
 
         <!-- МН-14 -->
-        <div class="shift-detail" data-detail="bar" data-back="active" data-title="Бар" data-subtitle="Очередь и отдача" hidden>
+        <div class="shift-detail" data-detail="bar" data-back="active" data-title="Бар" data-subtitle="Склад, списания, заготовки" hidden>
           <button class="back-btn">
             <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
             Назад
           </button>
+
           <div class="finance-rows">
-            <div class="finance-row"><span class="value-highlight">Чеков в работе</span><strong class="value-highlight">4</strong></div>
-            <div class="finance-row"><span>Напитков в работе</span><strong>9</strong></div>
-            <div class="finance-row"><span>Среднее время отдачи</span><strong>4 мин</strong></div>
-            <div class="finance-row"><span>Отдано за смену</span><strong>142</strong></div>
-            <div class="finance-row"><span>Выручка бара</span><strong>61 300 ₽</strong></div>
-            <div class="finance-row"><span>Бармены на смене</span><strong>2</strong></div>
+            <div class="finance-row"><span class="value-highlight">Выручка бара</span><strong class="value-highlight">61 300 ₽</strong></div>
+            <div class="finance-row"><span>Чеков</span><strong>58</strong></div>
+            <div class="finance-row"><span>Средний чек</span><strong>1 057 ₽</strong></div>
+            <div class="finance-row"><span>Списаний за смену</span><strong id="barRootWriteoffCount">—</strong></div>
           </div>
 
-          <div class="detail-section-title">В работе сейчас</div>
-          <div class="finance-rows">
-            <div class="finance-row"><span>Апероль шпритц · Стол 7</span><strong>2 мин</strong></div>
-            <div class="finance-row"><span>Мохито классический ×2 · Стол 3</span><strong>3 мин</strong></div>
-            <div class="finance-row"><span>Виски сауэр · Бар</span><strong>5 мин</strong></div>
-            <div class="finance-row"><span>Морс ягодный ×2 · Стол 12</span><strong>1 мин</strong></div>
+          <div class="bar-quick-actions">
+            <button class="bar-quick-btn" id="barScanBtn">
+              <span class="bar-quick-icon"><svg viewBox="0 0 24 24"><path d="M4 8V5h3"/><path d="M20 8V5h-3"/><path d="M4 16v3h3"/><path d="M20 16v3h-3"/><path d="M7 9v6"/><path d="M10 9v6"/><path d="M13 9v6"/><path d="M16 9v6"/></svg></span>
+              Сканер
+            </button>
+            <button class="bar-quick-btn" id="barQuickWriteoffBtn">
+              <span class="bar-quick-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M8 12h8"/></svg></span>
+              Списать
+            </button>
+            <button class="bar-quick-btn" id="barQuickPrepBtn">
+              <span class="bar-quick-icon"><svg viewBox="0 0 24 24"><path d="M11.5 3H4v7.5L13 20l7-7-8.5-9z"/><circle cx="8" cy="8" r="1.3" fill="currentColor" stroke="none"/></svg></span>
+              Маркировка
+            </button>
           </div>
+
+          <div class="detail-section-title">Разделы</div>
+          <div class="nav-rows">
+            <button class="nav-row" data-barsub="stock">
+              <svg class="nav-row-icon" viewBox="0 0 24 24"><path d="M3 8l9-5 9 5-9 5-9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>
+              <span class="nav-row-text"><span class="nav-row-name">Остатки</span><span class="nav-row-note">Критичных позиций</span></span>
+              <span class="nav-row-value" id="barNavStockValue">—</span>
+              <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+            </button>
+            <button class="nav-row" data-barsub="writeoffs">
+              <svg class="nav-row-icon" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/></svg>
+              <span class="nav-row-text"><span class="nav-row-name">Списания</span><span class="nav-row-note">Сумма за смену</span></span>
+              <span class="nav-row-value" id="barNavWriteoffValue">—</span>
+              <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+            </button>
+            <button class="nav-row" data-barsub="preps">
+              <svg class="nav-row-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.6"/><path d="M12 7.4V12l3 1.8"/></svg>
+              <span class="nav-row-text"><span class="nav-row-name">Заготовки и маркировка</span><span class="nav-row-note">Просрочено / активно</span></span>
+              <span class="nav-row-value" id="barNavPrepsValue">—</span>
+              <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+            </button>
+            <button class="nav-row" data-barsub="receiving">
+              <svg class="nav-row-icon" viewBox="0 0 24 24"><path d="M3 7h11v10H3z"/><path d="M14 10h4l3 3v4h-7"/><circle cx="7" cy="19" r="1.6"/><circle cx="17.5" cy="19" r="1.6"/></svg>
+              <span class="nav-row-text"><span class="nav-row-name">Приёмка товара</span><span class="nav-row-note">Ожидает / принято</span></span>
+              <span class="nav-row-value" id="barNavReceivingValue">—</span>
+              <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+            </button>
+            <button class="nav-row" data-barsub="inventory">
+              <svg class="nav-row-icon" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8"/><path d="M8 13h8"/><path d="M8 17h5"/></svg>
+              <span class="nav-row-text"><span class="nav-row-name">Инвентаризация</span><span class="nav-row-note">Последняя</span></span>
+              <span class="nav-row-value" id="barNavInventoryValue">—</span>
+              <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+            </button>
+            <button class="nav-row" data-barsub="menu">
+              <svg class="nav-row-icon" viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15.5A2.5 2.5 0 0 1 17.5 21H4z"/><path d="M4 18.5A2.5 2.5 0 0 1 6.5 16H20"/></svg>
+              <span class="nav-row-text"><span class="nav-row-name">Меню</span><span class="nav-row-note">Состав, аллергены, наличие</span></span>
+              <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+            </button>
+            <button class="nav-row" data-barsub="handover">
+              <svg class="nav-row-icon" viewBox="0 0 24 24"><path d="M7 7l-4 4 4 4"/><path d="M3 11h12"/><path d="M17 5l4 4-4 4"/><path d="M21 9H9"/></svg>
+              <span class="nav-row-text"><span class="nav-row-name">Передача смены</span><span class="nav-row-note">Остатки, списания, задачи</span></span>
+              <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- МН-33 -->
+        <div class="shift-detail" data-detail="bar-stock" data-back="bar" data-title="Остатки" data-subtitle="Склад бара" hidden>
+          <button class="back-btn">
+            <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+            Назад
+          </button>
+          <div class="menu-search">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4.3-4.3"/></svg>
+            <input type="text" id="barStockSearch" placeholder="Поиск позиции">
+            <button class="search-scan-btn" id="barStockScanBtn" aria-label="Сканер"><svg viewBox="0 0 24 24"><path d="M4 8V5h3"/><path d="M20 8V5h-3"/><path d="M4 16v3h3"/><path d="M20 16v3h-3"/><path d="M7 9v6"/><path d="M10 9v6"/><path d="M13 9v6"/><path d="M16 9v6"/></svg></button>
+          </div>
+          <div class="zone-filter-chips" id="barStockFilters">
+            <button class="filter-chip active" data-value="all">Все</button>
+            <button class="filter-chip" data-value="critical">Критичные</button>
+            <button class="filter-chip" data-value="alcohol">Алкоголь</button>
+            <button class="filter-chip" data-value="nonalcohol">Безалкогольное</button>
+            <button class="filter-chip" data-value="preps">Заготовки</button>
+            <button class="filter-chip" data-value="dishes">Посуда</button>
+            <button class="filter-chip" data-value="consumables">Расходники</button>
+          </div>
+          <div class="stock-rows" id="barStockRows"></div>
+          <div class="table-empty" id="barStockEmpty" hidden>Ничего не найдено</div>
+        </div>
+
+        <!-- МН-34 -->
+        <div class="shift-detail" data-detail="bar-writeoffs" data-back="bar" data-title="Списания" data-subtitle="Журнал за смену" hidden>
+          <button class="back-btn">
+            <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+            Назад
+          </button>
+          <button class="modal-btn modal-btn-gold bar-full-btn" id="barNewWriteoffBtn">Новое списание</button>
+          <div class="zone-filter-chips" id="barWoReasonFilters"></div>
+          <div class="zone-filter-chips" id="barWoAuthorFilters"></div>
+          <div class="stock-rows" id="barWriteoffRows"></div>
+          <div class="table-empty" id="barWriteoffEmpty" hidden>Списаний с такими фильтрами нет</div>
+          <div class="finance-rows">
+            <div class="finance-row"><span class="value-highlight">Итог за смену</span><strong class="value-highlight" id="barWriteoffTotal">0 ₽</strong></div>
+          </div>
+        </div>
+
+        <!-- МН-35 -->
+        <div class="shift-detail" data-detail="bar-preps" data-back="bar" data-title="Заготовки и маркировка" data-subtitle="Сроки годности" hidden>
+          <button class="back-btn">
+            <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+            Назад
+          </button>
+          <button class="modal-btn modal-btn-gold bar-full-btn" id="barNewPrepBtn">Новая заготовка</button>
+          <div class="stock-rows" id="barPrepRows"></div>
+        </div>
+
+        <!-- МН-36 -->
+        <div class="shift-detail" data-detail="bar-receiving" data-back="bar" data-title="Приёмка товара" data-subtitle="Поставки на смену" hidden>
+          <button class="back-btn">
+            <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+            Назад
+          </button>
+          <div class="stock-rows" id="barDeliveryRows"></div>
+        </div>
+
+        <!-- МН-37 -->
+        <div class="shift-detail" data-detail="bar-inventory" data-back="bar" data-title="Инвентаризация" data-subtitle="Подсчёт и история" hidden>
+          <button class="back-btn">
+            <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+            Назад
+          </button>
+          <button class="modal-btn modal-btn-gold bar-full-btn" id="barNewInventoryBtn">Новая инвентаризация</button>
+
+          <div id="barCountSession" hidden>
+            <div class="detail-section-title" id="barCountScopeLabel">Подсчёт</div>
+            <div class="stock-rows" id="barCountRows"></div>
+            <div class="finance-rows" id="barCountSummary" hidden></div>
+            <button class="modal-btn modal-btn-gold bar-full-btn" id="barCountFinishBtn" disabled>Завершить и зафиксировать</button>
+          </div>
+
+          <div class="detail-section-title">История инвентаризаций</div>
+          <div class="finance-rows" id="barInventoryHistoryRows"></div>
+        </div>
+
+        <!-- МН-38 -->
+        <div class="shift-detail" data-detail="bar-menu" data-back="bar" data-title="Меню" data-subtitle="Состав и наличие" hidden>
+          <button class="back-btn">
+            <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+            Назад
+          </button>
+          <div class="menu-search">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4.3-4.3"/></svg>
+            <input type="text" id="barMenuSearch" placeholder="Блюдо, напиток, ингредиент">
+          </div>
+          <div class="zone-tabs" id="barMenuSections">
+            <button class="pick-section active" data-bar-menu-section="all">Всё меню</button>
+            <button class="pick-section" data-bar-menu-section="bar">Бар</button>
+            <button class="pick-section" data-bar-menu-section="kitchen">Кухня</button>
+          </div>
+          <div class="menu-rows" id="barMenuRows"></div>
+          <div class="table-empty" id="barMenuEmpty" hidden>Ничего не найдено</div>
+        </div>
+
+        <!-- МН-39 -->
+        <div class="shift-detail" data-detail="bar-handover" data-back="bar" data-title="Передача смены" data-subtitle="Закрытие бара" hidden>
+          <button class="back-btn">
+            <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+            Назад
+          </button>
+
+          <div class="detail-section-title">Ключевые остатки</div>
+          <div class="finance-rows" id="barHandoverStock"></div>
+
+          <div class="detail-section-title">Итоги смены</div>
+          <div class="finance-rows">
+            <div class="finance-row"><span class="value-highlight">Списания за смену</span><strong class="value-highlight" id="barHandoverWriteoffSum">0 ₽</strong></div>
+          </div>
+
+          <div class="detail-section-title">Незакрытые задачи</div>
+          <div class="finance-rows" id="barHandoverTasks"></div>
+
+          <div class="detail-section-title">Подписи</div>
+          <div class="finance-rows">
+            <div class="finance-row"><span>Сдающий</span><strong id="barHandoverFrom">Не подписано</strong></div>
+            <div class="finance-row"><span>Принимающий</span><strong id="barHandoverTo">Не подтверждено</strong></div>
+          </div>
+          <button class="modal-btn modal-btn-gold bar-full-btn" id="barHandoverSignBtn">Подписать (сдающий)</button>
+          <button class="modal-btn modal-btn-ghost bar-full-btn" id="barHandoverConfirmBtn" disabled>Подтвердить приём смены</button>
         </div>
 
         <!-- МН-15 -->
@@ -5904,6 +6273,160 @@
         <div class="modal-actions">
           <button class="modal-btn modal-btn-ghost" id="passwordCancel">Отмена</button>
           <button class="modal-btn modal-btn-gold" id="passwordSave">Сохранить</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Бар: имитация сканера штрих-кода -->
+    <div class="modal-overlay" id="barScanOverlay" hidden>
+      <div class="modal-box">
+        <div class="modal-title">Сканер</div>
+        <div class="bar-scan-frame" id="barScanFrame">
+          <div class="bar-scan-line"></div>
+        </div>
+        <div class="modal-note" id="barScanNote">Наведите камеру на штрих-код</div>
+        <div class="modal-actions-single" id="barScanBeforeActions">
+          <button class="modal-btn modal-btn-gold" id="barScanSimulate">Симулировать скан</button>
+        </div>
+        <div class="modal-actions" id="barScanFoundActions" hidden>
+          <button class="modal-btn modal-btn-ghost" id="barScanToWriteoff">Списать</button>
+          <button class="modal-btn modal-btn-ghost" id="barScanToCount">Пересчитать</button>
+        </div>
+        <div class="modal-actions-single" id="barScanFoundActions2" hidden>
+          <button class="modal-btn modal-btn-ghost" id="barScanToReceiving">Принять по накладной</button>
+        </div>
+        <div class="modal-actions-single">
+          <button class="modal-btn modal-btn-ghost" id="barScanCancel">Закрыть</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Бар: действия по позиции остатков -->
+    <div class="modal-overlay" id="barItemActionsOverlay" hidden>
+      <div class="modal-box">
+        <div class="modal-title" id="barItemActionsTitle">Позиция</div>
+        <div class="modal-actions-single">
+          <button class="modal-btn modal-btn-ghost" id="barItemWriteoffBtn">Списать</button>
+        </div>
+        <div class="modal-actions-single">
+          <button class="modal-btn modal-btn-ghost" id="barItemStopBtn">В стоп-лист</button>
+        </div>
+        <div class="modal-actions-single">
+          <button class="modal-btn modal-btn-ghost" id="barItemRequestBtn">В заявку поставщику</button>
+        </div>
+        <div class="modal-actions-single">
+          <button class="modal-btn modal-btn-ghost" id="barItemActionsCancel">Отмена</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Бар: новое списание -->
+    <div class="modal-overlay" id="barWriteoffOverlay" hidden>
+      <div class="modal-box">
+        <div class="modal-title">Новое списание</div>
+        <div class="opts-section">
+          <div class="opts-section-title">Позиция</div>
+          <div class="bar-form-row">
+            <select class="bar-select" id="woItemSelect"></select>
+          </div>
+        </div>
+        <div class="opts-section">
+          <div class="opts-section-title">Количество</div>
+          <div class="bar-form-row">
+            <input class="bar-qty-input" type="number" min="0" step="1" id="woQtyInput" placeholder="0">
+            <span class="bar-unit-label" id="woUnitLabel">мл</span>
+          </div>
+        </div>
+        <div class="opts-section">
+          <div class="opts-section-title">Причина</div>
+          <div class="void-reasons" id="woReasons">
+            <button class="void-reason" data-reason="Бой посуды">Бой посуды</button>
+            <button class="void-reason" data-reason="Пролив">Пролив</button>
+            <button class="void-reason" data-reason="Брак">Брак</button>
+            <button class="void-reason" data-reason="Дегустация">Дегустация</button>
+            <button class="void-reason" data-reason="Просрочка">Просрочка</button>
+            <button class="void-reason" data-reason="Проработка">Проработка</button>
+            <button class="void-reason" data-reason="Гость-компенсация">Гость-компенсация</button>
+          </div>
+        </div>
+        <textarea class="void-comment" id="woComment" rows="2" placeholder="Комментарий (необязательно)"></textarea>
+        <div class="modal-actions">
+          <button class="modal-btn modal-btn-ghost" id="woCancel">Отмена</button>
+          <button class="modal-btn modal-btn-gold" id="woConfirm" disabled>Списать</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Бар: новая заготовка -->
+    <div class="modal-overlay" id="barPrepOverlay" hidden>
+      <div class="modal-box">
+        <div class="modal-title">Новая заготовка</div>
+        <div class="opts-section">
+          <div class="opts-section-title">Заготовка</div>
+          <div class="bar-form-row">
+            <select class="bar-select" id="prepSelect"></select>
+          </div>
+        </div>
+        <div class="modal-note" id="prepMeta">—</div>
+        <div class="modal-actions">
+          <button class="modal-btn modal-btn-ghost" id="prepCancel">Отмена</button>
+          <button class="modal-btn modal-btn-gold" id="prepPrint">Печать этикетки</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Бар: превью печати этикетки -->
+    <div class="modal-overlay" id="barLabelOverlay" hidden>
+      <div class="modal-box">
+        <div class="modal-title">Этикетка отправлена на печать</div>
+        <div class="bar-label-preview" id="barLabelPreview"></div>
+        <div class="modal-actions-single">
+          <button class="modal-btn modal-btn-gold" id="barLabelDone">Готово</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Бар: область новой инвентаризации -->
+    <div class="modal-overlay" id="barInventoryScopeOverlay" hidden>
+      <div class="modal-box">
+        <div class="modal-title">Новая инвентаризация</div>
+        <div class="opts-section">
+          <div class="opts-section-title">Область</div>
+          <div class="void-reasons" id="invScopeChoices">
+            <button class="void-reason" data-scope="all">Весь бар</button>
+            <button class="void-reason" data-scope="group">Группа позиций</button>
+            <button class="void-reason" data-scope="custom">Произвольный список</button>
+          </div>
+        </div>
+        <div class="opts-section" id="invGroupPicker" hidden>
+          <div class="opts-section-title">Группа</div>
+          <div class="void-reasons" id="invGroupChoices">
+            <button class="void-reason" data-group="alcohol">Алкоголь</button>
+            <button class="void-reason" data-group="nonalcohol">Безалкогольное</button>
+            <button class="void-reason" data-group="preps">Заготовки</button>
+            <button class="void-reason" data-group="dishes">Посуда</button>
+            <button class="void-reason" data-group="consumables">Расходники</button>
+          </div>
+        </div>
+        <div class="opts-section" id="invCustomPicker" hidden>
+          <div class="opts-section-title">Позиции</div>
+          <div class="stock-check-list" id="invCustomList"></div>
+        </div>
+        <div class="modal-actions">
+          <button class="modal-btn modal-btn-ghost" id="invScopeCancel">Отмена</button>
+          <button class="modal-btn modal-btn-gold" id="invScopeStart" disabled>Начать подсчёт</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Бар: карточка позиции меню -->
+    <div class="modal-overlay" id="barMenuItemOverlay" hidden>
+      <div class="modal-box">
+        <div class="modal-title" id="barMenuItemName">—</div>
+        <div class="modal-note" id="barMenuItemMeta">—</div>
+        <div id="barMenuItemInfo"></div>
+        <div class="modal-actions-single">
+          <button class="modal-btn modal-btn-gold" id="barMenuItemClose">Закрыть</button>
         </div>
       </div>
     </div>
@@ -12283,6 +12806,733 @@
     subEl.textContent = titles.messenger[1];
   }
 
+  /* ==================================================================
+     Смена → Актив смены → Бар: остатки, списания, заготовки и
+     маркировка, приёмка товара, инвентаризация, меню (просмотр),
+     передача смены. Блоки только для бар-менеджера — отдельным заходом.
+     ================================================================== */
+
+  const BAR_GROUP_NAMES = { alcohol:'Алкоголь', nonalcohol:'Безалкогольное', preps:'Заготовки', dishes:'Посуда', consumables:'Расходники' };
+
+  const barStock = [
+    { id:'s1', name:'Апероль', unit:'мл', qty:850, calc:900, group:'alcohol', price:2.5, critical:false, flagStop:false, flagRequest:false },
+    { id:'s2', name:'Джин Bombay Sapphire', unit:'мл', qty:120, calc:400, group:'alcohol', price:3.2, critical:true, flagStop:false, flagRequest:false },
+    { id:'s3', name:'Просекко', unit:'бут', qty:2, calc:6, group:'alcohol', price:950, critical:true, flagStop:false, flagRequest:false },
+    { id:'s4', name:'Тоник Fever-Tree', unit:'бут', qty:18, calc:20, group:'nonalcohol', price:180, critical:false, flagStop:false, flagRequest:false },
+    { id:'s5', name:'Лимонный фреш', unit:'мл', qty:300, calc:1500, group:'preps', price:0.7, critical:true, flagStop:false, flagRequest:false },
+    { id:'s6', name:'Мятный сироп', unit:'мл', qty:450, calc:500, group:'preps', price:0.5, critical:false, flagStop:false, flagRequest:false },
+    { id:'s7', name:'Бокалы для вина', unit:'шт', qty:34, calc:40, group:'dishes', price:600, critical:false, flagStop:false, flagRequest:false },
+    { id:'s8', name:'Соломинки бумажные', unit:'шт', qty:40, calc:200, group:'consumables', price:3, critical:true, flagStop:false, flagRequest:false },
+    { id:'s9', name:'Виски Jameson', unit:'мл', qty:700, calc:750, group:'alcohol', price:3.5, critical:false, flagStop:false, flagRequest:false },
+    { id:'s10', name:'Содовая', unit:'мл', qty:2000, calc:2200, group:'nonalcohol', price:0.3, critical:false, flagStop:false, flagRequest:false },
+    { id:'s11', name:'Гренадин домашний', unit:'мл', qty:120, calc:600, group:'preps', price:0.6, critical:true, flagStop:false, flagRequest:false },
+    { id:'s12', name:'Имбирный сироп', unit:'мл', qty:900, calc:1000, group:'preps', price:0.5, critical:false, flagStop:false, flagRequest:false }
+  ];
+
+  const WRITEOFF_REASONS = ['Бой посуды','Пролив','Брак','Дегустация','Просрочка','Проработка','Гость-компенсация'];
+
+  let barWoSeq = 3;
+  let barWriteoffs = [
+    { id:'w1', item:'Бокалы для вина', qty:2, unit:'шт', reason:'Бой посуды', comment:'', author:'Игорь', time:'19:12', sum:1200 },
+    { id:'w2', item:'Апероль', qty:40, unit:'мл', reason:'Пролив', comment:'', author:'Марина', time:'20:03', sum:100 },
+    { id:'w3', item:'Лимонный фреш', qty:200, unit:'мл', reason:'Просрочка', comment:'Отстоял больше суток', author:'Игорь', time:'21:40', sum:140 }
+  ];
+
+  const PREP_CATALOG = [
+    { name:'Лимонный фреш', shelfHours:24 },
+    { name:'Мятный сироп', shelfHours:72 },
+    { name:'Гренадин домашний', shelfHours:48 },
+    { name:'Имбирный сироп', shelfHours:120 },
+    { name:'Ягодный микс', shelfHours:36 }
+  ];
+  let barPrepSeq = 4;
+  let barPreps = [
+    { id:'p1', name:'Лимонный фреш', madeAt:Date.now() - 22 * 3600000, shelfHours:24, author:'Игорь' },
+    { id:'p2', name:'Мятный сироп', madeAt:Date.now() - 3 * 3600000, shelfHours:72, author:'Марина' },
+    { id:'p3', name:'Гренадин домашний', madeAt:Date.now() - 50 * 3600000, shelfHours:48, author:'Игорь' },
+    { id:'p4', name:'Имбирный сироп', madeAt:Date.now() - 1 * 3600000, shelfHours:120, author:'Марина' }
+  ];
+
+  const REJECT_REASONS = ['Недовоз','Брак','Не тот товар','Истёк срок','Цена не соответствует'];
+
+  let barDeliveries = [
+    { id:'d1', supplier:'АлкоТрейд', time:'12:00', status:'ожидается', open:false, returnFormed:false,
+      lines:[
+        { name:'Джин Bombay Sapphire', unit:'бут', ordered:6, price:1800, decision:null, fact:6, rejectReason:null },
+        { name:'Просекко', unit:'бут', ordered:12, price:950, decision:null, fact:12, rejectReason:null }
+      ] },
+    { id:'d2', supplier:'ФрешБар', time:'09:30', status:'принято', open:false, returnFormed:false,
+      lines:[
+        { name:'Лимоны', unit:'кг', ordered:10, price:220, decision:'full', fact:10, rejectReason:null },
+        { name:'Мята свежая', unit:'уп', ordered:8, price:90, decision:'reject', fact:0, rejectReason:'Брак' }
+      ] }
+  ];
+
+  let barInvSeq = 2;
+  let barInventories = [
+    { id:'inv1', date:'01.09', scope:'Весь бар', author:'Игорь', diffSum:-1240 },
+    { id:'inv2', date:'25.08', scope:'Алкоголь', author:'Марина', diffSum:340 }
+  ];
+  let barCountItems = null;
+  let barCountScopeLabel = '';
+
+  function barStaffName() { return currentStaff.firstName + ' ' + currentStaff.lastName; }
+  function barNowTime() { return new Date().toLocaleTimeString('ru-RU', { hour:'2-digit', minute:'2-digit' }); }
+  function barShortDate(ts) {
+    const d = new Date(ts);
+    return String(d.getDate()).padStart(2, '0') + '.' + String(d.getMonth() + 1).padStart(2, '0');
+  }
+  function barTimeOf(ts) {
+    const d = new Date(ts);
+    return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  }
+
+  /* ---------- сводка на корневом экране «Бар» и в «Активе смены» ---------- */
+  function barWriteoffSumTotal() { return barWriteoffs.reduce((a, w) => a + w.sum, 0); }
+  function barCriticalCount() { return barStock.filter(i => i.critical).length; }
+  function barExpiredPrepsCount() { return barPreps.filter(p => prepState(p).expired).length; }
+
+  function renderBarRoot() {
+    const crit = barCriticalCount();
+    const tileVal = '61 300 ₽ · ' + crit;
+    const tileEl = document.getElementById('barTileValue');
+    if (tileEl) tileEl.textContent = tileVal;
+    const rowEl = document.getElementById('barActiveRowValue');
+    if (rowEl) rowEl.textContent = tileVal;
+    const rootWo = document.getElementById('barRootWriteoffCount');
+    if (rootWo) rootWo.textContent = String(barWriteoffs.length);
+
+    const navStock = document.getElementById('barNavStockValue');
+    if (navStock) navStock.textContent = String(crit);
+    const navWo = document.getElementById('barNavWriteoffValue');
+    if (navWo) navWo.textContent = money(barWriteoffSumTotal());
+    const navPreps = document.getElementById('barNavPrepsValue');
+    if (navPreps) navPreps.textContent = barExpiredPrepsCount() + '/' + barPreps.length;
+    const navReceiving = document.getElementById('barNavReceivingValue');
+    if (navReceiving) {
+      const waiting = barDeliveries.filter(d => d.status !== 'принято').length;
+      navReceiving.textContent = waiting + '/' + barDeliveries.length;
+    }
+    const navInventory = document.getElementById('barNavInventoryValue');
+    if (navInventory) navInventory.textContent = barInventories.length ? barInventories[0].date : '—';
+  }
+
+  /* ---------- Остатки ---------- */
+  let barStockFilter = 'all';
+  function renderBarStock() {
+    const q = (document.getElementById('barStockSearch').value || '').trim().toLowerCase();
+    let items = barStock.filter(i => {
+      if (q && !i.name.toLowerCase().includes(q)) return false;
+      if (barStockFilter === 'critical') return i.critical;
+      if (barStockFilter !== 'all') return i.group === barStockFilter;
+      return true;
+    });
+    items = items.slice().sort((a, b) => (b.critical - a.critical) || a.name.localeCompare(b.name, 'ru'));
+    const wrap = document.getElementById('barStockRows');
+    document.getElementById('barStockEmpty').hidden = items.length > 0;
+    wrap.innerHTML = items.map(i => {
+      const badges = [];
+      if (i.flagStop) badges.push('<span class="stock-badge">В стоп-листе</span>');
+      if (i.flagRequest) badges.push('<span class="stock-badge">В заявке</span>');
+      return '<div class="stock-row' + (i.flagStop || i.flagRequest ? ' is-flagged' : '') + '">' +
+        '<div class="stock-row-top">' +
+          '<span class="stock-row-name">' + (i.critical ? '<span class="stock-critical-dot"></span>' : '') + '<span>' + i.name + '</span></span>' +
+          '<span class="stock-row-right">' +
+            '<span class="stock-row-qty">' + i.qty + ' ' + i.unit + '</span>' +
+            '<button class="stock-row-more" data-stock-more="' + i.id + '" aria-label="Действия">' +
+              '<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.4" fill="currentColor" stroke="none"/></svg>' +
+            '</button>' +
+          '</span>' +
+        '</div>' +
+        '<div class="stock-row-meta">' + BAR_GROUP_NAMES[i.group] + ' · расчётный ' + i.calc + ' ' + i.unit + '</div>' +
+        (badges.length ? '<div class="stock-row-badges">' + badges.join('') + '</div>' : '') +
+      '</div>';
+    }).join('');
+    renderBarRoot();
+  }
+  document.getElementById('barStockSearch').addEventListener('input', renderBarStock);
+  document.getElementById('barStockFilters').addEventListener('click', e => {
+    const chip = e.target.closest('.filter-chip');
+    if (!chip) return;
+    barStockFilter = chip.dataset.value;
+    document.querySelectorAll('#barStockFilters .filter-chip').forEach(c => c.classList.toggle('active', c === chip));
+    renderBarStock();
+  });
+  document.getElementById('barStockScanBtn').addEventListener('click', () => barSimulateScan());
+
+  let barActionItemId = null;
+  document.getElementById('barStockRows').addEventListener('click', e => {
+    const btn = e.target.closest('[data-stock-more]');
+    if (!btn) return;
+    openBarItemActions(btn.dataset.stockMore);
+  });
+  function openBarItemActions(id) {
+    const item = barStock.find(i => i.id === id);
+    if (!item) return;
+    barActionItemId = id;
+    document.getElementById('barItemActionsTitle').textContent = item.name;
+    document.getElementById('barItemActionsOverlay').hidden = false;
+  }
+  document.getElementById('barItemActionsCancel').addEventListener('click', () => { document.getElementById('barItemActionsOverlay').hidden = true; });
+  document.getElementById('barItemStopBtn').addEventListener('click', () => {
+    const item = barStock.find(i => i.id === barActionItemId);
+    if (item) item.flagStop = !item.flagStop;
+    document.getElementById('barItemActionsOverlay').hidden = true;
+    renderBarStock();
+  });
+  document.getElementById('barItemRequestBtn').addEventListener('click', () => {
+    const item = barStock.find(i => i.id === barActionItemId);
+    if (item) item.flagRequest = !item.flagRequest;
+    document.getElementById('barItemActionsOverlay').hidden = true;
+    renderBarStock();
+  });
+  document.getElementById('barItemWriteoffBtn').addEventListener('click', () => {
+    document.getElementById('barItemActionsOverlay').hidden = true;
+    openBarWriteoff(barActionItemId, null);
+  });
+
+  /* ---------- Списание — общая форма для всех точек входа ---------- */
+  function writeoffOptionsList() {
+    const map = new Map();
+    barStock.forEach(i => map.set(i.name, i));
+    barPreps.forEach(p => { if (!map.has(p.name)) map.set(p.name, { id:'prep-' + p.name, name:p.name, unit:'мл', price:0 }); });
+    return Array.from(map.values());
+  }
+  function openBarWriteoff(stockId, presetReason) {
+    const options = writeoffOptionsList();
+    const sel = document.getElementById('woItemSelect');
+    sel.innerHTML = options.map(o => '<option value="' + o.id + '">' + o.name + '</option>').join('');
+    const preset = stockId ? options.find(o => o.id === stockId) : null;
+    if (preset) sel.value = preset.id;
+    updateWoUnitLabel();
+    document.getElementById('woQtyInput').value = '';
+    document.getElementById('woComment').value = '';
+    document.querySelectorAll('#woReasons .void-reason').forEach(b => b.classList.remove('active'));
+    if (presetReason) {
+      const btn = document.querySelector('#woReasons .void-reason[data-reason="' + presetReason + '"]');
+      if (btn) btn.classList.add('active');
+    }
+    syncWoConfirm();
+    document.getElementById('barWriteoffOverlay').hidden = false;
+  }
+  function updateWoUnitLabel() {
+    const options = writeoffOptionsList();
+    const sel = document.getElementById('woItemSelect');
+    const opt = options.find(o => o.id === sel.value);
+    document.getElementById('woUnitLabel').textContent = opt ? opt.unit : '';
+  }
+  document.getElementById('woItemSelect').addEventListener('change', updateWoUnitLabel);
+  document.getElementById('woQtyInput').addEventListener('input', syncWoConfirm);
+  document.getElementById('woReasons').addEventListener('click', e => {
+    const btn = e.target.closest('.void-reason');
+    if (!btn) return;
+    document.querySelectorAll('#woReasons .void-reason').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    syncWoConfirm();
+  });
+  function syncWoConfirm() {
+    const qty = parseFloat(document.getElementById('woQtyInput').value);
+    const reason = document.querySelector('#woReasons .void-reason.active');
+    document.getElementById('woConfirm').disabled = !(qty > 0 && reason);
+  }
+  document.getElementById('woCancel').addEventListener('click', () => { document.getElementById('barWriteoffOverlay').hidden = true; });
+  document.getElementById('woConfirm').addEventListener('click', () => {
+    const options = writeoffOptionsList();
+    const sel = document.getElementById('woItemSelect');
+    const opt = options.find(o => o.id === sel.value);
+    const qty = parseFloat(document.getElementById('woQtyInput').value) || 0;
+    const reason = document.querySelector('#woReasons .void-reason.active');
+    if (!opt || !qty || !reason) return;
+    barWoSeq++;
+    barWriteoffs.unshift({
+      id:'w' + barWoSeq, item:opt.name, qty:qty, unit:opt.unit, reason:reason.dataset.reason,
+      comment:document.getElementById('woComment').value.trim(), author:barStaffName(), time:barNowTime(),
+      sum:Math.round(qty * (opt.price || 0))
+    });
+    const stockItem = barStock.find(i => i.name === opt.name);
+    if (stockItem) stockItem.qty = Math.max(0, stockItem.qty - qty);
+    document.getElementById('barWriteoffOverlay').hidden = true;
+    renderBarStock(); renderBarWriteoffs(); renderBarRoot(); renderBarHandover();
+  });
+
+  /* ---------- Списания: журнал за смену ---------- */
+  let barWoReasonFilter = 'all';
+  let barWoAuthorFilter = 'all';
+  function renderBarWoFilters() {
+    const reasonsWrap = document.getElementById('barWoReasonFilters');
+    reasonsWrap.innerHTML = '<button class="filter-chip' + (barWoReasonFilter === 'all' ? ' active' : '') + '" data-value="all">Все причины</button>' +
+      WRITEOFF_REASONS.map(r => '<button class="filter-chip' + (barWoReasonFilter === r ? ' active' : '') + '" data-value="' + r + '">' + r + '</button>').join('');
+    const authors = Array.from(new Set(barWriteoffs.map(w => w.author)));
+    const authorsWrap = document.getElementById('barWoAuthorFilters');
+    authorsWrap.innerHTML = '<button class="filter-chip' + (barWoAuthorFilter === 'all' ? ' active' : '') + '" data-value="all">Все сотрудники</button>' +
+      authors.map(a => '<button class="filter-chip' + (barWoAuthorFilter === a ? ' active' : '') + '" data-value="' + a + '">' + a + '</button>').join('');
+  }
+  document.getElementById('barWoReasonFilters').addEventListener('click', e => {
+    const chip = e.target.closest('.filter-chip'); if (!chip) return;
+    barWoReasonFilter = chip.dataset.value; renderBarWoFilters(); renderBarWriteoffs();
+  });
+  document.getElementById('barWoAuthorFilters').addEventListener('click', e => {
+    const chip = e.target.closest('.filter-chip'); if (!chip) return;
+    barWoAuthorFilter = chip.dataset.value; renderBarWoFilters(); renderBarWriteoffs();
+  });
+  function renderBarWriteoffs() {
+    renderBarWoFilters();
+    const items = barWriteoffs.filter(w =>
+      (barWoReasonFilter === 'all' || w.reason === barWoReasonFilter) &&
+      (barWoAuthorFilter === 'all' || w.author === barWoAuthorFilter)
+    );
+    const wrap = document.getElementById('barWriteoffRows');
+    document.getElementById('barWriteoffEmpty').hidden = items.length > 0;
+    wrap.innerHTML = items.map(w =>
+      '<div class="writeoff-entry">' +
+        '<div class="writeoff-entry-top"><span>' + w.item + ' × ' + w.qty + ' ' + w.unit + '</span><strong>' + money(w.sum) + '</strong></div>' +
+        '<div class="writeoff-entry-meta">' + w.reason + ' · ' + w.author + ' · ' + w.time + (w.comment ? ' · ' + w.comment : '') + '</div>' +
+      '</div>'
+    ).join('');
+    document.getElementById('barWriteoffTotal').textContent = money(barWriteoffSumTotal());
+  }
+  document.getElementById('barNewWriteoffBtn').addEventListener('click', () => openBarWriteoff(null, null));
+
+  /* ---------- Заготовки и маркировка ---------- */
+  function prepState(p) {
+    const expiresAt = p.madeAt + p.shelfHours * 3600000;
+    const left = expiresAt - Date.now();
+    return { expiresAt:expiresAt, left:left, expired:left <= 0, warn:left > 0 && left <= 12 * 3600000 };
+  }
+  function prepTimerText(st) {
+    if (st.expired) return 'Истёк ' + Math.round(-st.left / 3600000) + ' ч назад';
+    const h = Math.floor(st.left / 3600000);
+    const m = Math.floor((st.left % 3600000) / 60000);
+    return 'Осталось ' + h + ' ч ' + m + ' мин';
+  }
+  function renderBarPreps() {
+    const rows = barPreps.slice().sort((a, b) => {
+      const sa = prepState(a), sb = prepState(b);
+      if (sa.expired !== sb.expired) return sa.expired ? -1 : 1;
+      return sa.left - sb.left;
+    });
+    const wrap = document.getElementById('barPrepRows');
+    wrap.innerHTML = rows.map(p => {
+      const st = prepState(p);
+      const cls = st.expired ? 'is-expired' : (st.warn ? 'is-warn' : '');
+      return '<div class="stock-row">' +
+        '<div class="stock-row-top">' +
+          '<span class="stock-row-name"><span>' + p.name + '</span></span>' +
+          '<span class="prep-timer ' + cls + '">' + prepTimerText(st) + '</span>' +
+        '</div>' +
+        '<div class="stock-row-meta">Изготовлено ' + barTimeOf(p.madeAt) + ' · годен до ' + barTimeOf(p.madeAt + p.shelfHours * 3600000) + ' · ' + p.author + '</div>' +
+        '<div class="stock-row-badges">' +
+          '<button class="stock-badge bar-inline-btn" data-prep-reprint="' + p.id + '">Печать повторно</button>' +
+          (st.expired ? '<button class="stock-badge bar-inline-btn" data-prep-writeoff="' + p.id + '">Списать</button>' : '') +
+        '</div>' +
+      '</div>';
+    }).join('');
+    renderBarRoot();
+  }
+  document.getElementById('barPrepRows').addEventListener('click', e => {
+    const reprint = e.target.closest('[data-prep-reprint]');
+    if (reprint) { openBarLabel(barPreps.find(p => p.id === reprint.dataset.prepReprint)); return; }
+    const wo = e.target.closest('[data-prep-writeoff]');
+    if (wo) {
+      const p = barPreps.find(x => x.id === wo.dataset.prepWriteoff);
+      if (!p) return;
+      openBarWriteoff(null, 'Просрочка');
+      const opt = writeoffOptionsList().find(o => o.name === p.name);
+      if (opt) { document.getElementById('woItemSelect').value = opt.id; updateWoUnitLabel(); }
+    }
+  });
+  function barPrepMeta() {
+    const sel = document.getElementById('prepSelect');
+    const cat = PREP_CATALOG.find(c => c.name === sel.value);
+    document.getElementById('prepMeta').textContent = cat ? ('Срок хранения — ' + cat.shelfHours + ' ч · автор — ' + barStaffName()) : '';
+  }
+  document.getElementById('barNewPrepBtn').addEventListener('click', () => {
+    const sel = document.getElementById('prepSelect');
+    sel.innerHTML = PREP_CATALOG.map(c => '<option value="' + c.name + '">' + c.name + '</option>').join('');
+    barPrepMeta();
+    document.getElementById('barPrepOverlay').hidden = false;
+  });
+  document.getElementById('prepSelect').addEventListener('change', barPrepMeta);
+  document.getElementById('prepCancel').addEventListener('click', () => { document.getElementById('barPrepOverlay').hidden = true; });
+  document.getElementById('prepPrint').addEventListener('click', () => {
+    const sel = document.getElementById('prepSelect');
+    const cat = PREP_CATALOG.find(c => c.name === sel.value);
+    if (!cat) return;
+    barPrepSeq++;
+    const prep = { id:'p' + barPrepSeq, name:cat.name, madeAt:Date.now(), shelfHours:cat.shelfHours, author:barStaffName() };
+    barPreps.unshift(prep);
+    document.getElementById('barPrepOverlay').hidden = true;
+    renderBarPreps();
+    openBarLabel(prep);
+  });
+  function openBarLabel(prep) {
+    if (!prep) return;
+    const expiresAt = prep.madeAt + prep.shelfHours * 3600000;
+    document.getElementById('barLabelPreview').innerHTML =
+      '<div class="bar-label-name">' + prep.name + '</div>' +
+      '<div class="bar-label-row">Изготовлено: ' + barTimeOf(prep.madeAt) + ' · ' + barShortDate(prep.madeAt) + '</div>' +
+      '<div class="bar-label-row">Годен до: ' + barTimeOf(expiresAt) + ' · ' + barShortDate(expiresAt) + '</div>' +
+      '<div class="bar-label-row">Сотрудник: ' + prep.author + '</div>' +
+      '<div class="bar-label-row">Заведение: ' + currentStaff.restaurant + '</div>' +
+      '<div class="bar-label-qr"></div>';
+    document.getElementById('barLabelOverlay').hidden = false;
+  }
+  document.getElementById('barLabelDone').addEventListener('click', () => { document.getElementById('barLabelOverlay').hidden = true; });
+  /* пуш при истечении срока — тикает раз в минуту, пока экран заготовок жив */
+  setInterval(() => {
+    const wasExpired = {};
+    barPreps.forEach(p => { wasExpired[p.id] = prepState(p).expired; });
+    if (!document.querySelector('.shift-detail[data-detail="bar-preps"]:not([hidden])')) return;
+    renderBarPreps();
+  }, 60000);
+
+  /* ---------- Приёмка товара ---------- */
+  function deliveryLineDiff(l) {
+    const fact = l.decision === 'reject' ? 0 : (l.fact != null ? l.fact : l.ordered);
+    return (l.ordered - fact) * l.price;
+  }
+  function findDeliveryLine(el) {
+    const d = barDeliveries.find(x => x.id === el.dataset.delivery);
+    return d ? { d:d, line:d.lines[el.dataset.line] } : { d:null, line:null };
+  }
+  function renderBarReceiving() {
+    const wrap = document.getElementById('barDeliveryRows');
+    wrap.innerHTML = barDeliveries.map(d => {
+      const allDecided = d.lines.every(l => l.decision);
+      const diffSum = d.lines.reduce((a, l) => a + deliveryLineDiff(l), 0);
+      const hasReject = d.lines.some(l => l.decision === 'reject');
+      let body = '';
+      if (d.open) {
+        body = '<div class="delivery-body">' +
+          (d.status !== 'принято' ? '<button class="delivery-scan-btn" data-delivery-scan="' + d.id + '">Сверка сканером</button>' : '') +
+          d.lines.map((l, idx) => {
+            const disabled = d.status === 'принято' ? 'disabled' : '';
+            return '<div class="delivery-line" data-delivery-line="' + d.id + ':' + idx + '">' +
+              '<div class="delivery-line-top"><span>' + l.name + '</span><span>' + money(l.price) + ' / ' + l.unit + '</span></div>' +
+              '<div class="delivery-line-meta">Заявлено ' + l.ordered + ' ' + l.unit + '</div>' +
+              '<div class="delivery-line-row">' +
+                '<select class="bar-select delivery-decision" data-delivery="' + d.id + '" data-line="' + idx + '" ' + disabled + '>' +
+                  '<option value="">Решение…</option>' +
+                  '<option value="full"' + (l.decision === 'full' ? ' selected' : '') + '>Принять полностью</option>' +
+                  '<option value="partial"' + (l.decision === 'partial' ? ' selected' : '') + '>Принять частично</option>' +
+                  '<option value="reject"' + (l.decision === 'reject' ? ' selected' : '') + '>Отказ</option>' +
+                '</select>' +
+                (l.decision === 'partial' ? '<input class="bar-qty-input delivery-fact" type="number" min="0" data-delivery="' + d.id + '" data-line="' + idx + '" value="' + l.fact + '" ' + disabled + '>' : '') +
+                (l.decision === 'reject' ? '<select class="bar-select delivery-reject-reason" data-delivery="' + d.id + '" data-line="' + idx + '" ' + disabled + '>' +
+                  '<option value="">Причина…</option>' +
+                  REJECT_REASONS.map(r => '<option value="' + r + '"' + (l.rejectReason === r ? ' selected' : '') + '>' + r + '</option>').join('') +
+                '</select>' : '') +
+              '</div>' +
+            '</div>';
+          }).join('') +
+          '<div class="finance-rows"><div class="finance-row"><span>Расхождения по накладной</span><strong>' + money(diffSum) + '</strong></div></div>' +
+          '<div class="delivery-actions">' +
+            '<button class="modal-btn modal-btn-gold" data-delivery-confirm="' + d.id + '"' + (allDecided && d.status !== 'принято' ? '' : ' disabled') + '>Подтвердить приёмку</button>' +
+            (hasReject ? '<button class="modal-btn modal-btn-ghost" data-delivery-return="' + d.id + '">' + (d.returnFormed ? 'Акт возврата сформирован' : 'Оформить возврат') + '</button>' : '') +
+          '</div>' +
+        '</div>';
+      }
+      return '<div class="delivery-row">' +
+        '<div class="delivery-head" data-delivery-toggle="' + d.id + '">' +
+          '<span><span class="delivery-head-name">' + d.supplier + '</span><br><span class="delivery-head-meta">' + d.time + ' · ' + d.lines.length + ' поз.</span></span>' +
+          '<span class="delivery-status ' + (d.status === 'принято' ? 'is-done' : 'is-waiting') + '">' + d.status + '</span>' +
+        '</div>' +
+        body +
+      '</div>';
+    }).join('');
+    renderBarRoot();
+  }
+  document.getElementById('barDeliveryRows').addEventListener('click', e => {
+    const toggle = e.target.closest('[data-delivery-toggle]');
+    if (toggle) { const d = barDeliveries.find(x => x.id === toggle.dataset.deliveryToggle); if (d) { d.open = !d.open; renderBarReceiving(); } return; }
+    const scan = e.target.closest('[data-delivery-scan]');
+    if (scan) {
+      const d = barDeliveries.find(x => x.id === scan.dataset.deliveryScan);
+      const idx = d ? d.lines.findIndex(l => !l.decision) : -1;
+      if (d && idx !== -1) {
+        d.lines[idx].decision = 'full'; d.lines[idx].fact = d.lines[idx].ordered;
+        renderBarReceiving();
+        const flashed = document.querySelector('[data-delivery-line="' + d.id + ':' + idx + '"]');
+        if (flashed) { flashed.classList.add('is-flashed'); setTimeout(() => flashed.classList.remove('is-flashed'), 1000); }
+      }
+      return;
+    }
+    const confirmBtn = e.target.closest('[data-delivery-confirm]');
+    if (confirmBtn) {
+      const d = barDeliveries.find(x => x.id === confirmBtn.dataset.deliveryConfirm);
+      if (d) {
+        d.lines.forEach(l => {
+          const fact = l.decision === 'reject' ? 0 : (l.fact != null ? l.fact : l.ordered);
+          if (fact > 0) {
+            const stockItem = barStock.find(i => i.name === l.name);
+            if (stockItem) stockItem.qty += fact;
+            else barStock.push({ id:'s-' + l.name, name:l.name, unit:l.unit, qty:fact, calc:fact, group:'consumables', price:l.price, critical:false, flagStop:false, flagRequest:false });
+          }
+        });
+        d.status = 'принято';
+        renderBarReceiving(); renderBarStock(); renderBarHandover();
+      }
+      return;
+    }
+    const ret = e.target.closest('[data-delivery-return]');
+    if (ret) { const d = barDeliveries.find(x => x.id === ret.dataset.deliveryReturn); if (d) { d.returnFormed = true; renderBarReceiving(); } }
+  });
+  document.getElementById('barDeliveryRows').addEventListener('change', e => {
+    const decisionSel = e.target.closest('.delivery-decision');
+    if (decisionSel) {
+      const { line } = findDeliveryLine(decisionSel);
+      if (line) {
+        line.decision = decisionSel.value || null;
+        if (line.decision === 'full') line.fact = line.ordered;
+        if (line.decision === 'reject') { line.fact = 0; line.rejectReason = null; }
+        renderBarReceiving();
+      }
+      return;
+    }
+    const factInput = e.target.closest('.delivery-fact');
+    if (factInput) {
+      const { line } = findDeliveryLine(factInput);
+      if (line) line.fact = parseFloat(factInput.value) || 0;
+      return;
+    }
+    const reasonSel = e.target.closest('.delivery-reject-reason');
+    if (reasonSel) {
+      const { line } = findDeliveryLine(reasonSel);
+      if (line) line.rejectReason = reasonSel.value || null;
+    }
+  });
+
+  /* ---------- Инвентаризация ---------- */
+  let invPendingScope = null;
+  let invPendingGroup = null;
+  document.getElementById('barNewInventoryBtn').addEventListener('click', () => {
+    invPendingScope = null; invPendingGroup = null;
+    document.querySelectorAll('#invScopeChoices .void-reason').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#invGroupChoices .void-reason').forEach(b => b.classList.remove('active'));
+    document.getElementById('invGroupPicker').hidden = true;
+    document.getElementById('invCustomPicker').hidden = true;
+    document.getElementById('invCustomList').innerHTML = barStock.map(i =>
+      '<label class="stock-check-row"><input type="checkbox" value="' + i.id + '"><span>' + i.name + '</span></label>'
+    ).join('');
+    document.getElementById('invScopeStart').disabled = true;
+    document.getElementById('barInventoryScopeOverlay').hidden = false;
+  });
+  document.getElementById('invScopeChoices').addEventListener('click', e => {
+    const btn = e.target.closest('.void-reason'); if (!btn) return;
+    document.querySelectorAll('#invScopeChoices .void-reason').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    invPendingScope = btn.dataset.scope;
+    document.getElementById('invGroupPicker').hidden = invPendingScope !== 'group';
+    document.getElementById('invCustomPicker').hidden = invPendingScope !== 'custom';
+    syncInvScopeStart();
+  });
+  document.getElementById('invGroupChoices').addEventListener('click', e => {
+    const btn = e.target.closest('.void-reason'); if (!btn) return;
+    document.querySelectorAll('#invGroupChoices .void-reason').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    invPendingGroup = btn.dataset.group;
+    syncInvScopeStart();
+  });
+  document.getElementById('invCustomList').addEventListener('change', syncInvScopeStart);
+  function syncInvScopeStart() {
+    let ok = false;
+    if (invPendingScope === 'all') ok = true;
+    else if (invPendingScope === 'group') ok = !!invPendingGroup;
+    else if (invPendingScope === 'custom') ok = document.querySelectorAll('#invCustomList input:checked').length > 0;
+    document.getElementById('invScopeStart').disabled = !ok;
+  }
+  document.getElementById('invScopeCancel').addEventListener('click', () => { document.getElementById('barInventoryScopeOverlay').hidden = true; });
+  document.getElementById('invScopeStart').addEventListener('click', () => {
+    let ids, label;
+    if (invPendingScope === 'all') { ids = barStock.map(i => i.id); label = 'Весь бар'; }
+    else if (invPendingScope === 'group') { ids = barStock.filter(i => i.group === invPendingGroup).map(i => i.id); label = BAR_GROUP_NAMES[invPendingGroup]; }
+    else { ids = Array.from(document.querySelectorAll('#invCustomList input:checked')).map(el => el.value); label = 'Произвольный список (' + ids.length + ')'; }
+    barCountItems = ids.map(id => ({ id:id, fact:null }));
+    barCountScopeLabel = label;
+    document.getElementById('barInventoryScopeOverlay').hidden = true;
+    renderBarCountSession();
+  });
+  function renderBarCountSession() {
+    const session = document.getElementById('barCountSession');
+    if (!barCountItems) { session.hidden = true; return; }
+    session.hidden = false;
+    document.getElementById('barCountScopeLabel').textContent = 'Подсчёт: ' + barCountScopeLabel;
+    const wrap = document.getElementById('barCountRows');
+    wrap.innerHTML = barCountItems.map(c => {
+      const item = barStock.find(i => i.id === c.id);
+      if (!item) return '';
+      const entered = c.fact !== null;
+      const diff = entered ? c.fact - item.calc : 0;
+      return '<div class="stock-row">' +
+        '<div class="stock-row-top">' +
+          '<span class="stock-row-name"><span>' + item.name + '</span></span>' +
+          '<input class="bar-qty-input count-fact" type="number" min="0" data-count-id="' + c.id + '" style="max-width:90px;" placeholder="Факт" value="' + (entered ? c.fact : '') + '">' +
+        '</div>' +
+        (entered
+          ? '<div class="stock-row-meta">Расчётный ' + item.calc + ' ' + item.unit + ' · расхождение <span class="diff-value ' + (diff < 0 ? 'is-short' : (diff > 0 ? 'is-over' : '')) + '">' + (diff > 0 ? '+' : '') + diff + ' ' + item.unit + '</span></div>'
+          : '<div class="stock-row-meta">Расчётный остаток скрыт до ввода факта</div>') +
+      '</div>';
+    }).join('');
+    const allEntered = barCountItems.every(c => c.fact !== null);
+    document.getElementById('barCountFinishBtn').disabled = !allEntered;
+    const summaryEl = document.getElementById('barCountSummary');
+    if (allEntered) {
+      const diffSum = barCountItems.reduce((a, c) => { const item = barStock.find(i => i.id === c.id); return a + (item ? (c.fact - item.calc) * item.price : 0); }, 0);
+      summaryEl.hidden = false;
+      summaryEl.innerHTML = '<div class="finance-row"><span class="value-highlight">Сумма расхождений</span><strong class="value-highlight diff-value ' + (diffSum < 0 ? 'is-short' : 'is-over') + '">' + money(Math.round(diffSum)) + '</strong></div>';
+    } else {
+      summaryEl.hidden = true;
+    }
+  }
+  document.getElementById('barCountRows').addEventListener('input', e => {
+    const input = e.target.closest('.count-fact'); if (!input) return;
+    const c = barCountItems.find(x => x.id === input.dataset.countId);
+    if (c) c.fact = input.value === '' ? null : (parseFloat(input.value) || 0);
+    renderBarCountSession();
+  });
+  document.getElementById('barCountFinishBtn').addEventListener('click', () => {
+    if (!barCountItems || !barCountItems.every(c => c.fact !== null)) return;
+    const diffSum = barCountItems.reduce((a, c) => { const item = barStock.find(i => i.id === c.id); return a + (item ? (c.fact - item.calc) * item.price : 0); }, 0);
+    barCountItems.forEach(c => { const item = barStock.find(i => i.id === c.id); if (item) item.qty = c.fact; });
+    barInvSeq++;
+    barInventories.unshift({ id:'inv' + barInvSeq, date:barShortDate(Date.now()), scope:barCountScopeLabel, author:barStaffName(), diffSum:Math.round(diffSum) });
+    barCountItems = null;
+    renderBarCountSession(); renderBarInventoryHistory(); renderBarStock(); renderBarRoot();
+  });
+  function renderBarInventoryHistory() {
+    const wrap = document.getElementById('barInventoryHistoryRows');
+    wrap.innerHTML = barInventories.map(inv =>
+      '<div class="finance-row"><span>' + inv.date + ' · ' + inv.scope + ' · ' + inv.author + '</span>' +
+      '<strong class="diff-value ' + (inv.diffSum < 0 ? 'is-short' : 'is-over') + '">' + money(inv.diffSum) + '</strong></div>'
+    ).join('');
+  }
+
+  /* ---------- Меню (только просмотр — состав, аллергены, наличие) ---------- */
+  let barMenuSection = 'all';
+  function renderBarMenuList() {
+    const q = (document.getElementById('barMenuSearch').value || '').trim().toLowerCase();
+    const items = menuItems.filter(m => {
+      if (barMenuSection !== 'all' && m.section !== barMenuSection) return false;
+      if (!q) return true;
+      return m.name.toLowerCase().includes(q) || (m.ingredients || []).some(ing => ing.toLowerCase().includes(q));
+    });
+    const wrap = document.getElementById('barMenuRows');
+    document.getElementById('barMenuEmpty').hidden = items.length > 0;
+    wrap.innerHTML = items.map(m => {
+      const statusText = m.status === 'start' ? 'Старт' : (m.status === 'stop' ? 'Стоп' : '—');
+      const statusColor = m.status === 'start' ? 'var(--dot-green)' : (m.status === 'stop' ? 'var(--dot-red)' : 'var(--text-muted)');
+      return '<div class="menu-row" data-menu-item="' + m.id + '">' +
+        '<span class="menu-row-name">' + m.name + '</span>' +
+        '<span class="stock-badge" style="background:var(--segment-track); color:' + statusColor + ';">' + statusText + '</span>' +
+      '</div>';
+    }).join('');
+  }
+  document.getElementById('barMenuSearch').addEventListener('input', renderBarMenuList);
+  document.getElementById('barMenuSections').addEventListener('click', e => {
+    const btn = e.target.closest('.pick-section'); if (!btn) return;
+    barMenuSection = btn.dataset.barMenuSection;
+    document.querySelectorAll('#barMenuSections .pick-section').forEach(b => b.classList.toggle('active', b === btn));
+    renderBarMenuList();
+  });
+  document.getElementById('barMenuRows').addEventListener('click', e => {
+    const row = e.target.closest('[data-menu-item]'); if (!row) return;
+    const item = menuItems.find(m => m.id === row.dataset.menuItem);
+    if (!item) return;
+    document.getElementById('barMenuItemName').textContent = item.name;
+    document.getElementById('barMenuItemMeta').textContent = money(item.price) +
+      (item.status === 'start' ? ' · Старт' : (item.status === 'stop' ? ' · Стоп' : ''));
+    document.getElementById('barMenuItemInfo').innerHTML = itemInfoHtml(item.name);
+    document.getElementById('barMenuItemOverlay').hidden = false;
+  });
+  document.getElementById('barMenuItemClose').addEventListener('click', () => { document.getElementById('barMenuItemOverlay').hidden = true; });
+
+  /* ---------- Передача смены ---------- */
+  function renderBarHandover() {
+    const keyItems = barStock.filter(i => i.critical);
+    document.getElementById('barHandoverStock').innerHTML = keyItems.length
+      ? keyItems.map(i => '<div class="finance-row"><span>' + i.name + '</span><strong>' + i.qty + ' ' + i.unit + '</strong></div>').join('')
+      : '<div class="finance-row"><span>Критичных позиций нет</span><strong>—</strong></div>';
+    document.getElementById('barHandoverWriteoffSum').textContent = money(barWriteoffSumTotal());
+    const notAccepted = barDeliveries.filter(d => d.status !== 'принято').length;
+    document.getElementById('barHandoverTasks').innerHTML =
+      '<div class="finance-row"><span>Непринятые поставки</span><strong>' + notAccepted + '</strong></div>' +
+      '<div class="finance-row"><span>Просроченные заготовки</span><strong>' + barExpiredPrepsCount() + '</strong></div>';
+  }
+  document.getElementById('barHandoverSignBtn').addEventListener('click', () => {
+    document.getElementById('barHandoverFrom').textContent = barStaffName() + ' · ' + barNowTime();
+    document.getElementById('barHandoverSignBtn').disabled = true;
+    document.getElementById('barHandoverConfirmBtn').disabled = false;
+  });
+  document.getElementById('barHandoverConfirmBtn').addEventListener('click', () => {
+    document.getElementById('barHandoverTo').textContent = 'Марина · ' + barNowTime();
+    document.getElementById('barHandoverConfirmBtn').disabled = true;
+  });
+
+  /* ---------- Быстрые действия и сканер ---------- */
+  document.getElementById('barQuickWriteoffBtn').addEventListener('click', () => openBarWriteoff(null, null));
+  document.getElementById('barQuickPrepBtn').addEventListener('click', () => { document.getElementById('barNewPrepBtn').click(); });
+
+  function barSimulateScan() {
+    document.getElementById('barScanNote').textContent = 'Наведите камеру на штрих-код';
+    document.getElementById('barScanBeforeActions').hidden = false;
+    document.getElementById('barScanFoundActions').hidden = true;
+    document.getElementById('barScanFoundActions2').hidden = true;
+    document.getElementById('barScanOverlay').hidden = false;
+  }
+  document.getElementById('barScanBtn').addEventListener('click', barSimulateScan);
+  document.getElementById('barScanCancel').addEventListener('click', () => { document.getElementById('barScanOverlay').hidden = true; });
+  document.getElementById('barScanSimulate').addEventListener('click', () => {
+    const found = barStock[Math.floor(Math.random() * barStock.length)];
+    document.getElementById('barScanNote').textContent = 'Найдено: ' + found.name;
+    document.getElementById('barScanBeforeActions').hidden = true;
+    document.getElementById('barScanFoundActions').hidden = false;
+    document.getElementById('barScanFoundActions2').hidden = false;
+    document.getElementById('barScanOverlay').dataset.foundId = found.id;
+  });
+  document.getElementById('barScanToWriteoff').addEventListener('click', () => {
+    const id = document.getElementById('barScanOverlay').dataset.foundId;
+    document.getElementById('barScanOverlay').hidden = true;
+    openBarWriteoff(id, null);
+  });
+  document.getElementById('barScanToCount').addEventListener('click', () => {
+    const id = document.getElementById('barScanOverlay').dataset.foundId;
+    const item = barStock.find(i => i.id === id);
+    if (item) item.qty = item.calc;
+    document.getElementById('barScanOverlay').hidden = true;
+    renderBarStock(); renderBarRoot();
+  });
+  document.getElementById('barScanToReceiving').addEventListener('click', () => {
+    document.getElementById('barScanOverlay').hidden = true;
+    openBarSub('receiving');
+  });
+
+  /* ---------- навигация «Бар» (корень) → 7 подэкранов ---------- */
+  const BAR_SUB_ROUTE = { stock:'мн-33', writeoffs:'мн-34', preps:'мн-35', receiving:'мн-36', inventory:'мн-37', menu:'мн-38', handover:'мн-39' };
+  function showBarSub(key) {
+    const name = 'bar-' + key;
+    const detail = document.querySelector('.shift-detail[data-detail="' + name + '"]');
+    if (!detail) return;
+    showDetail(name, detailTitle(detail), detail.dataset.subtitle || 'Детали');
+    setRoute(BAR_SUB_ROUTE[key]);
+  }
+  function openBarSub(key) {
+    openSub('bar');
+    showBarSub(key);
+  }
+  document.querySelectorAll('.shift-detail[data-detail="bar"] .nav-row[data-barsub]').forEach(el => {
+    el.addEventListener('click', () => showBarSub(el.dataset.barsub));
+  });
+
+  /* первичная отрисовка данных раздела «Бар» */
+  renderBarStock();
+  renderBarWriteoffs();
+  renderBarPreps();
+  renderBarReceiving();
+  renderBarInventoryHistory();
+  renderBarMenuList();
+  renderBarHandover();
+  renderBarRoot();
+
   const ROUTES = {
     'мн-00': showMap,
     'мн-01': () => gotoTab('home'),
@@ -12318,7 +13568,14 @@
     'мн-27': () => showAuthScreen('signup'),
     'мн-28': () => showAuthScreen('login'),
     'мн-29': () => showAuthScreen('expired'),
-    'мн-32': () => showAuthScreen('owner')
+    'мн-32': () => showAuthScreen('owner'),
+    'мн-33': () => { gotoTab('shift'); openBarSub('stock'); },
+    'мн-34': () => { gotoTab('shift'); openBarSub('writeoffs'); },
+    'мн-35': () => { gotoTab('shift'); openBarSub('preps'); },
+    'мн-36': () => { gotoTab('shift'); openBarSub('receiving'); },
+    'мн-37': () => { gotoTab('shift'); openBarSub('inventory'); },
+    'мн-38': () => { gotoTab('shift'); openBarSub('menu'); },
+    'мн-39': () => { gotoTab('shift'); openBarSub('handover'); }
   };
 
   /* ---------- МН-26/27/28/29/32: приветствие, регистрация, вход, устаревший
@@ -12497,7 +13754,8 @@
     el.addEventListener('click', e => { e.stopPropagation(); setRoute(SUB_ROUTE[el.dataset.subblock]); });
   });
 
-  const DETAIL_ROUTE = { finance:'мн-03', startstop:'мн-04', active:'мн-11', hall:'мн-12', reserves:'мн-13', bar:'мн-14', kitchen:'мн-15', order:'мн-16', guests:'мн-17', precheck:'мн-19', history:'мн-22', shiftlog:'мн-23', visitors:'мн-20', staff:'мн-21', cashier:'мн-24', closed:'мн-25' };
+  const DETAIL_ROUTE = { finance:'мн-03', startstop:'мн-04', active:'мн-11', hall:'мн-12', reserves:'мн-13', bar:'мн-14', kitchen:'мн-15', order:'мн-16', guests:'мн-17', precheck:'мн-19', history:'мн-22', shiftlog:'мн-23', visitors:'мн-20', staff:'мн-21', cashier:'мн-24', closed:'мн-25',
+    'bar-stock':'мн-33', 'bar-writeoffs':'мн-34', 'bar-preps':'мн-35', 'bar-receiving':'мн-36', 'bar-inventory':'мн-37', 'bar-menu':'мн-38', 'bar-handover':'мн-39' };
 
   /* хеш всегда соответствует тому экрану, который реально открыт */
   window.syncRouteFromScreen = function () {
