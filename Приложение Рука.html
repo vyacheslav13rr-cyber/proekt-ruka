@@ -3107,13 +3107,6 @@
     color:var(--text-soft);
     text-align:left;
   }
-  /* до печати комментарий кликабелен — тот же вход в редактор, что и у
-     значков; сбрасываем всё, что браузер добавляет кнопке по умолчанию */
-  button.order-note-line{
-    display:block; width:auto;
-    background:none; border:none; margin:0; padding:0;
-    cursor:pointer; font-family:inherit;
-  }
   /* «Не отправлено N из M» / «Готовится·Приготовлено N из M» — стоят
      столбиком в строке счётчика, в том же слоте, где по умолчанию сидит
      модификатор (см. orderStatusStackHtml/modTextHtml) — та же золотая
@@ -3150,7 +3143,6 @@
     font-family:inherit; font-size:9.5px; font-weight:700;
     margin:0;
   }
-  button.order-icon-badge{cursor:pointer;}
   .order-icon-badge svg{width:11px; height:11px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
   .order-icon-badge.is-course{border-color:var(--gold); color:var(--accent);}
   /* значок курса/гостя на позиции — крупнее общей иконки в бейдже,
@@ -8024,31 +8016,27 @@
      Значок рисуем, только когда курс вообще назначен (см. orderIconBadgesHtml) —
      у позиции без курса его нет вовсе, назначить его после печати всё равно
      больше негде (правки нет вообще, см. CLAUDE.md), а до печати это делают
-     свайпом, без значка. Курс кликабелен до печати и то, пока по позиции
-     не нажали «Готовить»: как только это сохранили (i.cookStartedAt), блюдо
-     уже в работе — значок превращается в обычную нередактируемую метку (без
-     data-badge-course), а свайп для этой строки отключается совсем (см.
-     finishSwipe) — курс заведомо готовящегося блюда больше поменять нельзя.
+     свайпом, без значка. Значок сам по себе никогда не кликабелен — ни до
+     печати, ни после: вызвать редактор курса можно только свайпом влево
+     (см. swipeFrameHtml/finishSwipe), не важно, новая это позиция (с меню
+     или через «+ повторить» с правками) или уже отпечатанная. Курс
+     заведомо готовящегося блюда (i.cookStartedAt) к тому же ещё и
+     заблокирован навсегда — см. locked.
      pinRight — только для курса в «Общем»: отодвигает значок к правому
      краю строки, к шеврону (см. .is-pinned в CSS), подальше от «+» и
      модификатора, которые, наоборот, держатся рядом со счётчиком. Звезду
      в «Курсы» не трогаем — там она остаётся рядом с гостем, как и была. */
-  /* locked — курс вообще редактируем (кликом) или уже нет: как только по
-     позиции хоть раз нажали «Готовить» (i.cookStartedAt), курс заблокирован
-     навсегда, даже пока значок между кусками показывает не огонь, а обычную
-     цифру курса (см. showFire). Это две разные вещи: locked решает
-     кликабельность, showFire — только какую картинку рисовать. */
-  function courseBadgeHtml(courseId, idx, locked, pinRight, showFire) {
+  /* locked — только визуально: приглушённая метка для курса уже
+     готовящегося блюда (i.cookStartedAt), даже пока значок между кусками
+     показывает не огонь, а обычную цифру курса (см. showFire). На
+     кликабельность больше не влияет — значок никогда не кнопка. */
+  function courseBadgeHtml(courseId, locked, pinRight, showFire) {
     const c = COURSES.find(x => x.id === courseId);
     const content = showFire
       ? '<span class="course-chip-icon">' + ICON_COOKING + '</span>'
       : courseChipContent(c);
-    if (locked) {
-      return '<span class="order-icon-badge is-course is-locked' + (pinRight ? ' is-pinned' : '') +
-        '" aria-label="' + (showFire ? 'Готовится' : 'Курс подачи') + '">' + content + '</span>';
-    }
-    return '<button class="order-icon-badge is-course' + (pinRight ? ' is-pinned' : '') +
-      '" data-badge-course="' + idx + '" aria-label="Курс подачи">' + content + '</button>';
+    return '<span class="order-icon-badge is-course' + (locked ? ' is-locked' : '') + (pinRight ? ' is-pinned' : '') +
+      '" aria-label="' + (showFire ? 'Готовится' : 'Курс подачи') + '">' + content + '</span>';
   }
 
   function guestBadgeHtml(t, i) {
@@ -8095,7 +8083,7 @@
     return '<span class="order-mod-text">' + mods.join(', ') + '</span>';
   }
 
-  function orderIconBadgesHtml(t, i, idx, showGuestBadge, editable, statusHtml, modDisplaced) {
+  function orderIconBadgesHtml(t, i, showGuestBadge, statusHtml, modDisplaced) {
     const badges = [];
     const locked = !!i.cookStartedAt;
     /* огонь на значке курса — только пока текущая пробитая раньше времени
@@ -8113,7 +8101,7 @@
          держатся у «+» */
       if (showGuestBadge) badges.push(guestBadgeHtml(t, i));
       if (statusHtml) badges.push(statusHtml); else if (modHtml) badges.push(modHtml);
-      if (i.course === 'star') badges.push(courseBadgeHtml('star', idx, false));
+      if (i.course === 'star') badges.push(courseBadgeHtml('star', false));
     } else {
       /* в «Общем» курс отодвинут к правому краю (pinRight, см. courseBadgeHtml) */
       if (statusHtml) badges.push(statusHtml); else if (modHtml) badges.push(modHtml);
@@ -8125,7 +8113,7 @@
            модификатор с комментарием, после печати вообще не редактируется
            (см. CLAUDE.md) — назначать больше некуда, значок был бы мёртвой
            кнопкой */
-        badges.push(courseBadgeHtml(i.course, idx, locked, true, showFire));
+        badges.push(courseBadgeHtml(i.course, locked, true, showFire));
       }
     }
     return badges.join('');
@@ -8135,20 +8123,16 @@
      скобках. Модификатор сюда попадает, только когда его вытеснили из
      строки счётчика статусы («Не отправлено»/«Готовится», см.
      modDisplaced/orderIconBadgesHtml) — тогда встаёт следом за скобкой
-     простым текстом, без своих скобок. Комментарий кликабелен, пока
-     позицию можно редактировать (открывает тот же редактор, что и
-     значок); модификатор сам по себе не кликабелен нигде — поменять его
-     можно только свайпом влево. В режиме переноса/удаления строка не
-     кликабельна вообще. */
-  function orderMetaHtml(i, idx, editable, modDisplaced) {
+     простым текстом, без своих скобок. Строка никогда не кликабельна сама
+     по себе — ни комментарий, ни модификатор: вызвать редактор можно
+     только свайпом влево (см. swipeFrameHtml), не важно, новая это
+     позиция или уже отпечатанная. */
+  function orderMetaHtml(i, modDisplaced) {
     const modsText = (modDisplaced && i.mods && i.mods.length) ? i.mods.join(', ') : '';
     const noteText = i.note ? '(' + i.note + ')' : '';
     const combined = [noteText, modsText].filter(Boolean).join(' ');
     if (!combined) return '';
-    const line = (editable && !transfer.active && i.note)
-      ? '<button class="order-note-line" data-badge-note="' + idx + '">' + combined + '</button>'
-      : '<div class="order-note-line">' + combined + '</div>';
-    return '<div class="order-item-meta">' + line + '</div>';
+    return '<div class="order-item-meta"><div class="order-note-line">' + combined + '</div></div>';
   }
 
   /* курсы 2+ греются только после явной команды «Готовить» — до этого
@@ -8253,9 +8237,6 @@
        вернётся обычная цена/таймер */
     const priceSlot = transfer.active ? '' : (isSwiped ? swipeFrameHtml(i, idx) : orderValueHtml(i, idx));
     const main = '<span class="order-name">' + i.n + '</span>' + priceSlot + trash;
-    /* пока в позиции есть неотправленная часть — можно править модификатор
-       и комментарий; после печати правки нет вообще (см. точку 2/7) */
-    const editable = i.q > sq;
     /* статус («Не отправлено»/«Готовится») и модификатор делят один слот в
        строке счётчика — считаем статус один раз и решаем по нему, кому
        достанется место там, а кому — строка комментария (см. modTextHtml/
@@ -8265,10 +8246,10 @@
     const statusHtml = orderStatusStackHtml(i, sq);
     const modDisplaced = !!statusHtml || transfer.active;
     /* комментарий (и модификатор, если его вытеснили) — слева, под названием */
-    const meta = orderMetaHtml(i, idx, editable, modDisplaced);
+    const meta = orderMetaHtml(i, modDisplaced);
     /* курс/звезда, гость (в «Курсы») и статус/модификатор — компактно,
        сразу после «+» в строке счётчика (см. orderIconBadgesHtml) */
-    const badges = orderIconBadgesHtml(t, i, idx, showGuestBadge, editable, statusHtml, modDisplaced);
+    const badges = orderIconBadgesHtml(t, i, showGuestBadge, statusHtml, modDisplaced);
     /* рамка иконок не текстовая — центрируем всю строку вместо выравнивания
        по базовой линии, иначе название «прыгает» относительно рамки */
     const mainCls = 'order-row-main' + (trash ? ' has-trash' : '') + (isSwiped ? ' has-swipe' : '');
@@ -9471,23 +9452,6 @@
       refreshOrderView();
       return;
     }
-
-    /* значки курса/звезды и текст комментария на самой позиции — прямой
-       вход в тот же редактор, без свайпа. Модификатор и курс теперь только
-       для чтения на уже отпечатанной позиции (правятся исключительно
-       свайпом, и только до печати — после неё правки нет вообще); комментарий
-       кликабелен только пока не отпечатан (см. orderMetaHtml — до этого
-       момента значка просто нет в разметке). */
-    const badgeCourse = e.target.closest('[data-badge-course]');
-    if (badgeCourse && !transfer.active) {
-      const bidx = parseInt(badgeCourse.dataset.badgeCourse, 10);
-      const it = currentTable && currentTable.items[bidx];
-      const bsq = it && (it.sq === undefined ? it.q : it.sq);
-      if (it && it.q > bsq) openOpts(bidx, 'course');
-      return;
-    }
-    const badgeNote = e.target.closest('[data-badge-note]');
-    if (badgeNote && !transfer.active) { openOpts(parseInt(badgeNote.dataset.badgeNote, 10), 'note'); return; }
 
     if (transfer.active) {
       if (e.target.closest('[data-trash]')) { openVoidDialog(); return; }
