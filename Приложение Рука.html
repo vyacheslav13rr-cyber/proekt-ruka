@@ -2838,10 +2838,10 @@
   .toast-undo svg{width:13px; height:13px; stroke:currentColor; fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; margin-top:0;}
 
   /* ---------- Перенос позиций между гостями ---------- */
-  /* удержание позиции 1 секунду — фон плавно набирает золото */
+  /* удержание позиции 0,7 секунды — фон плавно набирает золото */
   .order-row.is-holding{
     background:rgba(198,153,47,0.14);
-    transition:background 1s linear;
+    transition:background 0.7s linear;
   }
   .order-row.is-move{cursor:pointer;}
   .order-row.is-move .order-name{color:var(--text-soft);}
@@ -9697,7 +9697,7 @@
         clearTimeout(tapTimer); tapTimer = null; tapIdx = null;
         row.classList.remove('is-holding');
         startTransfer(idx);
-      }, 1000);
+      }, 700);
     }
     /* тот же жест отслеживаем и как возможный свайп влево/вправо —
        долгое удержание и свайп стартуют с одного касания, но живут
