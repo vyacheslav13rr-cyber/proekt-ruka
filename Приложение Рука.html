@@ -9528,6 +9528,15 @@
     if (delta < 0 && item.q <= sq) return;      // напечатанное не убираем
     item.sq = sq;
     item.q += delta;
+    /* добавка через «+» никак не подтверждает модификатор/комментарий/курс
+       уже отпечатанной части — это просто плюс к количеству. Копим её
+       отдельно (unconfirmedQty), чтобы при отправке в печать (см.
+       sendOrderBtn) она ушла без старых модификатора/комментария/курса,
+       если её не подтвердили явно через кнопки (см. optsSave). «−» снимает
+       в первую очередь как раз такую неподтверждённую добавку. */
+    if (sq > 0) {
+      item.unconfirmedQty = Math.max(0, (item.unconfirmedQty || 0) + delta);
+    }
     logAction(currentTable, 'qty',
       (delta > 0 ? 'Добавлено · ' : 'Убрано · ') + item.n,
       guestLabel(currentTable, item.g || 0) + ' · стало ' + Math.max(0, item.q));
@@ -10067,6 +10076,7 @@
     if (sq > 0 && was !== now) {
       const repeatQty = i.q - sq;
       i.q = sq;
+      i.unconfirmedQty = 0;
       const clone = { q:repeatQty, n:i.n, c:i.c, p:i.p, g:i.g || 0, sq:0 };
       if (newMods.length) clone.mods = newMods;
       if (note) clone.note = note;
@@ -10080,6 +10090,10 @@
       i.mods = newMods;
       if (note) i.note = note; else delete i.note;
       if (optsCourse) i.course = optsCourse; else delete i.course;
+      /* через кнопки явно подтвердили модификатор/комментарий/курс для
+         текущего количества целиком, включая любую добавку через «+» —
+         дальше при печати делить уже нечего (см. unconfirmedQty выше) */
+      i.unconfirmedQty = 0;
       swipedIdx = optsIdx;   // иконки остаются доступны на позиции после сохранения
       if (was !== now) {
         logAction(t, 'qty', 'Позиция уточнена · ' + i.n,
@@ -11482,12 +11496,32 @@
       }).filter(Boolean).join('');
 
     /* позиция ушла в цех — с этой секунды пошло время приготовления;
-       у позиции без новых порций (только правка) время готовки не трогаем */
+       у позиции без новых порций (только правка) время готовки не трогаем.
+       Добавка через «+», которую ни разу не подтвердили через кнопки
+       модификатора/комментария/курса (см. unconfirmedQty), печатается без
+       них отдельной новой позицией — модификатор/комментарий/курс уже
+       отпечатанной части трогать нельзя (см. CLAUDE.md), а молчаливо
+       переносить их на новую добавку тоже нельзя: это не то же самое,
+       что явно подтвердить те же настройки ещё раз. */
     pendingItems.forEach(i => {
       const sq = i.sq === undefined ? i.q : i.sq;
       if (i.q > sq) {
-        i.firedAt = Date.now();
-        delete i.servedAt; delete i.servedMin; delete i.peekUntil;
+        const hasAttrs = (i.mods && i.mods.length) || i.note || i.course;
+        const unconfirmed = Math.min(i.unconfirmedQty || 0, i.q - sq);
+        if (sq > 0 && hasAttrs && unconfirmed > 0) {
+          const plainQty = unconfirmed;
+          i.q -= plainQty;
+          i.firedAt = Date.now();
+          delete i.servedAt; delete i.servedMin; delete i.peekUntil;
+          i.unconfirmedQty = 0;
+          const clone = { q:plainQty, n:i.n, c:i.c, p:i.p, g:i.g || 0, sq:plainQty, firedAt:Date.now() };
+          clone.sInfo = infoSnapshot(clone);
+          currentTable.items.push(clone);
+        } else {
+          i.firedAt = Date.now();
+          delete i.servedAt; delete i.servedMin; delete i.peekUntil;
+          i.unconfirmedQty = 0;
+        }
       }
       i.sInfo = infoSnapshot(i);
     });
