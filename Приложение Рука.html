@@ -3114,10 +3114,17 @@
     background:none; border:none; margin:0; padding:0;
     cursor:pointer; font-family:inherit;
   }
-  .order-unsent-line{
-    font-size:11.5px; font-weight:700;
+  /* «Не отправлено N из M» / «Готовится·Приготовлено N из M» — стоят
+     столбиком в строке счётчика, на месте бывшего модификатора (см.
+     orderStatusStackHtml); та же золотая жирная заметка, что была у
+     комментария раньше, просто теперь их может быть две сразу */
+  .order-status-stack{
+    display:inline-flex; flex-direction:column; gap:1px;
+  }
+  .order-status-line{
+    font-size:11px; font-weight:700;
     color:var(--gold);
-    text-align:left;
+    white-space:nowrap;
   }
   /* курс/звезда, гость и модификатор — значками в строке счётчика, сразу
      после «+»; компактные, без подписи (кроме гостя, у которого есть
@@ -8037,18 +8044,45 @@
     return '<span class="order-icon-badge is-guest">' + label + '</span>';
   }
 
-  function orderIconBadgesHtml(t, i, idx, showGuestBadge, editable) {
+  /* «Не отправлено N из M» и «Готовится/Приготовлено N из M» — компактными
+     строками, друг над другом, ровно там же, где раньше стоял модификатор
+     (сразу после «+»/количества, до значка курса): модификатор оттуда
+     съехал в строку комментария (см. orderMetaHtml), это место заняли
+     статусы. «Не отправлено» — если есть свежедобавленное, ещё не
+     напечатанное количество; «Готовится/Приготовлено» — если часть курса
+     2+ уже в работе (см. commitCourseFire/servePartialFire). Оба разом —
+     редкий, но возможный случай, тогда «Не отправлено» сверху. */
+  function orderStatusStackHtml(i, sq) {
+    const lines = [];
+    const unsentText = (i.q > sq && i.firedAt)
+      ? 'Не отправлено ' + (i.q - sq) + ' из ' + i.q
+      : (i.q <= sq && isInfoDirty(i) ? 'Правки не отправлены' : '');
+    if (unsentText) lines.push(unsentText);
+    if (i.firedQty && i.firedQty < i.q) {
+      lines.push((i.firedServed ? 'Приготовлено ' : 'Готовится ') + i.firedQty + ' из ' + i.q);
+    }
+    if (!lines.length) return '';
+    return '<span class="order-status-stack">' +
+      lines.map(t => '<span class="order-status-line">' + t + '</span>').join('') +
+      '</span>';
+  }
+
+  function orderIconBadgesHtml(t, i, idx, showGuestBadge, editable, sq) {
     const badges = [];
     const cooking = !!i.cookStartedAt;
+    const status = orderStatusStackHtml(i, sq);
     if (courseView) {
       /* здесь курс не отодвигаем — гость (и звезда следом) по-прежнему
-         держатся у «+». Модификатор и заметки «Не отправлено»/«Готовится»
-         сюда больше не попадают ни в одном виде — они всегда в строке
-         комментария под названием (см. orderMetaHtml) */
+         держатся у «+», следом статусы — модификатор в этом виде сюда
+         больше не попадает, он всегда в строке комментария */
       if (showGuestBadge) badges.push(guestBadgeHtml(t, i));
+      if (status) badges.push(status);
       if (i.course === 'star') badges.push(courseBadgeHtml('star', idx, false));
     } else {
-      /* в «Общем» курс отодвинут к правому краю (pinRight, см. courseBadgeHtml) */
+      /* в «Общем» курс отодвинут к правому краю (pinRight, см.
+         courseBadgeHtml) — статусы встают первыми, сразу после «+», там же,
+         где раньше был модификатор */
+      if (status) badges.push(status);
       if (i.course) {
         /* без курса значок не показываем вовсе, чтобы не захламлять строку
            тем, что чаще всего не задействуют (напитки и прочее без курса);
@@ -8063,39 +8097,24 @@
     return badges.join('');
   }
 
-  /* заметки под названием — одним и тем же порядком строк везде («Общий»,
-     «Курсы», перенос/удаление): сперва статусы («Не отправлено N из M»,
-     «Готовится/Приготовлено N из M»), последней строкой — комментарий с
-     модификатором. Комментарий в скобках, кликабелен, пока позицию можно
-     редактировать (открывает тот же редактор, что и значок); модификатор —
-     простым текстом следом за скобкой, без своих скобок, и не кликабелен
-     сам по себе — его можно поменять только свайпом влево (см. swipeFrameHtml),
-     как и раньше. В режиме переноса/удаления вся строка не кликабельна —
+  /* строка комментария под названием — теперь только комментарий с
+     модификатором, статусы («Не отправлено»/«Готовится») переехали в
+     строку счётчика (см. orderStatusStackHtml/orderIconBadgesHtml).
+     Комментарий в скобках, кликабелен, пока позицию можно редактировать
+     (открывает тот же редактор, что и значок); модификатор — простым
+     текстом следом за скобкой, без своих скобок, и не кликабелен сам по
+     себе — его можно поменять только свайпом влево (см. swipeFrameHtml),
+     как и раньше. В режиме переноса/удаления строка не кликабельна —
      редактировать позицию в этом режиме нельзя вообще. */
-  function orderMetaHtml(i, idx, sq, editable) {
-    const lines = [];
-    const unsentText = (i.q > sq && i.firedAt)
-      ? 'Не отправлено ' + (i.q - sq) + ' из ' + i.q
-      : (i.q <= sq && isInfoDirty(i) ? 'Правки не отправлены' : '');
-    if (unsentText) lines.push('<div class="order-unsent-line">' + unsentText + '</div>');
-    /* часть позиции курса 2+ уже отправлена в работу раньше остальных (см.
-       courseFireStepperHtml) — остаток ждёт общей отбивки курса или своей
-       очереди на этот же свайп. Как только эту часть отдали гостю (двойной
-       тап, см. servePartialFire), «Готовится» меняется на «Приготовлено» —
-       остаток количества при этом всё ещё не пробит в работу. */
-    if (i.firedQty && i.firedQty < i.q) {
-      const label = i.firedServed ? 'Приготовлено' : 'Готовится';
-      lines.push('<div class="order-unsent-line">' + label + ' ' + i.firedQty + ' из ' + i.q + '</div>');
-    }
+  function orderMetaHtml(i, idx, editable) {
     const modsText = (i.mods && i.mods.length) ? i.mods.join(', ') : '';
     const noteText = i.note ? '(' + i.note + ')' : '';
     const combined = [noteText, modsText].filter(Boolean).join(' ');
-    if (combined) {
-      lines.push((editable && !transfer.active && i.note)
-        ? '<button class="order-note-line" data-badge-note="' + idx + '">' + combined + '</button>'
-        : '<div class="order-note-line">' + combined + '</div>');
-    }
-    return lines.length ? '<div class="order-item-meta">' + lines.join('') + '</div>' : '';
+    if (!combined) return '';
+    const line = (editable && !transfer.active && i.note)
+      ? '<button class="order-note-line" data-badge-note="' + idx + '">' + combined + '</button>'
+      : '<div class="order-note-line">' + combined + '</div>';
+    return '<div class="order-item-meta">' + line + '</div>';
   }
 
   /* курсы 2+ греются только после явной команды «Готовить» — до этого
@@ -8203,12 +8222,11 @@
     /* пока в позиции есть неотправленная часть — можно править модификатор
        и комментарий; после печати правки нет вообще (см. точку 2/7) */
     const editable = i.q > sq;
-    /* комментарий цеху (простым текстом), заметка о неотправленном и
-       заметка о частичной готовке — слева, под названием */
-    const meta = orderMetaHtml(i, idx, sq, editable);
-    /* курс/звезда, гость (в «Курсы») и модификатор — компактными значками,
-       сразу после «+» в строке счётчика (см. orderIconBadgesHtml) */
-    const badges = orderIconBadgesHtml(t, i, idx, showGuestBadge, editable);
+    /* комментарий с модификатором — слева, под названием */
+    const meta = orderMetaHtml(i, idx, editable);
+    /* курс/звезда, гость (в «Курсы») и статусы «Не отправлено»/«Готовится» —
+       компактно, сразу после «+» в строке счётчика (см. orderIconBadgesHtml) */
+    const badges = orderIconBadgesHtml(t, i, idx, showGuestBadge, editable, sq);
     /* рамка иконок не текстовая — центрируем всю строку вместо выравнивания
        по базовой линии, иначе название «прыгает» относительно рамки */
     const mainCls = 'order-row-main' + (trash ? ' has-trash' : '') + (isSwiped ? ' has-swipe' : '');
