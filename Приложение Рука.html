@@ -3115,9 +3115,10 @@
     cursor:pointer; font-family:inherit;
   }
   /* «Не отправлено N из M» / «Готовится·Приготовлено N из M» — стоят
-     столбиком в строке счётчика, на месте бывшего модификатора (см.
-     orderStatusStackHtml); та же золотая жирная заметка, что была у
-     комментария раньше, просто теперь их может быть две сразу */
+     столбиком в строке счётчика, в том же слоте, где по умолчанию сидит
+     модификатор (см. orderStatusStackHtml/modTextHtml) — та же золотая
+     жирная заметка, что была у комментария раньше, просто теперь их
+     может быть две сразу */
   .order-status-stack{
     display:inline-flex; flex-direction:column; gap:1px;
   }
@@ -3125,6 +3126,15 @@
     font-size:11px; font-weight:700;
     color:var(--gold);
     white-space:nowrap;
+  }
+  /* модификатор — простой текст в том же слоте строки счётчика, без
+     пилюли; только для чтения — сама метка никогда не кликабельна,
+     править можно исключительно свайпом влево (см. modTextHtml) */
+  .order-mod-text{
+    display:inline-flex; align-items:center;
+    background:none; border:none; margin:0; padding:0;
+    font-family:inherit; font-size:12px; font-weight:500;
+    color:var(--text-soft);
   }
   /* курс/звезда, гость и модификатор — значками в строке счётчика, сразу
      после «+»; компактные, без подписи (кроме гостя, у которого есть
@@ -8067,22 +8077,34 @@
       '</span>';
   }
 
-  function orderIconBadgesHtml(t, i, idx, showGuestBadge, editable, sq) {
+  /* модификатор — простым текстом, без пилюли и без иконки. По умолчанию
+     стоит здесь же, в строке счётчика, сразу после «+» (своё исходное
+     место) — но эта же позиция нужна под статусы «Не отправлено»/
+     «Готовится» (см. orderStatusStackHtml), а строка счётчика на двоих
+     не резиновая: как только статус появляется, модификатор уступает
+     ему место и переезжает в строку комментария под названием (см.
+     orderMetaHtml/modDisplaced ниже) — не раньше. Сам по себе модификатор
+     никогда не кликабелен ни там, ни там — поменять его можно только
+     свайпом влево (см. swipeFrameHtml). */
+  function modTextHtml(mods) {
+    return '<span class="order-mod-text">' + mods.join(', ') + '</span>';
+  }
+
+  function orderIconBadgesHtml(t, i, idx, showGuestBadge, editable, statusHtml) {
     const badges = [];
     const cooking = !!i.cookStartedAt;
-    const status = orderStatusStackHtml(i, sq);
+    /* статус и модификатор делят один и тот же слот в строке счётчика —
+       см. modTextHtml выше */
+    const modHtml = (!statusHtml && i.mods && i.mods.length) ? modTextHtml(i.mods) : '';
     if (courseView) {
       /* здесь курс не отодвигаем — гость (и звезда следом) по-прежнему
-         держатся у «+», следом статусы — модификатор в этом виде сюда
-         больше не попадает, он всегда в строке комментария */
+         держатся у «+» */
       if (showGuestBadge) badges.push(guestBadgeHtml(t, i));
-      if (status) badges.push(status);
+      if (statusHtml) badges.push(statusHtml); else if (modHtml) badges.push(modHtml);
       if (i.course === 'star') badges.push(courseBadgeHtml('star', idx, false));
     } else {
-      /* в «Общем» курс отодвинут к правому краю (pinRight, см.
-         courseBadgeHtml) — статусы встают первыми, сразу после «+», там же,
-         где раньше был модификатор */
-      if (status) badges.push(status);
+      /* в «Общем» курс отодвинут к правому краю (pinRight, см. courseBadgeHtml) */
+      if (statusHtml) badges.push(statusHtml); else if (modHtml) badges.push(modHtml);
       if (i.course) {
         /* без курса значок не показываем вовсе, чтобы не захламлять строку
            тем, что чаще всего не задействуют (напитки и прочее без курса);
@@ -8097,17 +8119,17 @@
     return badges.join('');
   }
 
-  /* строка комментария под названием — теперь только комментарий с
-     модификатором, статусы («Не отправлено»/«Готовится») переехали в
-     строку счётчика (см. orderStatusStackHtml/orderIconBadgesHtml).
-     Комментарий в скобках, кликабелен, пока позицию можно редактировать
-     (открывает тот же редактор, что и значок); модификатор — простым
-     текстом следом за скобкой, без своих скобок, и не кликабелен сам по
-     себе — его можно поменять только свайпом влево (см. swipeFrameHtml),
-     как и раньше. В режиме переноса/удаления строка не кликабельна —
-     редактировать позицию в этом режиме нельзя вообще. */
-  function orderMetaHtml(i, idx, editable) {
-    const modsText = (i.mods && i.mods.length) ? i.mods.join(', ') : '';
+  /* строка комментария под названием — обычно просто комментарий в
+     скобках. Модификатор сюда попадает, только когда его вытеснили из
+     строки счётчика статусы («Не отправлено»/«Готовится», см.
+     modDisplaced/orderIconBadgesHtml) — тогда встаёт следом за скобкой
+     простым текстом, без своих скобок. Комментарий кликабелен, пока
+     позицию можно редактировать (открывает тот же редактор, что и
+     значок); модификатор сам по себе не кликабелен нигде — поменять его
+     можно только свайпом влево. В режиме переноса/удаления строка не
+     кликабельна вообще. */
+  function orderMetaHtml(i, idx, editable, modDisplaced) {
+    const modsText = (modDisplaced && i.mods && i.mods.length) ? i.mods.join(', ') : '';
     const noteText = i.note ? '(' + i.note + ')' : '';
     const combined = [noteText, modsText].filter(Boolean).join(' ');
     if (!combined) return '';
@@ -8222,11 +8244,16 @@
     /* пока в позиции есть неотправленная часть — можно править модификатор
        и комментарий; после печати правки нет вообще (см. точку 2/7) */
     const editable = i.q > sq;
-    /* комментарий с модификатором — слева, под названием */
-    const meta = orderMetaHtml(i, idx, editable);
-    /* курс/звезда, гость (в «Курсы») и статусы «Не отправлено»/«Готовится» —
-       компактно, сразу после «+» в строке счётчика (см. orderIconBadgesHtml) */
-    const badges = orderIconBadgesHtml(t, i, idx, showGuestBadge, editable, sq);
+    /* статус («Не отправлено»/«Готовится») и модификатор делят один слот в
+       строке счётчика — считаем статус один раз и решаем по нему, кому
+       достанется место там, а кому — строка комментария (см. modTextHtml/
+       orderMetaHtml выше) */
+    const statusHtml = orderStatusStackHtml(i, sq);
+    /* комментарий (и модификатор, если его вытеснили) — слева, под названием */
+    const meta = orderMetaHtml(i, idx, editable, !!statusHtml);
+    /* курс/звезда, гость (в «Курсы») и статус/модификатор — компактно,
+       сразу после «+» в строке счётчика (см. orderIconBadgesHtml) */
+    const badges = orderIconBadgesHtml(t, i, idx, showGuestBadge, editable, statusHtml);
     /* рамка иконок не текстовая — центрируем всю строку вместо выравнивания
        по базовой линии, иначе название «прыгает» относительно рамки */
     const mainCls = 'order-row-main' + (trash ? ' has-trash' : '') + (isSwiped ? ' has-swipe' : '');
