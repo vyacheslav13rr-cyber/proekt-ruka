@@ -8089,12 +8089,15 @@
          текст просто встаёт первым */
       if (i.firedQty && i.firedQty < i.q) badges.push(coursePartialFireHtml(i));
       if (i.course === 'star') badges.push(courseBadgeHtml('star', idx, false));
-      if (i.mods && i.mods.length) badges.push(modTextHtml(i.mods));
+      /* в режиме переноса/удаления модификатор уходит в строку комментария
+         (см. orderMetaHtml) — здесь его больше не показываем */
+      if (!transfer.active && i.mods && i.mods.length) badges.push(modTextHtml(i.mods));
     } else {
       /* в «Общем» курс отодвинут к правому краю (pinRight, см.
          courseBadgeHtml) — модификатор ставим первым, сразу после «+», а не
-         за курсом, иначе он уедет вместе с ним к шеврону */
-      if (i.mods && i.mods.length) badges.push(modTextHtml(i.mods));
+         за курсом, иначе он уедет вместе с ним к шеврону; в переносе/удалении
+         его тут вообще нет — см. комментарий выше */
+      if (!transfer.active && i.mods && i.mods.length) badges.push(modTextHtml(i.mods));
       if (i.course) {
         /* без курса значок не показываем вовсе, чтобы не захламлять строку
            тем, что чаще всего не задействуют (напитки и прочее без курса);
@@ -8113,10 +8116,20 @@
      счётчика; следом, если есть, идёт заметка о том, что часть позиции ещё
      не ушла в цех. Обе строки — слева, под названием. Пока позиция не
      отправлена, текст комментария кликабелен — открывает тот же редактор,
-     что и значок; после печати это просто текст. */
+     что и значок; после печати это просто текст.
+     В режиме переноса/удаления строка счётчика занята корзиной и «к
+     переносу», модификатор туда уже не помещается — на время переноса он
+     переезжает сюда же, в строку комментария (вместе с самим комментарием,
+     если он есть), и перестаёт быть кликабельным, как и сам комментарий —
+     редактировать позицию в этом режиме всё равно нельзя. */
   function orderMetaHtml(i, idx, sq, editable) {
     const lines = [];
-    if (i.note) {
+    if (transfer.active) {
+      const parts = [];
+      if (i.mods && i.mods.length) parts.push(i.mods.join(', '));
+      if (i.note) parts.push(i.note);
+      if (parts.length) lines.push('<div class="order-note-line">(' + parts.join(', ') + ')</div>');
+    } else if (i.note) {
       lines.push(editable
         ? '<button class="order-note-line" data-badge-note="' + idx + '">(' + i.note + ')</button>'
         : '<div class="order-note-line">(' + i.note + ')</div>');
@@ -8251,17 +8264,23 @@
        по базовой линии, иначе название «прыгает» относительно рамки */
     const mainCls = 'order-row-main' + (trash ? ' has-trash' : '') + (isSwiped ? ' has-swipe' : '');
 
-    /* режим переноса: количество к переносу вместо обычного счётчика */
+    /* режим переноса: количество к переносу вместо обычного счётчика.
+       «К переносу из N»/«выбрать» встаёт сразу после «+»/количества — там
+       же, где в обычном режиме идёт заметка «Готовится/Приготовлено»; значок
+       курса (единственное, что осталось в badges — модификатор на время
+       переноса живёт в строке комментария, см. orderIconBadgesHtml) идёт
+       последним и правым краем (is-pinned) встаёт точно под корзиной,
+       которая так же прижата к правому краю строкой выше (см. trash) */
     const qtyRow = transfer.active
       ? (picked
           ? '<button class="order-step-btn" data-move-qty="-1">−</button>' +
             '<span class="order-step-count">' + moveQty + '</span>' +
             (moveQty < i.q ? '<button class="order-step-btn" data-move-qty="1">+</button>' : '') +
-            badges +
-            '<span class="move-hint">к переносу из ' + i.q + '</span>'
+            '<span class="move-hint">к переносу из ' + i.q + '</span>' +
+            badges
           : '<span class="order-step-count all-sent">' + i.q + '</span>' +
-            badges +
-            '<span class="move-hint">выбрать</span>')
+            '<span class="move-hint">выбрать</span>' +
+            badges)
       : courseView
         /* в «Курсах» плюс-минус только мешают — количество здесь не
            правят; тот же слот вместо этого раскрывается свайпом под
@@ -9664,14 +9683,22 @@
     if (!row) return;
     const idx = parseInt(row.dataset.item, 10);
     pressPoint = { x:e.clientX, y:e.clientY };
-    requestAnimationFrame(() => { if (pressPoint) row.classList.add('is-holding'); });
-    pressTimer = setTimeout(() => {
-      pressTimer = null;
-      suppressTap = true;
-      clearTimeout(tapTimer); tapTimer = null; tapIdx = null;
-      row.classList.remove('is-holding');
-      startTransfer(idx);
-    }, 1000);
+    /* в «Курсах» удержание не запускает перенос/удаление — тот же жест там
+       занят свайпом под «Готовить пораньше» (см. finishSwipe/isFireSwiped),
+       и два смысла на одном пальце не развести; перенос доступен только по
+       гостям — начать его можно, только выйдя из «Курсы» (см. startTransfer,
+       который на входе сам переключает courseView, но обратного пути,
+       начать из «Курсы», тут больше нет) */
+    if (!courseView) {
+      requestAnimationFrame(() => { if (pressPoint) row.classList.add('is-holding'); });
+      pressTimer = setTimeout(() => {
+        pressTimer = null;
+        suppressTap = true;
+        clearTimeout(tapTimer); tapTimer = null; tapIdx = null;
+        row.classList.remove('is-holding');
+        startTransfer(idx);
+      }, 1000);
+    }
     /* тот же жест отслеживаем и как возможный свайп влево/вправо —
        долгое удержание и свайп стартуют с одного касания, но живут
        независимо: движение отменяет только удержание (см. cancelPress) */
@@ -9828,6 +9855,12 @@
         twin.q += move;
         twin.sq = (twin.sq === undefined ? twin.q - move : twin.sq) + moveSent;
       } else {
+        /* курс, модификатор и комментарий сюда нарочно не копируются: на
+           другом столе (или у другого гостя) прежний курс подачи не имеет
+           смысла — блюдо там подают по счёту нового адресата, а не по
+           курсам старого заказа. i.course/i.mods/i.note/i.cookStartedAt/
+           i.firedQty остаются только у той части позиции, что не переехала
+           (см. i.q/i.sq ниже) — на дублирующей позиции их нет вовсе. */
         const clone = { q:move, n:i.n, c:i.c, p:i.p, g:g, sq:moveSent };
         if (i.firedAt) clone.firedAt = i.firedAt;
         if (i.servedAt) { clone.servedAt = i.servedAt; clone.servedMin = i.servedMin; }
