@@ -9974,11 +9974,18 @@
     if (!i) return;
     swipedIdx = null;   // рамка своё дело сделала — дальше говорит модалка
     optsIdx = idx;
-    optsMods = (i.mods || []).slice();
-    optsCourse = i.course || null;
+    const sq = i.sq === undefined ? i.q : i.sq;
+    /* часть позиции (sq) уже пробита — правим не её, а «повтор» (см.
+       optsSave): у повтора нет настроек по умолчанию, он не наследует то,
+       что уже отпечатано, поэтому окно открывается пустым — в нём
+       останется только то, что выберут именно сейчас, для этой добавки.
+       Для ещё ни разу не пробитой позиции (sq===0) правим её саму — окно
+       как обычно открывается с её текущими настройками. */
+    optsMods = sq > 0 ? [] : (i.mods || []).slice();
+    optsCourse = sq > 0 ? null : (i.course || null);
     optsCourseRevealed = revealForCourse(optsCourse);
     document.getElementById('optsTitle').textContent = i.n;
-    document.getElementById('optsNote').value = i.note || '';
+    document.getElementById('optsNote').value = sq > 0 ? '' : (i.note || '');
     paintOptsChips();
     /* какую иконку на свайпе нажали — тот раздел и показываем, остальные
        два прячем: модификатор открывает только модификатор, и так же
@@ -10047,7 +10054,11 @@
       if (note) clone.note = note;
       if (optsCourse) clone.course = optsCourse;
       t.items.push(clone);
-      swipedIdx = null;
+      /* рамка остаётся открытой уже на новой позиции — так же, как при
+         обычной правке (см. ветку ниже); закрывается сама, как только
+         добавку напечатают (условие isSwiped перестанет выполняться), или
+         явным свайпом вправо */
+      swipedIdx = t.items.length - 1;
       logAction(t, 'qty', 'Повтор с изменениями · ' + i.n,
         [newMods.join(', '), note ? '« ' + note + ' »' : '',
          optsCourse ? courseLabel(optsCourse) : ''].filter(Boolean).join(' · ') || 'Настройки сняты');
