@@ -8033,14 +8033,19 @@
      краю строки, к шеврону (см. .is-pinned в CSS), подальше от «+» и
      модификатора, которые, наоборот, держатся рядом со счётчиком. Звезду
      в «Курсы» не трогаем — там она остаётся рядом с гостем, как и была. */
-  function courseBadgeHtml(courseId, idx, cooking, pinRight) {
+  /* locked — курс вообще редактируем (кликом) или уже нет: как только по
+     позиции хоть раз нажали «Готовить» (i.cookStartedAt), курс заблокирован
+     навсегда, даже пока значок между кусками показывает не огонь, а обычную
+     цифру курса (см. showFire). Это две разные вещи: locked решает
+     кликабельность, showFire — только какую картинку рисовать. */
+  function courseBadgeHtml(courseId, idx, locked, pinRight, showFire) {
     const c = COURSES.find(x => x.id === courseId);
-    const content = cooking
+    const content = showFire
       ? '<span class="course-chip-icon">' + ICON_COOKING + '</span>'
       : courseChipContent(c);
-    if (cooking) {
+    if (locked) {
       return '<span class="order-icon-badge is-course is-locked' + (pinRight ? ' is-pinned' : '') +
-        '" aria-label="Готовится">' + content + '</span>';
+        '" aria-label="' + (showFire ? 'Готовится' : 'Курс подачи') + '">' + content + '</span>';
     }
     return '<button class="order-icon-badge is-course' + (pinRight ? ' is-pinned' : '') +
       '" data-badge-course="' + idx + '" aria-label="Курс подачи">' + content + '</button>';
@@ -8092,7 +8097,13 @@
 
   function orderIconBadgesHtml(t, i, idx, showGuestBadge, editable, statusHtml, modDisplaced) {
     const badges = [];
-    const cooking = !!i.cookStartedAt;
+    const locked = !!i.cookStartedAt;
+    /* огонь на значке курса — только пока текущая пробитая раньше времени
+       часть курса 2+ ещё варится и её не отдали (см. commitCourseFire/
+       servePartialFire); как только эту часть отдали, значок на время
+       возвращается к обычной цифре курса — до следующей такой же пробивки
+       следующей части, и так пока весь курс не пробьют целиком */
+    const showFire = locked && !(i.firedQty && i.firedQty < i.q && i.firedServed);
     /* статус (и в переносе — «к переносу»/«выбрать», см. move-hint) и
        модификатор делят один и тот же слот в строке счётчика — см.
        modTextHtml выше */
@@ -8114,7 +8125,7 @@
            модификатор с комментарием, после печати вообще не редактируется
            (см. CLAUDE.md) — назначать больше некуда, значок был бы мёртвой
            кнопкой */
-        badges.push(courseBadgeHtml(i.course, idx, cooking, true));
+        badges.push(courseBadgeHtml(i.course, idx, locked, true, showFire));
       }
     }
     return badges.join('');
