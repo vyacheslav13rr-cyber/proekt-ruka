@@ -8090,12 +8090,13 @@
     return '<span class="order-mod-text">' + mods.join(', ') + '</span>';
   }
 
-  function orderIconBadgesHtml(t, i, idx, showGuestBadge, editable, statusHtml) {
+  function orderIconBadgesHtml(t, i, idx, showGuestBadge, editable, statusHtml, modDisplaced) {
     const badges = [];
     const cooking = !!i.cookStartedAt;
-    /* статус и модификатор делят один и тот же слот в строке счётчика —
-       см. modTextHtml выше */
-    const modHtml = (!statusHtml && i.mods && i.mods.length) ? modTextHtml(i.mods) : '';
+    /* статус (и в переносе — «к переносу»/«выбрать», см. move-hint) и
+       модификатор делят один и тот же слот в строке счётчика — см.
+       modTextHtml выше */
+    const modHtml = (!modDisplaced && i.mods && i.mods.length) ? modTextHtml(i.mods) : '';
     if (courseView) {
       /* здесь курс не отодвигаем — гость (и звезда следом) по-прежнему
          держатся у «+» */
@@ -8247,13 +8248,16 @@
     /* статус («Не отправлено»/«Готовится») и модификатор делят один слот в
        строке счётчика — считаем статус один раз и решаем по нему, кому
        достанется место там, а кому — строка комментария (см. modTextHtml/
-       orderMetaHtml выше) */
+       orderMetaHtml выше). «К переносу из N»/«выбрать» в режиме переноса
+       занимает тот же слот (см. move-hint в qtyRow ниже) — модификатор
+       уступает и ему, с теми же условиями, что и обычным статусам. */
     const statusHtml = orderStatusStackHtml(i, sq);
+    const modDisplaced = !!statusHtml || transfer.active;
     /* комментарий (и модификатор, если его вытеснили) — слева, под названием */
-    const meta = orderMetaHtml(i, idx, editable, !!statusHtml);
+    const meta = orderMetaHtml(i, idx, editable, modDisplaced);
     /* курс/звезда, гость (в «Курсы») и статус/модификатор — компактно,
        сразу после «+» в строке счётчика (см. orderIconBadgesHtml) */
-    const badges = orderIconBadgesHtml(t, i, idx, showGuestBadge, editable, statusHtml);
+    const badges = orderIconBadgesHtml(t, i, idx, showGuestBadge, editable, statusHtml, modDisplaced);
     /* рамка иконок не текстовая — центрируем всю строку вместо выравнивания
        по базовой линии, иначе название «прыгает» относительно рамки */
     const mainCls = 'order-row-main' + (trash ? ' has-trash' : '') + (isSwiped ? ' has-swipe' : '');
@@ -10043,23 +10047,48 @@
   optsOverlayEl.addEventListener('click', e => { if (e.target === optsOverlayEl) closeOpts(); });
 
   document.getElementById('optsSave').addEventListener('click', () => {
-    const i = currentTable && currentTable.items[optsIdx];
+    const t = currentTable;
+    const i = t && t.items[optsIdx];
     optsOverlayEl.hidden = true;
-    swipedIdx = optsIdx;   // иконки остаются доступны на позиции после сохранения
     if (!i) return;
     const note = document.getElementById('optsNote').value.trim();
     const was = [].concat(i.mods || [], i.note ? [i.note] : [], [i.course || '']).join('|');
-    i.mods = optsMods.slice();
-    if (note) i.note = note; else delete i.note;
-    if (optsCourse) i.course = optsCourse; else delete i.course;
-    const now = [].concat(i.mods, note ? [note] : [], [optsCourse || '']).join('|');
-    if (was !== now) {
-      logAction(currentTable, 'qty', 'Позиция уточнена · ' + i.n,
-        [i.mods.join(', '), note ? '« ' + note + ' »' : '',
+    const newMods = optsMods.slice();
+    const now = [].concat(newMods, note ? [note] : [], [optsCourse || '']).join('|');
+    const sq = i.sq === undefined ? i.q : i.sq;
+    /* часть позиции (sq) уже пробита в печать — её модификатор, комментарий
+       и курс менять нельзя (см. CLAUDE.md: после печати правки нет вообще).
+       Правки применяются к ещё не отправленной добавке — «повтору» уже
+       пробитого блюда. Если добавка правда стала другой, она печатается
+       отдельной новой позицией (q:0 → своя строка с новыми настройками);
+       если нет изменений — просто остаётся тем же количеством того же
+       блюда, как обычная добавка через «+». Для ещё ни разу не пробитой
+       позиции (sq===0) разделять нечего — правим её саму, как раньше. */
+    if (sq > 0 && was !== now) {
+      const repeatQty = i.q - sq;
+      i.q = sq;
+      const clone = { q:repeatQty, n:i.n, c:i.c, p:i.p, g:i.g || 0, sq:0 };
+      if (newMods.length) clone.mods = newMods;
+      if (note) clone.note = note;
+      if (optsCourse) clone.course = optsCourse;
+      t.items.push(clone);
+      swipedIdx = null;
+      logAction(t, 'qty', 'Повтор с изменениями · ' + i.n,
+        [newMods.join(', '), note ? '« ' + note + ' »' : '',
          optsCourse ? courseLabel(optsCourse) : ''].filter(Boolean).join(' · ') || 'Настройки сняты');
+    } else {
+      i.mods = newMods;
+      if (note) i.note = note; else delete i.note;
+      if (optsCourse) i.course = optsCourse; else delete i.course;
+      swipedIdx = optsIdx;   // иконки остаются доступны на позиции после сохранения
+      if (was !== now) {
+        logAction(t, 'qty', 'Позиция уточнена · ' + i.n,
+          [i.mods.join(', '), note ? '« ' + note + ' »' : '',
+           optsCourse ? courseLabel(optsCourse) : ''].filter(Boolean).join(' · ') || 'Настройки сняты');
+      }
     }
     renderTables();
-    openOrder(currentTable.num);
+    openOrder(t.num);
   });
 
   /* ---------- Курс для отпечатанных позиций: выбор как при переносе ---------- */
