@@ -2537,6 +2537,42 @@
     color:var(--text-muted);
   }
 
+  /* ---------- МН-01: виджет «Новости» ---------- */
+  .news-list{display:flex; flex-direction:column; margin-top:12px;}
+  .news-item{padding:11px 0;}
+  .news-item:first-child{padding-top:0;}
+  .news-item:last-child{padding-bottom:0;}
+  .news-item + .news-item{border-top:1px solid var(--card-border);}
+  .news-item-top{display:flex; align-items:center; justify-content:space-between; gap:8px;}
+  .news-tag{
+    font-family:'Manrope', sans-serif;
+    font-size:10.5px; font-weight:700;
+    text-transform:uppercase; letter-spacing:.06em;
+    color:var(--navy-deep);
+    background:linear-gradient(160deg, var(--gold-light), var(--gold));
+    padding:3px 8px;
+    border-radius:999px;
+    flex-shrink:0;
+  }
+  .news-date{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--text-muted);
+  }
+  .news-title{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:14.5px;
+    color:var(--text-primary);
+    margin-top:7px;
+  }
+  .news-text{
+    font-size:12.5px;
+    line-height:1.45;
+    color:var(--text-soft);
+    margin-top:4px;
+  }
+
   /* ---------- МН-22: история стола ---------- */
   .history-meta{
     display:flex; flex-wrap:wrap; gap:6px 14px;
@@ -4873,6 +4909,45 @@
 
       <!-- ===== МН-01 · ГЛАВНАЯ (пусто, соберём позже) ===== -->
       <section class="panel" data-panel="home" hidden>
+        <div class="list-block static-block news-block">
+          <div class="list-block-head">
+            <span class="list-block-title">Новости</span>
+          </div>
+          <div class="news-list">
+            <div class="news-item">
+              <div class="news-item-top">
+                <span class="news-tag">Меню</span>
+                <span class="news-date">2 сентября</span>
+              </div>
+              <div class="news-title">Осеннее меню от шеф-повара</div>
+              <div class="news-text">В карте — крем-суп из тыквы с кедровым маслом, утка с айвой и новый десерт «Груша, мёд, грецкий орех».</div>
+            </div>
+            <div class="news-item">
+              <div class="news-item-top">
+                <span class="news-tag">Событие</span>
+                <span class="news-date">5 сентября</span>
+              </div>
+              <div class="news-title">Вечер живого джаза</div>
+              <div class="news-text">В пятницу с 20:00 в зале играет трио — контрабас, фортепиано, саксофон. Столики у сцены бронируются отдельно.</div>
+            </div>
+            <div class="news-item">
+              <div class="news-item-top">
+                <span class="news-tag">Команда</span>
+                <span class="news-date">30 августа</span>
+              </div>
+              <div class="news-title">Новый су-шеф в команде</div>
+              <div class="news-text">К нам присоединился Дмитрий Орлов — ранее работал в «Белом Кролике». Первую неделю проведёт на линии вместе с поварами цеха.</div>
+            </div>
+            <div class="news-item">
+              <div class="news-item-top">
+                <span class="news-tag">Кухня</span>
+                <span class="news-date">28 августа</span>
+              </div>
+              <div class="news-title">Обновили линию раздачи</div>
+              <div class="news-text">Заменили тепловую витрину и модуль подогрева тарелок — время выдачи блюд должно сократиться.</div>
+            </div>
+          </div>
+        </div>
         <div class="widget-slots">
           <button class="widget-slot">
             <span class="widget-slot-plus">
