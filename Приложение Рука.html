@@ -8158,8 +8158,16 @@
     };
   }
 
-  function orderValueHtml(i, idx) {
-    if (!cookStartedAt(i) || i.servedAt) return '<span class="order-price">' + money(i.q * i.p) + '</span>';
+  /* цена — только когда позиция не готовится (ещё не начали или уже
+     отдали): пока идёт готовка, там таймер, его показываем всегда, даже
+     в «Курсы» — время важнее. А вот цену в «Курсах» заменяем иконкой
+     гостя (см. guestBadgeHtml) — там про счёт не думают, а вот кому
+     нести блюдо — как раз то, чего не хватало на видном месте. */
+  function orderValueHtml(t, i, idx, showGuestBadge) {
+    if (!cookStartedAt(i) || i.servedAt) {
+      if (courseView && showGuestBadge) return guestBadgeHtml(t, i);
+      return '<span class="order-price">' + money(i.q * i.p) + '</span>';
+    }
     const st = itemTimeState(i);
     return '<span class="order-price order-time' +
       (st.warn ? ' is-warn' : '') + (st.late ? ' is-late' : '') + (st.peek ? ' is-peek' : '') +
@@ -8235,7 +8243,7 @@
     /* в режиме переноса/удаления цена и таймер не нужны — вместо них справа
        появляется корзина (см. trash выше); как только режим закончится,
        вернётся обычная цена/таймер */
-    const priceSlot = transfer.active ? '' : (isSwiped ? swipeFrameHtml(i, idx) : orderValueHtml(i, idx));
+    const priceSlot = transfer.active ? '' : (isSwiped ? swipeFrameHtml(i, idx) : orderValueHtml(t, i, idx, showGuestBadge));
     const main = '<span class="order-name">' + i.n + '</span>' + priceSlot + trash;
     /* статус («Не отправлено»/«Готовится») и модификатор делят один слот в
        строке счётчика — считаем статус один раз и решаем по нему, кому
@@ -9562,13 +9570,17 @@
   /* двойной тап по позиции курса 2+, у которой в работе только часть (см.
      courseFireStepperHtml/commitCourseFire) — отдаёт именно эту часть:
      «Готовится N из M» становится «Приготовлено N из M» в orderMetaHtml.
-     i.servedAt здесь не трогаем — остаток количества ещё не пробит в
-     работу, вся позиция целиком сдаётся обычным serveItem уже потом,
-     когда дойдёт очередь и до него. */
+     Время останавливается и вместо него встаёт цена — как и при обычной
+     сдаче всей позиции (см. serveItem) — во всех случаях один и тот же
+     эффект двойного тапа. Следующая пробивка остатка курса (см.
+     commitCourseFire) сама снимает i.servedAt — таймер идёт заново уже
+     для новой партии. */
   function servePartialFire(idx) {
     const i = currentTable.items[idx];
     if (!i || !i.firedQty || i.firedQty >= i.q || i.firedServed) return;
     i.firedServed = true;
+    i.servedAt = Date.now();
+    delete i.peekUntil;
     logAction(currentTable, 'serve', 'Отдано · ' + i.n, 'Приготовлено ' + i.firedQty + ' из ' + i.q);
     renderOrderPositions();
   }
