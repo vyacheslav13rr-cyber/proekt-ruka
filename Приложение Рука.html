@@ -1845,14 +1845,14 @@
   /* подписи плиток заказа — с большой буквы, не капсом */
   .order-stats .hall-stat-label{text-transform:none; font-size:11px; letter-spacing:0;}
 
-  /* официант + стол сжаты и прижаты влево, фильтр — справа;
-     сами ячейки — уже и ниже, чем обычные плитки показателей */
+  /* официант + стол сжаты и прижаты влево, «История» — справа, тем же
+     круглым значком, что и на «Заказах» (см. .hall-tool); сами ячейки —
+     шире и ниже, чем обычные плитки показателей */
   .order-stats{align-items:stretch;}
   .order-stats-left{display:flex; gap:6px;}
-  .order-stats-left .hall-stat{flex:0 0 auto; min-width:72px; padding:6px 8px;}
-  .order-stats-left .hall-stat-value{margin-top:3px;}
-  .order-filter-wrap{position:relative; margin-left:auto;}
-  .order-filter-wrap .filter-btn{height:100%; align-self:stretch; padding:6px 10px;}
+  .order-stats-left .hall-stat{flex:0 0 auto; min-width:84px; padding:5px 8px;}
+  .order-stats-left .hall-stat-value{margin-top:2px;}
+  .order-filter-wrap{position:relative; margin-left:auto; display:flex; align-items:center;}
   .order-filter-panel{
     left:auto; right:0;
     width:200px;
@@ -5010,9 +5010,8 @@
             </div>
 
             <div class="order-filter-wrap">
-              <button class="filter-btn" id="orderHistoryBtn">
+              <button class="hall-tool" id="orderHistoryBtn" aria-label="История стола">
                 <svg viewBox="0 0 24 24"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3.2 4.6v3.6h3.6"/><path d="M12 7.6V12l3 1.8"/></svg>
-                <span class="filter-btn-label">История</span>
               </button>
             </div>
           </div>
