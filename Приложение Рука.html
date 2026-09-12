@@ -1845,14 +1845,14 @@
   /* подписи плиток заказа — с большой буквы, не капсом */
   .order-stats .hall-stat-label{text-transform:none; font-size:11px; letter-spacing:0;}
 
-  /* официант + стол сжаты и прижаты влево, фильтр — справа;
-     сами ячейки — уже и ниже, чем обычные плитки показателей */
+  /* официант + стол сжаты и прижаты влево, «История» — справа, тем же
+     круглым значком, что и на «Заказах» (см. .hall-tool); сами ячейки —
+     шире и ниже, чем обычные плитки показателей */
   .order-stats{align-items:stretch;}
   .order-stats-left{display:flex; gap:6px;}
-  .order-stats-left .hall-stat{flex:0 0 auto; min-width:72px; padding:6px 8px;}
-  .order-stats-left .hall-stat-value{margin-top:3px;}
-  .order-filter-wrap{position:relative; margin-left:auto;}
-  .order-filter-wrap .filter-btn{height:100%; align-self:stretch; padding:6px 10px;}
+  .order-stats-left .hall-stat{flex:0 0 auto; min-width:84px; padding:5px 8px;}
+  .order-stats-left .hall-stat-value{margin-top:2px;}
+  .order-filter-wrap{position:relative; margin-left:auto; display:flex; align-items:center;}
   .order-filter-panel{
     left:auto; right:0;
     width:200px;
@@ -2874,10 +2874,10 @@
   .toast-undo svg{width:13px; height:13px; stroke:currentColor; fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; margin-top:0;}
 
   /* ---------- Перенос позиций между гостями ---------- */
-  /* удержание позиции 1 секунду — фон плавно набирает золото */
+  /* удержание позиции 0,7 секунды — фон плавно набирает золото */
   .order-row.is-holding{
     background:rgba(198,153,47,0.14);
-    transition:background 1s linear;
+    transition:background 0.7s linear;
   }
   .order-row.is-move{cursor:pointer;}
   .order-row.is-move .order-name{color:var(--text-soft);}
@@ -3143,17 +3143,27 @@
     color:var(--text-soft);
     text-align:left;
   }
-  /* до печати комментарий кликабелен — тот же вход в редактор, что и у
-     значков; сбрасываем всё, что браузер добавляет кнопке по умолчанию */
-  button.order-note-line{
-    display:block; width:auto;
-    background:none; border:none; margin:0; padding:0;
-    cursor:pointer; font-family:inherit;
+  /* «Не отправлено N из M» / «Готовится·Приготовлено N из M» — стоят
+     столбиком в строке счётчика, в том же слоте, где по умолчанию сидит
+     модификатор (см. orderStatusStackHtml/modTextHtml) — та же золотая
+     жирная заметка, что была у комментария раньше, просто теперь их
+     может быть две сразу */
+  .order-status-stack{
+    display:inline-flex; flex-direction:column; gap:1px;
   }
-  .order-unsent-line{
-    font-size:11.5px; font-weight:700;
+  .order-status-line{
+    font-size:11px; font-weight:700;
     color:var(--gold);
-    text-align:left;
+    white-space:nowrap;
+  }
+  /* модификатор — простой текст в том же слоте строки счётчика, без
+     пилюли; только для чтения — сама метка никогда не кликабельна,
+     править можно исключительно свайпом влево (см. modTextHtml) */
+  .order-mod-text{
+    display:inline-flex; align-items:center;
+    background:none; border:none; margin:0; padding:0;
+    font-family:inherit; font-size:12px; font-weight:500;
+    color:var(--text-soft);
   }
   /* курс/звезда, гость и модификатор — значками в строке счётчика, сразу
      после «+»; компактные, без подписи (кроме гостя, у которого есть
@@ -3169,7 +3179,6 @@
     font-family:inherit; font-size:9.5px; font-weight:700;
     margin:0;
   }
-  button.order-icon-badge{cursor:pointer;}
   .order-icon-badge svg{width:11px; height:11px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
   .order-icon-badge.is-course{border-color:var(--gold); color:var(--accent);}
   /* значок курса/гостя на позиции — крупнее общей иконки в бейдже,
@@ -3181,30 +3190,9 @@
      больше нельзя; тот же вид значка, но без курсора-руки и с лёгкой
      прозрачностью, как у прочих неактивных элементов в файле */
   .order-icon-badge.is-course.is-locked{cursor:default; opacity:.75;}
-  /* модификатор — простой текст рядом со значками, без пилюли; только для
-     чтения — сама метка никогда не кликабельна, править можно исключительно
-     свайпом влево (см. modTextHtml) */
-  .order-mod-text{
-    display:inline-flex; align-items:center;
-    background:none; border:none; margin:0; padding:0;
-    font-family:inherit; font-size:12px; font-weight:500;
-    color:var(--text-soft);
-  }
-  /* «Готовится N из M» рядом с гостем в «Курсах» (см. coursePartialFireHtml) —
-     не заметка мимоходом, а активный статус, поэтому золотом и жирным,
-     как «Не отправлено» в других видах, но без переноса строки */
-  .order-partial-fire{
-    display:inline-flex; align-items:center;
-    font-size:11px; font-weight:700;
-    color:var(--gold);
-    white-space:nowrap;
-  }
   /* строка счётчика держит общий gap:7px между всеми элементами; здесь —
-     точечные исключения: курс в «Общем» (.is-pinned, см. courseBadgeHtml)
-     отодвинут к правому краю строки, к шеврону — модификатор и «+» его не
-     интересуют, это про разные вещи. Модификатор от «+» ничем не сдвигаем —
-     обычный gap:7px: достаточно близко к счётчику и достаточно далеко,
-     чтобы не задеть «+» случайным нажатием рядом. Иконка гостя (в «Курсы»,
+     точечное исключение: курс в «Общем» (.is-pinned, см. courseBadgeHtml)
+     отодвинут к правому краю строки, к шеврону. Иконка гостя (в «Курсы»,
      где гость обычно первый) — наоборот, на 3px ближе к «+» */
   .order-icon-badge.is-course.is-pinned{margin-left:auto;}
   /* у шеврона (order-info-btn) уже есть свой margin-left:auto — если оба
@@ -5349,9 +5337,8 @@
             </div>
 
             <div class="order-filter-wrap">
-              <button class="filter-btn" id="orderHistoryBtn">
+              <button class="hall-tool" id="orderHistoryBtn" aria-label="История стола">
                 <svg viewBox="0 0 24 24"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3.2 4.6v3.6h3.6"/><path d="M12 7.6V12l3 1.8"/></svg>
-                <span class="filter-btn-label">История</span>
               </button>
             </div>
           </div>
@@ -8892,26 +8879,27 @@
      Значок рисуем, только когда курс вообще назначен (см. orderIconBadgesHtml) —
      у позиции без курса его нет вовсе, назначить его после печати всё равно
      больше негде (правки нет вообще, см. CLAUDE.md), а до печати это делают
-     свайпом, без значка. Курс кликабелен до печати и то, пока по позиции
-     не нажали «Готовить»: как только это сохранили (i.cookStartedAt), блюдо
-     уже в работе — значок превращается в обычную нередактируемую метку (без
-     data-badge-course), а свайп для этой строки отключается совсем (см.
-     finishSwipe) — курс заведомо готовящегося блюда больше поменять нельзя.
+     свайпом, без значка. Значок сам по себе никогда не кликабелен — ни до
+     печати, ни после: вызвать редактор курса можно только свайпом влево
+     (см. swipeFrameHtml/finishSwipe), не важно, новая это позиция (с меню
+     или через «+ повторить» с правками) или уже отпечатанная. Курс
+     заведомо готовящегося блюда (i.cookStartedAt) к тому же ещё и
+     заблокирован навсегда — см. locked.
      pinRight — только для курса в «Общем»: отодвигает значок к правому
      краю строки, к шеврону (см. .is-pinned в CSS), подальше от «+» и
      модификатора, которые, наоборот, держатся рядом со счётчиком. Звезду
      в «Курсы» не трогаем — там она остаётся рядом с гостем, как и была. */
-  function courseBadgeHtml(courseId, idx, cooking, pinRight) {
+  /* locked — только визуально: приглушённая метка для курса уже
+     готовящегося блюда (i.cookStartedAt), даже пока значок между кусками
+     показывает не огонь, а обычную цифру курса (см. showFire). На
+     кликабельность больше не влияет — значок никогда не кнопка. */
+  function courseBadgeHtml(courseId, locked, pinRight, showFire) {
     const c = COURSES.find(x => x.id === courseId);
-    const content = cooking
+    const content = showFire
       ? '<span class="course-chip-icon">' + ICON_COOKING + '</span>'
       : courseChipContent(c);
-    if (cooking) {
-      return '<span class="order-icon-badge is-course is-locked' + (pinRight ? ' is-pinned' : '') +
-        '" aria-label="Готовится">' + content + '</span>';
-    }
-    return '<button class="order-icon-badge is-course' + (pinRight ? ' is-pinned' : '') +
-      '" data-badge-course="' + idx + '" aria-label="Курс подачи">' + content + '</button>';
+    return '<span class="order-icon-badge is-course' + (locked ? ' is-locked' : '') + (pinRight ? ' is-pinned' : '') +
+      '" aria-label="' + (showFire ? 'Готовится' : 'Курс подачи') + '">' + content + '</span>';
   }
 
   function guestBadgeHtml(t, i) {
@@ -8922,43 +8910,63 @@
     return '<span class="order-icon-badge is-guest">' + label + '</span>';
   }
 
-  /* заметка «Готовится N из M» в «Курсах» — сразу после гостя (см.
-     orderIconBadgesHtml), чтобы сразу было видно, чья часть уже в работе */
-  function coursePartialFireHtml(i) {
-    return '<span class="order-partial-fire">Готовится ' + i.firedQty + ' из ' + i.q + '</span>';
+  /* «Не отправлено N из M» и «Готовится/Приготовлено N из M» — компактными
+     строками, друг над другом, ровно там же, где раньше стоял модификатор
+     (сразу после «+»/количества, до значка курса): модификатор оттуда
+     съехал в строку комментария (см. orderMetaHtml), это место заняли
+     статусы. «Не отправлено» — если есть свежедобавленное, ещё не
+     напечатанное количество; «Готовится/Приготовлено» — если часть курса
+     2+ уже в работе (см. commitCourseFire/servePartialFire). Оба разом —
+     редкий, но возможный случай, тогда «Не отправлено» сверху. */
+  function orderStatusStackHtml(i, sq) {
+    const lines = [];
+    const unsentText = (i.q > sq && i.firedAt)
+      ? 'Не отправлено ' + (i.q - sq) + ' из ' + i.q
+      : (i.q <= sq && isInfoDirty(i) ? 'Правки не отправлены' : '');
+    if (unsentText) lines.push(unsentText);
+    if (i.firedQty && i.firedQty < i.q) {
+      lines.push((i.firedServed ? 'Приготовлено ' : 'Готовится ') + i.firedQty + ' из ' + i.q);
+    }
+    if (!lines.length) return '';
+    return '<span class="order-status-stack">' +
+      lines.map(t => '<span class="order-status-line">' + t + '</span>').join('') +
+      '</span>';
   }
 
-  /* модификатор — простым текстом, без пилюли и без иконки, сразу после «+»
-     в строке счётчика (не в блоке под названием — там только комментарий).
-     Всегда только для чтения — сама по себе не кликабельна ни в каком
-     состоянии; править модификатор можно только через свайп влево (см.
-     swipeFrameHtml), как и раньше умели курс/комментарий у неотпечатанной
-     позиции. После печати/«Готовить» свайп для позиции недоступен (см.
-     isSwiped), так что и модификатор в этот момент трогать уже негде — это
-     и есть блокировка правки, отдельного кода под неё не нужно. */
+  /* модификатор — простым текстом, без пилюли и без иконки. По умолчанию
+     стоит здесь же, в строке счётчика, сразу после «+» (своё исходное
+     место) — но эта же позиция нужна под статусы «Не отправлено»/
+     «Готовится» (см. orderStatusStackHtml), а строка счётчика на двоих
+     не резиновая: как только статус появляется, модификатор уступает
+     ему место и переезжает в строку комментария под названием (см.
+     orderMetaHtml/modDisplaced ниже) — не раньше. Сам по себе модификатор
+     никогда не кликабелен ни там, ни там — поменять его можно только
+     свайпом влево (см. swipeFrameHtml). */
   function modTextHtml(mods) {
     return '<span class="order-mod-text">' + mods.join(', ') + '</span>';
   }
 
-  function orderIconBadgesHtml(t, i, idx, showGuestBadge, editable) {
+  function orderIconBadgesHtml(t, i, statusHtml, modDisplaced) {
     const badges = [];
-    const cooking = !!i.cookStartedAt;
+    const locked = !!i.cookStartedAt;
+    /* огонь на значке курса — только пока текущая пробитая раньше времени
+       часть курса 2+ ещё варится и её не отдали (см. commitCourseFire/
+       servePartialFire); как только эту часть отдали, значок на время
+       возвращается к обычной цифре курса — до следующей такой же пробивки
+       следующей части, и так пока весь курс не пробьют целиком */
+    const showFire = locked && !(i.firedQty && i.firedQty < i.q && i.firedServed);
+    /* статус (и в переносе — «к переносу»/«выбрать», см. move-hint) и
+       модификатор делят один и тот же слот в строке счётчика — см.
+       modTextHtml выше */
+    const modHtml = (!modDisplaced && i.mods && i.mods.length) ? modTextHtml(i.mods) : '';
     if (courseView) {
-      /* здесь курс не отодвигаем — гость (и звезда следом) по-прежнему
-         держатся у «+», модификатор в этом виде как и раньше идёт последним */
-      if (showGuestBadge) badges.push(guestBadgeHtml(t, i));
-      /* часть позиции курса 2+ уже отправлена в работу раньше остальных
-         (см. courseFireStepperHtml) — текст сразу после гостя, чтобы было
-         понятно, к кому относится; если гостя не показываем (общий счёт),
-         текст просто встаёт первым */
-      if (i.firedQty && i.firedQty < i.q) badges.push(coursePartialFireHtml(i));
-      if (i.course === 'star') badges.push(courseBadgeHtml('star', idx, false));
-      if (i.mods && i.mods.length) badges.push(modTextHtml(i.mods));
+      /* гостя здесь больше не дублируем — он теперь на месте цены, у
+         названия (см. orderValueHtml); звезда остаётся рядом со статусом */
+      if (statusHtml) badges.push(statusHtml); else if (modHtml) badges.push(modHtml);
+      if (i.course === 'star') badges.push(courseBadgeHtml('star', false));
     } else {
-      /* в «Общем» курс отодвинут к правому краю (pinRight, см.
-         courseBadgeHtml) — модификатор ставим первым, сразу после «+», а не
-         за курсом, иначе он уедет вместе с ним к шеврону */
-      if (i.mods && i.mods.length) badges.push(modTextHtml(i.mods));
+      /* в «Общем» курс отодвинут к правому краю (pinRight, см. courseBadgeHtml) */
+      if (statusHtml) badges.push(statusHtml); else if (modHtml) badges.push(modHtml);
       if (i.course) {
         /* без курса значок не показываем вовсе, чтобы не захламлять строку
            тем, что чаще всего не задействуют (напитки и прочее без курса);
@@ -8967,37 +8975,26 @@
            модификатор с комментарием, после печати вообще не редактируется
            (см. CLAUDE.md) — назначать больше некуда, значок был бы мёртвой
            кнопкой */
-        badges.push(courseBadgeHtml(i.course, idx, cooking, true));
+        badges.push(courseBadgeHtml(i.course, locked, true, showFire));
       }
     }
     return badges.join('');
   }
 
-  /* комментарий цеху — простым текстом под названием, не значком среди
-     счётчика; следом, если есть, идёт заметка о том, что часть позиции ещё
-     не ушла в цех. Обе строки — слева, под названием. Пока позиция не
-     отправлена, текст комментария кликабелен — открывает тот же редактор,
-     что и значок; после печати это просто текст. */
-  function orderMetaHtml(i, idx, sq, editable) {
-    const lines = [];
-    if (i.note) {
-      lines.push(editable
-        ? '<button class="order-note-line" data-badge-note="' + idx + '">(' + i.note + ')</button>'
-        : '<div class="order-note-line">(' + i.note + ')</div>');
-    }
-    const unsentText = (i.q > sq && i.firedAt)
-      ? 'Не отправлено ' + (i.q - sq) + ' из ' + i.q
-      : (i.q <= sq && isInfoDirty(i) ? 'Правки не отправлены' : '');
-    if (unsentText) lines.push('<div class="order-unsent-line">' + unsentText + '</div>');
-    /* часть позиции курса 2+ уже отправлена в работу раньше остальных (см.
-       courseFireStepperHtml) — остаток ждёт общей отбивки курса или своей
-       очереди на этот же свайп. В самих «Курсах» та же заметка показывается
-       иначе — рядом с гостем в строке счётчика (см. coursePartialFireHtml),
-       здесь её не дублируем, чтобы не было двух копий на одной строке. */
-    if (!courseView && i.firedQty && i.firedQty < i.q) {
-      lines.push('<div class="order-unsent-line">Готовится ' + i.firedQty + ' из ' + i.q + '</div>');
-    }
-    return lines.length ? '<div class="order-item-meta">' + lines.join('') + '</div>' : '';
+  /* строка комментария под названием — обычно просто комментарий в
+     скобках. Модификатор сюда попадает, только когда его вытеснили из
+     строки счётчика статусы («Не отправлено»/«Готовится», см.
+     modDisplaced/orderIconBadgesHtml) — тогда встаёт следом за скобкой
+     простым текстом, без своих скобок. Строка никогда не кликабельна сама
+     по себе — ни комментарий, ни модификатор: вызвать редактор можно
+     только свайпом влево (см. swipeFrameHtml), не важно, новая это
+     позиция или уже отпечатанная. */
+  function orderMetaHtml(i, modDisplaced) {
+    const modsText = (modDisplaced && i.mods && i.mods.length) ? i.mods.join(', ') : '';
+    const noteText = i.note ? '(' + i.note + ')' : '';
+    const combined = [noteText, modsText].filter(Boolean).join(' ');
+    if (!combined) return '';
+    return '<div class="order-item-meta"><div class="order-note-line">' + combined + '</div></div>';
   }
 
   /* курсы 2+ греются только после явной команды «Готовить» — до этого
@@ -9023,8 +9020,16 @@
     };
   }
 
-  function orderValueHtml(i, idx) {
-    if (!cookStartedAt(i) || i.servedAt) return '<span class="order-price">' + money(i.q * i.p) + '</span>';
+  /* цена — только когда позиция не готовится (ещё не начали или уже
+     отдали): пока идёт готовка, там таймер, его показываем всегда, даже
+     в «Курсы» — время важнее. А вот цену в «Курсах» заменяем иконкой
+     гостя (см. guestBadgeHtml) — там про счёт не думают, а вот кому
+     нести блюдо — как раз то, чего не хватало на видном месте. */
+  function orderValueHtml(t, i, idx, showGuestBadge) {
+    if (!cookStartedAt(i) || i.servedAt) {
+      if (courseView && showGuestBadge) return guestBadgeHtml(t, i);
+      return '<span class="order-price">' + money(i.q * i.p) + '</span>';
+    }
     const st = itemTimeState(i);
     return '<span class="order-price order-time' +
       (st.warn ? ' is-warn' : '') + (st.late ? ' is-late' : '') + (st.peek ? ' is-peek' : '') +
@@ -9100,32 +9105,42 @@
     /* в режиме переноса/удаления цена и таймер не нужны — вместо них справа
        появляется корзина (см. trash выше); как только режим закончится,
        вернётся обычная цена/таймер */
-    const priceSlot = transfer.active ? '' : (isSwiped ? swipeFrameHtml(i, idx) : orderValueHtml(i, idx));
+    const priceSlot = transfer.active ? '' : (isSwiped ? swipeFrameHtml(i, idx) : orderValueHtml(t, i, idx, showGuestBadge));
     const main = '<span class="order-name">' + i.n + '</span>' + priceSlot + trash;
-    /* пока в позиции есть неотправленная часть — можно править модификатор
-       и комментарий; после печати правки нет вообще (см. точку 2/7) */
-    const editable = i.q > sq;
-    /* комментарий цеху (простым текстом), заметка о неотправленном и
-       заметка о частичной готовке — слева, под названием */
-    const meta = orderMetaHtml(i, idx, sq, editable);
-    /* курс/звезда, гость (в «Курсы») и модификатор — компактными значками,
+    /* статус («Не отправлено»/«Готовится») и модификатор делят один слот в
+       строке счётчика — считаем статус один раз и решаем по нему, кому
+       достанется место там, а кому — строка комментария (см. modTextHtml/
+       orderMetaHtml выше). «К переносу из N»/«выбрать» в режиме переноса
+       занимает тот же слот (см. move-hint в qtyRow ниже) — модификатор
+       уступает и ему, с теми же условиями, что и обычным статусам. */
+    const statusHtml = orderStatusStackHtml(i, sq);
+    const modDisplaced = !!statusHtml || transfer.active;
+    /* комментарий (и модификатор, если его вытеснили) — слева, под названием */
+    const meta = orderMetaHtml(i, modDisplaced);
+    /* курс/звезда, гость (в «Курсы») и статус/модификатор — компактно,
        сразу после «+» в строке счётчика (см. orderIconBadgesHtml) */
-    const badges = orderIconBadgesHtml(t, i, idx, showGuestBadge, editable);
+    const badges = orderIconBadgesHtml(t, i, statusHtml, modDisplaced);
     /* рамка иконок не текстовая — центрируем всю строку вместо выравнивания
        по базовой линии, иначе название «прыгает» относительно рамки */
     const mainCls = 'order-row-main' + (trash ? ' has-trash' : '') + (isSwiped ? ' has-swipe' : '');
 
-    /* режим переноса: количество к переносу вместо обычного счётчика */
+    /* режим переноса: количество к переносу вместо обычного счётчика.
+       «К переносу из N»/«выбрать» встаёт сразу после «+»/количества — там
+       же, где в обычном режиме идёт заметка «Готовится/Приготовлено»; значок
+       курса (единственное, что осталось в badges — модификатор на время
+       переноса живёт в строке комментария, см. orderIconBadgesHtml) идёт
+       последним и правым краем (is-pinned) встаёт точно под корзиной,
+       которая так же прижата к правому краю строкой выше (см. trash) */
     const qtyRow = transfer.active
       ? (picked
           ? '<button class="order-step-btn" data-move-qty="-1">−</button>' +
             '<span class="order-step-count">' + moveQty + '</span>' +
             (moveQty < i.q ? '<button class="order-step-btn" data-move-qty="1">+</button>' : '') +
-            badges +
-            '<span class="move-hint">к переносу из ' + i.q + '</span>'
+            '<span class="move-hint">к переносу из ' + i.q + '</span>' +
+            badges
           : '<span class="order-step-count all-sent">' + i.q + '</span>' +
-            badges +
-            '<span class="move-hint">выбрать</span>')
+            '<span class="move-hint">выбрать</span>' +
+            badges)
       : courseView
         /* в «Курсах» плюс-минус только мешают — количество здесь не
            правят; тот же слот вместо этого раскрывается свайпом под
@@ -10308,23 +10323,6 @@
       return;
     }
 
-    /* значки курса/звезды и текст комментария на самой позиции — прямой
-       вход в тот же редактор, без свайпа. Модификатор и курс теперь только
-       для чтения на уже отпечатанной позиции (правятся исключительно
-       свайпом, и только до печати — после неё правки нет вообще); комментарий
-       кликабелен только пока не отпечатан (см. orderMetaHtml — до этого
-       момента значка просто нет в разметке). */
-    const badgeCourse = e.target.closest('[data-badge-course]');
-    if (badgeCourse && !transfer.active) {
-      const bidx = parseInt(badgeCourse.dataset.badgeCourse, 10);
-      const it = currentTable && currentTable.items[bidx];
-      const bsq = it && (it.sq === undefined ? it.q : it.sq);
-      if (it && it.q > bsq) openOpts(bidx, 'course');
-      return;
-    }
-    const badgeNote = e.target.closest('[data-badge-note]');
-    if (badgeNote && !transfer.active) { openOpts(parseInt(badgeNote.dataset.badgeNote, 10), 'note'); return; }
-
     if (transfer.active) {
       if (e.target.closest('[data-trash]')) { openVoidDialog(); return; }
       if (e.target.closest('[data-course-btn]')) { openCourseDialog(); return; }
@@ -10431,6 +10429,24 @@
     renderOrderPositions();
   }
 
+  /* двойной тап по позиции курса 2+, у которой в работе только часть (см.
+     courseFireStepperHtml/commitCourseFire) — отдаёт именно эту часть:
+     «Готовится N из M» становится «Приготовлено N из M» в orderMetaHtml.
+     Время останавливается и вместо него встаёт цена — как и при обычной
+     сдаче всей позиции (см. serveItem) — во всех случаях один и тот же
+     эффект двойного тапа. Следующая пробивка остатка курса (см.
+     commitCourseFire) сама снимает i.servedAt — таймер идёт заново уже
+     для новой партии. */
+  function servePartialFire(idx) {
+    const i = currentTable.items[idx];
+    if (!i || !i.firedQty || i.firedQty >= i.q || i.firedServed) return;
+    i.firedServed = true;
+    i.servedAt = Date.now();
+    delete i.peekUntil;
+    logAction(currentTable, 'serve', 'Отдано · ' + i.n, 'Приготовлено ' + i.firedQty + ' из ' + i.q);
+    renderOrderPositions();
+  }
+
   function handleItemTap(e) {
     if (!currentTable || e.target.closest('input, button')) return;
     const row = e.target.closest('.order-row[data-item]');
@@ -10440,7 +10456,15 @@
     if (!i || !i.firedAt || i.servedAt) return;   // цена и так на месте
     if (tapTimer !== null && tapIdx === idx) {
       clearTimeout(tapTimer); tapTimer = null; tapIdx = null;
-      serveItem(idx);
+      /* пробита вся позиция, но в работу пока ушла только часть курса 2+ —
+         двойной тап отдаёт именно её, а не всю позицию разом (см.
+         servePartialFire); когда ждать больше нечего (i.firedQty>=i.q или
+         эта часть уже отдана), это снова обычная сдача всей позиции */
+      if (i.firedQty && i.firedQty < i.q && !i.firedServed) {
+        servePartialFire(idx);
+      } else {
+        serveItem(idx);
+      }
       return;
     }
     clearTimeout(tapTimer);
@@ -10528,14 +10552,22 @@
     if (!row) return;
     const idx = parseInt(row.dataset.item, 10);
     pressPoint = { x:e.clientX, y:e.clientY };
-    requestAnimationFrame(() => { if (pressPoint) row.classList.add('is-holding'); });
-    pressTimer = setTimeout(() => {
-      pressTimer = null;
-      suppressTap = true;
-      clearTimeout(tapTimer); tapTimer = null; tapIdx = null;
-      row.classList.remove('is-holding');
-      startTransfer(idx);
-    }, 1000);
+    /* в «Курсах» удержание не запускает перенос/удаление — тот же жест там
+       занят свайпом под «Готовить пораньше» (см. finishSwipe/isFireSwiped),
+       и два смысла на одном пальце не развести; перенос доступен только по
+       гостям — начать его можно, только выйдя из «Курсы» (см. startTransfer,
+       который на входе сам переключает courseView, но обратного пути,
+       начать из «Курсы», тут больше нет) */
+    if (!courseView) {
+      requestAnimationFrame(() => { if (pressPoint) row.classList.add('is-holding'); });
+      pressTimer = setTimeout(() => {
+        pressTimer = null;
+        suppressTap = true;
+        clearTimeout(tapTimer); tapTimer = null; tapIdx = null;
+        row.classList.remove('is-holding');
+        startTransfer(idx);
+      }, 700);
+    }
     /* тот же жест отслеживаем и как возможный свайп влево/вправо —
        долгое удержание и свайп стартуют с одного касания, но живут
        независимо: движение отменяет только удержание (см. cancelPress) */
@@ -10692,6 +10724,12 @@
         twin.q += move;
         twin.sq = (twin.sq === undefined ? twin.q - move : twin.sq) + moveSent;
       } else {
+        /* курс, модификатор и комментарий сюда нарочно не копируются: на
+           другом столе (или у другого гостя) прежний курс подачи не имеет
+           смысла — блюдо там подают по счёту нового адресата, а не по
+           курсам старого заказа. i.course/i.mods/i.note/i.cookStartedAt/
+           i.firedQty остаются только у той части позиции, что не переехала
+           (см. i.q/i.sq ниже) — на дублирующей позиции их нет вовсе. */
         const clone = { q:move, n:i.n, c:i.c, p:i.p, g:g, sq:moveSent };
         if (i.firedAt) clone.firedAt = i.firedAt;
         if (i.servedAt) { clone.servedAt = i.servedAt; clone.servedMin = i.servedMin; }
@@ -10810,11 +10848,18 @@
     if (!i) return;
     swipedIdx = null;   // рамка своё дело сделала — дальше говорит модалка
     optsIdx = idx;
-    optsMods = (i.mods || []).slice();
-    optsCourse = i.course || null;
+    const sq = i.sq === undefined ? i.q : i.sq;
+    /* часть позиции (sq) уже пробита — правим не её, а «повтор» (см.
+       optsSave): у повтора нет настроек по умолчанию, он не наследует то,
+       что уже отпечатано, поэтому окно открывается пустым — в нём
+       останется только то, что выберут именно сейчас, для этой добавки.
+       Для ещё ни разу не пробитой позиции (sq===0) правим её саму — окно
+       как обычно открывается с её текущими настройками. */
+    optsMods = sq > 0 ? [] : (i.mods || []).slice();
+    optsCourse = sq > 0 ? null : (i.course || null);
     optsCourseRevealed = revealForCourse(optsCourse);
     document.getElementById('optsTitle').textContent = i.n;
-    document.getElementById('optsNote').value = i.note || '';
+    document.getElementById('optsNote').value = sq > 0 ? '' : (i.note || '');
     paintOptsChips();
     /* какую иконку на свайпе нажали — тот раздел и показываем, остальные
        два прячем: модификатор открывает только модификатор, и так же
@@ -10858,23 +10903,52 @@
   optsOverlayEl.addEventListener('click', e => { if (e.target === optsOverlayEl) closeOpts(); });
 
   document.getElementById('optsSave').addEventListener('click', () => {
-    const i = currentTable && currentTable.items[optsIdx];
+    const t = currentTable;
+    const i = t && t.items[optsIdx];
     optsOverlayEl.hidden = true;
-    swipedIdx = optsIdx;   // иконки остаются доступны на позиции после сохранения
     if (!i) return;
     const note = document.getElementById('optsNote').value.trim();
     const was = [].concat(i.mods || [], i.note ? [i.note] : [], [i.course || '']).join('|');
-    i.mods = optsMods.slice();
-    if (note) i.note = note; else delete i.note;
-    if (optsCourse) i.course = optsCourse; else delete i.course;
-    const now = [].concat(i.mods, note ? [note] : [], [optsCourse || '']).join('|');
-    if (was !== now) {
-      logAction(currentTable, 'qty', 'Позиция уточнена · ' + i.n,
-        [i.mods.join(', '), note ? '« ' + note + ' »' : '',
+    const newMods = optsMods.slice();
+    const now = [].concat(newMods, note ? [note] : [], [optsCourse || '']).join('|');
+    const sq = i.sq === undefined ? i.q : i.sq;
+    /* часть позиции (sq) уже пробита в печать — её модификатор, комментарий
+       и курс менять нельзя (см. CLAUDE.md: после печати правки нет вообще).
+       Правки применяются к ещё не отправленной добавке — «повтору» уже
+       пробитого блюда. Если добавка правда стала другой, она печатается
+       отдельной новой позицией (q:0 → своя строка с новыми настройками);
+       если нет изменений — просто остаётся тем же количеством того же
+       блюда, как обычная добавка через «+». Для ещё ни разу не пробитой
+       позиции (sq===0) разделять нечего — правим её саму, как раньше. */
+    if (sq > 0 && was !== now) {
+      const repeatQty = i.q - sq;
+      i.q = sq;
+      const clone = { q:repeatQty, n:i.n, c:i.c, p:i.p, g:i.g || 0, sq:0 };
+      if (newMods.length) clone.mods = newMods;
+      if (note) clone.note = note;
+      if (optsCourse) clone.course = optsCourse;
+      t.items.push(clone);
+      /* рамка остаётся открытой уже на новой позиции — так же, как при
+         обычной правке (см. ветку ниже); закрывается сама, как только
+         добавку напечатают (условие isSwiped перестанет выполняться), или
+         явным свайпом вправо */
+      swipedIdx = t.items.length - 1;
+      logAction(t, 'qty', 'Повтор с изменениями · ' + i.n,
+        [newMods.join(', '), note ? '« ' + note + ' »' : '',
          optsCourse ? courseLabel(optsCourse) : ''].filter(Boolean).join(' · ') || 'Настройки сняты');
+    } else {
+      i.mods = newMods;
+      if (note) i.note = note; else delete i.note;
+      if (optsCourse) i.course = optsCourse; else delete i.course;
+      swipedIdx = optsIdx;   // иконки остаются доступны на позиции после сохранения
+      if (was !== now) {
+        logAction(t, 'qty', 'Позиция уточнена · ' + i.n,
+          [i.mods.join(', '), note ? '« ' + note + ' »' : '',
+           optsCourse ? courseLabel(optsCourse) : ''].filter(Boolean).join(' · ') || 'Настройки сняты');
+      }
     }
     renderTables();
-    openOrder(currentTable.num);
+    openOrder(t.num);
   });
 
   /* ---------- Курс для отпечатанных позиций: выбор как при переносе ---------- */
@@ -10978,6 +11052,10 @@
     i.firedQty = (i.firedQty || 0) + qty;
     i.cookStartedAt = Date.now();
     delete i.servedAt; delete i.servedMin; delete i.peekUntil;
+    /* новая порция только что ушла в работу — прежняя пометка «отдано»
+       относилась к меньшему firedQty и к этой ещё не отправленной добавке
+       не имеет отношения (см. servePartialFire) */
+    delete i.firedServed;
     logAction(t, 'fire', 'Начали готовить · ' + i.n, courseLabel(i.course) + ' · ' + qty + ' из ' + i.q);
     swipedIdx = null;
     resetFireDraft();
@@ -12264,7 +12342,11 @@
       }).filter(Boolean).join('');
 
     /* позиция ушла в цех — с этой секунды пошло время приготовления;
-       у позиции без новых порций (только правка) время готовки не трогаем */
+       у позиции без новых порций (только правка) время готовки не трогаем.
+       Добавка через «+» без правок через кнопки остаётся тем же количеством
+       той же позиции и печатается с теми же модификатором/комментарием/
+       курсом — отдельной строкой она становится только если эти настройки
+       реально поменяли через кнопки (см. optsSave). */
     pendingItems.forEach(i => {
       const sq = i.sq === undefined ? i.q : i.sq;
       if (i.q > sq) {
