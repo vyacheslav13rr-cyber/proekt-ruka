@@ -8083,7 +8083,7 @@
     return '<span class="order-mod-text">' + mods.join(', ') + '</span>';
   }
 
-  function orderIconBadgesHtml(t, i, showGuestBadge, statusHtml, modDisplaced) {
+  function orderIconBadgesHtml(t, i, statusHtml, modDisplaced) {
     const badges = [];
     const locked = !!i.cookStartedAt;
     /* огонь на значке курса — только пока текущая пробитая раньше времени
@@ -8097,9 +8097,8 @@
        modTextHtml выше */
     const modHtml = (!modDisplaced && i.mods && i.mods.length) ? modTextHtml(i.mods) : '';
     if (courseView) {
-      /* здесь курс не отодвигаем — гость (и звезда следом) по-прежнему
-         держатся у «+» */
-      if (showGuestBadge) badges.push(guestBadgeHtml(t, i));
+      /* гостя здесь больше не дублируем — он теперь на месте цены, у
+         названия (см. orderValueHtml); звезда остаётся рядом со статусом */
       if (statusHtml) badges.push(statusHtml); else if (modHtml) badges.push(modHtml);
       if (i.course === 'star') badges.push(courseBadgeHtml('star', false));
     } else {
@@ -8257,7 +8256,7 @@
     const meta = orderMetaHtml(i, modDisplaced);
     /* курс/звезда, гость (в «Курсы») и статус/модификатор — компактно,
        сразу после «+» в строке счётчика (см. orderIconBadgesHtml) */
-    const badges = orderIconBadgesHtml(t, i, showGuestBadge, statusHtml, modDisplaced);
+    const badges = orderIconBadgesHtml(t, i, statusHtml, modDisplaced);
     /* рамка иконок не текстовая — центрируем всю строку вместо выравнивания
        по базовой линии, иначе название «прыгает» относительно рамки */
     const mainCls = 'order-row-main' + (trash ? ' has-trash' : '') + (isSwiped ? ' has-swipe' : '');
