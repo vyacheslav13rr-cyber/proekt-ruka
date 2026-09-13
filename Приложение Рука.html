@@ -215,6 +215,45 @@
     background:linear-gradient(90deg, transparent, var(--gold), transparent);
     opacity:.8;
   }
+
+  /* ---------- МН-01: шапка (фактура — только на главной) ---------- */
+  .app-header.is-home{
+    padding:20px 24px 24px;
+    background:
+      linear-gradient(155deg, rgba(198,153,47,0.18), transparent 60%),
+      linear-gradient(155deg, var(--navy), var(--navy-deep));
+  }
+  .app-header.is-home::after{
+    height:3px;
+    background:linear-gradient(90deg, var(--gold-light), var(--gold), var(--gold-light));
+    opacity:1;
+  }
+  .app-header-home[hidden]{display:none;}
+  .app-header-home-name-row{
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    padding-right:46px;
+    cursor:pointer;
+    transition:opacity .15s ease;
+  }
+  .app-header-home-name-row:active{opacity:.8;}
+  .app-header-home-name-row .chevron{
+    width:18px; height:18px; flex-shrink:0;
+    stroke:var(--cream); fill:none;
+    stroke-width:2; stroke-linecap:round; stroke-linejoin:round;
+  }
+  .app-header-home-name{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:23px;
+    line-height:1.15;
+    color:var(--cream);
+  }
+  .app-header-home-date{
+    margin-top:3px;
+    font-size:12.5px;
+    color:var(--khaki);
+    font-family:'Manrope', sans-serif;
+  }
   /* знак РУКА — виден на каждом экране, он же кнопка чата с ассистентом */
   .header-logo-btn{
     position:absolute;
@@ -2534,44 +2573,13 @@
   }
 
   /* ---------- МН-01: Главная ---------- */
-  /* фактура (градиент + золотая окантовка) — только у шапки главной,
-     остальные блоки экрана остаются обычными карточками */
-  .home-shift-header{
-    margin-bottom:0;
-    padding:22px 18px 20px;
-    border-radius:18px;
-    background:linear-gradient(160deg, var(--khaki-block-bg), var(--content-bg));
-    border-bottom:3px solid var(--gold);
-  }
-  .screen.dark .home-shift-header{background:linear-gradient(160deg, #8C733F, var(--content-bg));}
-  .home-shift-name-row{
-    display:flex; align-items:center; justify-content:space-between; gap:8px;
-    cursor:pointer;
-    transition:transform .15s ease;
-  }
-  .home-shift-name-row:active{transform:scale(.99);}
-  .home-shift-name-row .chevron{
-    width:18px; height:18px; flex-shrink:0;
-    stroke:var(--text-primary); fill:none;
-    stroke-width:2; stroke-linecap:round; stroke-linejoin:round;
-  }
-  .home-shift-name{
-    font-family:'Fraunces', serif;
-    font-weight:700;
-    font-size:21px;
-    line-height:1.2;
-    color:var(--text-primary);
-  }
-  .home-shift-date{
-    margin-top:6px;
-    font-size:12.5px;
-    color:var(--text-muted);
-  }
-  /* строка смены — простой текст без фона/рамки/тени, прижата к шапке */
+  /* название заведения, день недели и дата теперь в самой шапке
+     (.app-header-home, см. выше) — здесь остаётся только строка смены:
+     простой текст без фона/рамки/тени, первая в списке блоков */
   .shift-line{
     font-size:12.5px;
     color:var(--text-muted);
-    margin:-8px 0 16px;
+    margin:0 0 16px;
   }
 
   /* ---------- Важная информация ---------- */
@@ -2679,40 +2687,43 @@
 
   /* ---------- События дня ---------- */
   .home-events-row{
-    padding:7px 0;
+    padding:5px 0;
   }
   .home-events-row + .home-events-row{border-top:1px solid var(--card-border);}
-  .home-events-head{display:flex; align-items:center; gap:8px; margin-bottom:6px;}
+  .home-events-head{display:flex; align-items:center; gap:6px; margin-bottom:4px;}
   .home-events-icon{
     display:flex; align-items:center; justify-content:center;
-    width:23px; height:23px;
+    width:19px; height:19px;
     border-radius:50%;
     background:var(--segment-track);
-    font-size:12px;
+    font-size:10px;
     flex-shrink:0;
   }
-  .home-events-text{font-size:11px; line-height:1.35; color:var(--text-primary);}
-  .home-events-reactions{display:flex; gap:4px; margin:0 0 7px 31px;}
+  .home-events-text{font-size:10px; line-height:1.3; color:var(--text-primary);}
+  /* реакции и кнопки — одна компактная плашка под заголовком события */
+  .home-events-controls{display:flex; align-items:center; gap:4px; flex-wrap:wrap; margin-left:25px;}
+  .home-events-reactions{display:flex; gap:3px;}
   .home-events-reaction{
     border:1px solid var(--card-border);
     background:none;
-    border-radius:8px;
-    padding:2px 5px;
-    font-size:11px;
+    border-radius:7px;
+    padding:1px 4px;
+    font-size:9.5px;
+    line-height:1.4;
     cursor:pointer;
     transition:border-color .15s ease, background .15s ease;
   }
   .home-events-reaction.active{border-color:var(--gold); background:rgba(198,153,47,0.12);}
-  .home-events-actions{display:flex; gap:6px; flex-wrap:wrap; margin-left:31px;}
+  .home-events-actions{display:flex; gap:4px; flex-wrap:wrap;}
   .home-events-btn{
-    flex:1 1 auto;
     border:1px solid var(--gold);
     background:none;
     color:var(--accent);
-    border-radius:8px;
-    padding:5px 7px;
+    border-radius:7px;
+    padding:3px 6px;
     font-family:'Manrope', sans-serif;
-    font-size:10.5px; font-weight:700;
+    font-size:9px; font-weight:700;
+    white-space:nowrap;
     cursor:pointer;
     transition:background .15s ease, transform .15s ease;
   }
@@ -4789,7 +4800,7 @@
       </div>
     </div>
 
-    <div class="app-header">
+    <div class="app-header" id="appHeader">
       <button class="header-logo-btn" id="assistantHeaderBtn" aria-label="Открыть ассистента РУКА">
         <svg class="header-logo" viewBox="0 0 512 512" role="img" aria-label="РУКА"><defs><linearGradient id="rukaBg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b3050"/><stop offset="1" stop-color="#0e1c2e"/></linearGradient><clipPath id="rukaCard"><rect x="16" y="16" width="480" height="480" rx="112"/></clipPath></defs><rect x="16" y="16" width="480" height="480" rx="112" fill="url(#rukaBg)"/><g clip-path="url(#rukaCard)"><rect x="92" y="206" width="46" height="194" rx="12" fill="#5b7ba6"/><rect x="156" y="158" width="46" height="242" rx="12" fill="#7c9bc2"/><rect x="220" y="116" width="46" height="284" rx="12" fill="#e6dabf"/><rect x="284" y="62" width="46" height="338" rx="12" fill="#efe6d2"/><path d="M 84,300 A 186,186 0 1 0 438,222 Z" fill="#c9a227"/><polyline points="105,378 222,252 278,306 392,200" fill="none" stroke="#12233a" stroke-width="56" stroke-linecap="round" stroke-linejoin="round"/><polyline points="105,378 222,252 278,306 392,200" fill="none" stroke="#f7efe1" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/></g><rect x="42" y="42" width="428" height="428" rx="92" fill="none" stroke="#c9a227" stroke-width="3" opacity="0.85"/></svg>
         <span class="header-logo-ping"></span>
@@ -4801,6 +4812,14 @@
       </button>
       <div class="screen-title" id="screenTitle">Карта экранов</div>
       <div class="screen-sub" id="screenSub">МН-00 · служебный экран</div>
+      <!-- МН-01: название заведения + дата вместо обычного заголовка вкладки -->
+      <div class="app-header-home" id="appHeaderHome" hidden>
+        <div class="app-header-home-name-row" id="homeVenueOpenBtn">
+          <span class="app-header-home-name" id="homeShiftName"></span>
+          <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </div>
+        <div class="app-header-home-date" id="homeShiftDate"></div>
+      </div>
       <button class="header-back" id="headerBack" hidden>
         <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
         Назад
@@ -5049,14 +5068,7 @@
       <section class="panel" data-panel="home" hidden>
         <div id="homeRoot">
 
-        <!-- 1. Шапка смены -->
-        <div class="home-shift-header" id="homeShiftHeader">
-          <div class="home-shift-name-row" id="homeVenueOpenBtn">
-            <span class="home-shift-name" id="homeShiftName"></span>
-            <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
-          </div>
-          <div class="home-shift-date" id="homeShiftDate"></div>
-        </div>
+        <!-- 1. Строка смены (название заведения, день недели и дата — теперь в самой шапке) -->
         <div class="shift-line" id="homeShiftLine"></div>
 
         <!-- 2. Важная информация -->
@@ -7442,6 +7454,7 @@
       panels.forEach(p => { p.hidden = p.dataset.panel !== tab; });
       titleEl.textContent = titles[tab][0];
       subEl.textContent = titles[tab][1];
+      setAppHeaderMode(tab === 'home');
 
       newChatFab.hidden = tab !== 'messenger';
 
@@ -13276,13 +13289,10 @@
        профессиональный праздник, повышение. personalChat — только когда
        есть привязанный к человеку тред и есть кого поздравлять лично
        (не выводится для проф. праздника и даты заведения — это не про
-       конкретного человека) */
+       конкретного человека). Демо временно сокращено до одного события —
+       остальные типы поддержаны кодом и добавляются сюда же */
     events: [
-      { type: 'birthday', icon: '🎂', text: 'День рождения — Анна, хостес', personalChat: 'c4' },
-      { type: 'anniversary', icon: '🎉', text: 'Игорь работает в ресторане 2 года', personalChat: 'c3' },
-      { type: 'venue-date', icon: '📅', text: '5 лет ресторану «Депо»' },
-      { type: 'pro-holiday', icon: '🍸', text: 'Профессиональный праздник — День бармена' },
-      { type: 'promotion', icon: '⭐', text: 'Дмитрий Орлов — повышение до бренд-шефа' }
+      { type: 'birthday', icon: '🎂', text: 'День рождения — Анна, хостес', personalChat: 'c4' }
     ]
   };
 
@@ -13506,12 +13516,14 @@
     document.getElementById('homeEventsRows').innerHTML = rows.map((ev, i) =>
       '<div class="home-events-row">' +
         '<div class="home-events-head"><span class="home-events-icon">' + ev.icon + '</span><span class="home-events-text">' + ev.text + '</span></div>' +
-        '<div class="home-events-reactions">' +
-          ['👍', '❤️', '🎉', '👏'].map(e => '<button class="home-events-reaction" data-event="' + i + '">' + e + '</button>').join('') +
-        '</div>' +
-        '<div class="home-events-actions">' +
-          (ev.personalChat ? '<button class="home-events-btn is-primary" data-event-chat="' + ev.personalChat + '">Поздравить лично</button>' : '') +
-          '<button class="home-events-btn" data-event-chat="c1">Поздравить в общем чате</button>' +
+        '<div class="home-events-controls">' +
+          '<div class="home-events-reactions">' +
+            ['👍', '❤️', '🎉', '👏'].map(e => '<button class="home-events-reaction" data-event="' + i + '">' + e + '</button>').join('') +
+          '</div>' +
+          '<div class="home-events-actions">' +
+            (ev.personalChat ? '<button class="home-events-btn is-primary" data-event-chat="' + ev.personalChat + '">Лично</button>' : '') +
+            '<button class="home-events-btn" data-event-chat="c1">В общем чате</button>' +
+          '</div>' +
         '</div>' +
       '</div>'
     ).join('');
@@ -13531,6 +13543,17 @@
      Свои независимые show/hide, как у экранов «Профиля» — общий
      navStack/showDetail завязан на shiftList «Смены» и здесь не подходит */
   const homeRootEl = document.getElementById('homeRoot');
+
+  /* Название заведения + дата живут в самой шапке (.app-header-home) только
+     пока открыт корень главной; на любом детальном экране (в т.ч. «Смены»
+     и «Профиля») шапка возвращается к обычному виду с заголовком экрана */
+  function setAppHeaderMode(isHome) {
+    document.getElementById('appHeader').classList.toggle('is-home', isHome);
+    document.getElementById('screenTitle').hidden = isHome;
+    document.getElementById('screenSub').hidden = isHome;
+    document.getElementById('appHeaderHome').hidden = !isHome;
+  }
+
   function showHomeDetail(name) {
     document.querySelectorAll('.shift-detail').forEach(d => { d.hidden = true; });
     homeRootEl.hidden = true;
@@ -13539,12 +13562,12 @@
     detail.hidden = false;
     titleEl.textContent = detail.dataset.title;
     subEl.textContent = detail.dataset.subtitle || 'Детали';
+    setAppHeaderMode(false);
   }
   function showHomeHome() {
     document.querySelectorAll('.shift-detail').forEach(d => { d.hidden = true; });
     homeRootEl.hidden = false;
-    titleEl.textContent = titles.home[0];
-    subEl.textContent = titles.home[1];
+    setAppHeaderMode(true);
   }
   document.getElementById('homeHallLoadBackBtn').addEventListener('click', showHomeHome);
   document.getElementById('homeThanksBackBtn').addEventListener('click', showHomeHome);
@@ -13849,6 +13872,7 @@
     newChatFab.hidden = true;
     titleEl.textContent = 'Карта экранов';
     subEl.textContent = 'МН-00 · служебный экран';
+    setAppHeaderMode(false);
   }
 
   /* возврат раздела в исходное состояние — деталь могла остаться открытой */
