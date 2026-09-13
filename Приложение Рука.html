@@ -2534,7 +2534,27 @@
   }
 
   /* ---------- МН-01: Главная ---------- */
-  .home-shift-header{margin-bottom:16px;}
+  /* фактура (градиент + золотая окантовка) — только у шапки главной,
+     остальные блоки экрана остаются обычными карточками */
+  .home-shift-header{
+    margin-bottom:0;
+    padding:22px 18px 20px;
+    border-radius:18px;
+    background:linear-gradient(160deg, var(--khaki-block-bg), var(--content-bg));
+    border-bottom:3px solid var(--gold);
+  }
+  .screen.dark .home-shift-header{background:linear-gradient(160deg, #8C733F, var(--content-bg));}
+  .home-shift-name-row{
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    cursor:pointer;
+    transition:transform .15s ease;
+  }
+  .home-shift-name-row:active{transform:scale(.99);}
+  .home-shift-name-row .chevron{
+    width:18px; height:18px; flex-shrink:0;
+    stroke:var(--text-primary); fill:none;
+    stroke-width:2; stroke-linecap:round; stroke-linejoin:round;
+  }
   .home-shift-name{
     font-family:'Fraunces', serif;
     font-weight:700;
@@ -2542,10 +2562,16 @@
     line-height:1.2;
     color:var(--text-primary);
   }
-  .home-shift-meta{
-    margin-top:4px;
+  .home-shift-date{
+    margin-top:6px;
     font-size:12.5px;
     color:var(--text-muted);
+  }
+  /* строка смены — простой текст без фона/рамки/тени, прижата к шапке */
+  .shift-line{
+    font-size:12.5px;
+    color:var(--text-muted);
+    margin:-8px 0 16px;
   }
 
   /* ---------- Важная информация ---------- */
@@ -2653,40 +2679,40 @@
 
   /* ---------- События дня ---------- */
   .home-events-row{
-    padding:10px 0;
+    padding:7px 0;
   }
   .home-events-row + .home-events-row{border-top:1px solid var(--card-border);}
-  .home-events-head{display:flex; align-items:center; gap:10px; margin-bottom:8px;}
+  .home-events-head{display:flex; align-items:center; gap:8px; margin-bottom:6px;}
   .home-events-icon{
     display:flex; align-items:center; justify-content:center;
-    width:30px; height:30px;
+    width:23px; height:23px;
     border-radius:50%;
     background:var(--segment-track);
-    font-size:15px;
+    font-size:12px;
     flex-shrink:0;
   }
-  .home-events-text{font-size:12.5px; line-height:1.4; color:var(--text-primary);}
-  .home-events-reactions{display:flex; gap:6px; margin:0 0 10px 40px;}
+  .home-events-text{font-size:11px; line-height:1.35; color:var(--text-primary);}
+  .home-events-reactions{display:flex; gap:4px; margin:0 0 7px 31px;}
   .home-events-reaction{
     border:1px solid var(--card-border);
     background:none;
-    border-radius:10px;
-    padding:4px 8px;
-    font-size:14px;
+    border-radius:8px;
+    padding:2px 5px;
+    font-size:11px;
     cursor:pointer;
     transition:border-color .15s ease, background .15s ease;
   }
   .home-events-reaction.active{border-color:var(--gold); background:rgba(198,153,47,0.12);}
-  .home-events-actions{display:flex; gap:8px; flex-wrap:wrap; margin-left:40px;}
+  .home-events-actions{display:flex; gap:6px; flex-wrap:wrap; margin-left:31px;}
   .home-events-btn{
     flex:1 1 auto;
     border:1px solid var(--gold);
     background:none;
     color:var(--accent);
-    border-radius:10px;
-    padding:8px 10px;
+    border-radius:8px;
+    padding:5px 7px;
     font-family:'Manrope', sans-serif;
-    font-size:12px; font-weight:700;
+    font-size:10.5px; font-weight:700;
     cursor:pointer;
     transition:background .15s ease, transform .15s ease;
   }
@@ -5025,9 +5051,13 @@
 
         <!-- 1. Шапка смены -->
         <div class="home-shift-header" id="homeShiftHeader">
-          <div class="home-shift-name" id="homeShiftName"></div>
-          <div class="home-shift-meta" id="homeShiftMeta"></div>
+          <div class="home-shift-name-row" id="homeVenueOpenBtn">
+            <span class="home-shift-name" id="homeShiftName"></span>
+            <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+          </div>
+          <div class="home-shift-date" id="homeShiftDate"></div>
         </div>
+        <div class="shift-line" id="homeShiftLine"></div>
 
         <!-- 2. Важная информация -->
         <div class="list-block khaki-variant static-block" id="homeImportant">
@@ -5149,6 +5179,15 @@
           </div>
         </div>
 
+        </div>
+
+        <!-- Детальный экран: Карточка заведения -->
+        <div class="shift-detail" data-detail="home-venue" data-title="Карточка заведения" data-subtitle="Адрес, часы работы, парковка" hidden>
+          <button class="back-btn" id="homeVenueBackBtn">
+            <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+            Назад
+          </button>
+          <div class="finance-rows" id="homeVenueRows"></div>
         </div>
 
         <!-- Детальный экран: Загрузка зала — только роли из STATS_ACCESS_ROLES -->
@@ -7465,20 +7504,36 @@
   const STATS_ACCESS_ROLES = ['Владелец', 'Управляющий', 'Операционный директор', 'Менеджер'];
   const hasStatsAccess = STATS_ACCESS_ROLES.includes(currentStaff.positionKey);
 
-  /* ---------- Анкета заведения: тип и родительный падеж ----------
-     Готовая строка родительного падежа (с «наш-», уже согласованным по
-     роду) — заголовок «Новости …» просто дописывает её, без склонения на лету */
+  /* ---------- Анкета заведения: тип и склонение ----------
+     genitive — готовая строка с «наш-», уже согласованным по роду
+     (для заголовка «Новости …», просто дописывается без склонения на
+     лету); genitiveBare — тот же падеж без «наш-» (для строки смены:
+     «до закрытия ресторана»/«кофейни»). name используется и в
+     именительном (шапка, «ресторан откроется») */
   const VENUE_TYPES = {
-    restaurant: { name: 'Ресторан', genitive: 'нашего ресторана' },
-    bar: { name: 'Бар', genitive: 'нашего бара' },
-    cafe: { name: 'Кафе', genitive: 'нашего кафе' },
-    coffeehouse: { name: 'Кофейня', genitive: 'нашей кофейни' },
-    pizzeria: { name: 'Пиццерия', genitive: 'нашей пиццерии' },
-    hookah: { name: 'Кальянная', genitive: 'нашей кальянной' },
-    banquet: { name: 'Банкетный зал', genitive: 'нашего банкетного зала' },
-    nightclub: { name: 'Ночной клуб', genitive: 'нашего ночного клуба' }
+    restaurant: { name: 'Ресторан', genitiveBare: 'ресторана', genitive: 'нашего ресторана' },
+    bar: { name: 'Бар', genitiveBare: 'бара', genitive: 'нашего бара' },
+    cafe: { name: 'Кафе', genitiveBare: 'кафе', genitive: 'нашего кафе' },
+    coffeehouse: { name: 'Кофейня', genitiveBare: 'кофейни', genitive: 'нашей кофейни' },
+    pizzeria: { name: 'Пиццерия', genitiveBare: 'пиццерии', genitive: 'нашей пиццерии' },
+    hookah: { name: 'Кальянная', genitiveBare: 'кальянной', genitive: 'нашей кальянной' },
+    banquet: { name: 'Банкетный зал', genitiveBare: 'банкетного зала', genitive: 'нашего банкетного зала' },
+    nightclub: { name: 'Ночной клуб', genitiveBare: 'ночного клуба', genitive: 'нашего ночного клуба' }
   };
-  const venueProfile = { type: 'restaurant' };
+  const venueProfile = {
+    type: 'restaurant',
+    name: 'Депо',
+    /* mode: 'scheduled' — часы работы ниже; '24-7' — круглосуточно.
+       Единственный источник времени закрытия/открытия для шапки и строки
+       смены — счётчик считается от него, а не от графика сотрудника */
+    hours: { mode: 'scheduled', open: '10:00', close: '01:00' },
+    address: 'ул. Складская, 14',
+    phone: '+7 495 123-45-67',
+    parking: 'Бесплатная парковка во дворе, 20 мест',
+    menu: 'Европейская кухня с паназиатскими акцентами',
+    openedYear: 2019,
+    founder: 'Алексей Дорохов'
+  };
 
   /* ролей в прототипе нет — временный переключатель официант/кассир только
      для демонстрации доступа к «Чек-коррекции» на экране кассира (МН-24) */
@@ -13200,10 +13255,8 @@
 
   /* ---------- Главная (МН-01) ---------- */
   const HOME_DATA = {
-    restaurantName: 'Ресторан «Депо»',
     shiftOpen: true,
     shiftNumber: 412,
-    closesAt: Date.now() + (4 * 60 + 20) * 60000,
     important: [
       'Завтра, 11:00 — выездная проверка СЭС, проверьте чек-лист закрытия смены',
       'С 1 числа новый способ приёма чаевых картой — инструкция у управляющего'
@@ -13249,23 +13302,80 @@
   }
   let thanksState = loadThanksState();
 
-  function renderHomeHeader() {
-    document.getElementById('homeShiftName').textContent = HOME_DATA.restaurantName;
-    const now = new Date();
-    const weekday = now.toLocaleDateString('ru-RU', { weekday: 'long' });
-    const dayMonth = now.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
-    const dateStr = weekday.charAt(0).toUpperCase() + weekday.slice(1) + ', ' + dayMonth;
-    let tail;
-    if (HOME_DATA.shiftOpen) {
-      const left = Math.max(0, HOME_DATA.closesAt - Date.now());
-      const h = Math.floor(left / 3600000);
-      const m = Math.floor((left % 3600000) / 60000);
-      tail = 'До закрытия ' + h + ' ч ' + m + ' мин';
-    } else {
-      tail = 'Смена не открыта';
-    }
-    document.getElementById('homeShiftMeta').textContent = dateStr + ' · Смена №' + HOME_DATA.shiftNumber + ' · ' + tail;
+  function parseHM(str) {
+    const parts = str.split(':');
+    return Number(parts[0]) * 60 + Number(parts[1]);
   }
+
+  /* Состояние по часам работы заведения (venueProfile.hours) — единственный
+     источник для «до закрытия»/«откроется через» в строке смены: одинаков
+     для всех ролей и не связан с графиком конкретного сотрудника */
+  function getVenueHoursState(now) {
+    const hours = venueProfile.hours;
+    if (hours.mode === '24-7') return { mode: '24-7' };
+    const openMin = parseHM(hours.open);
+    const closeMinRaw = parseHM(hours.close);
+    const crossesMidnight = closeMinRaw <= openMin;
+    const closeMin = crossesMidnight ? closeMinRaw + 24 * 60 : closeMinRaw;
+    let nowMin = now.getHours() * 60 + now.getMinutes();
+    if (crossesMidnight && nowMin < openMin) nowMin += 24 * 60;
+    if (nowMin >= openMin && nowMin < closeMin) {
+      return { mode: 'open', minutesToClose: Math.max(0, closeMin - nowMin) };
+    }
+    const minutesToOpen = nowMin < openMin ? (openMin - nowMin) : (openMin + 24 * 60 - nowMin);
+    return { mode: 'closed', minutesToOpen: Math.max(0, minutesToOpen) };
+  }
+
+  function formatDuration(totalMinutes) {
+    const h = Math.floor(totalMinutes / 60);
+    const m = totalMinutes % 60;
+    return (h > 0 ? h + ' ч ' : '') + m + ' мин';
+  }
+
+  /* Шапка и строка смены берут дату/время из одного «now» за один вызов —
+     расхождение между ними исключено */
+  function renderHomeHeader() {
+    const type = VENUE_TYPES[venueProfile.type];
+    document.getElementById('homeShiftName').textContent = type.name + ' «' + venueProfile.name + '»';
+
+    const now = new Date();
+    document.getElementById('homeShiftDate').textContent =
+      now.toLocaleDateString('ru-RU', { weekday: 'long' }) + ', ' + now.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+
+    let line = 'Смена № ' + HOME_DATA.shiftNumber;
+    const state = getVenueHoursState(now);
+    if (state.mode === 'open') {
+      line += ' · до закрытия ' + type.genitiveBare + ' ' + formatDuration(state.minutesToClose);
+    } else if (state.mode === 'closed' && state.minutesToOpen <= 60) {
+      line += ' · ' + type.name.toLowerCase() + ' откроется через ' + state.minutesToOpen + ' мин';
+    }
+    /* режим '24-7' и «закрыто, но до открытия больше часа» — только номер смены */
+    document.getElementById('homeShiftLine').textContent = line;
+  }
+
+  function renderHomeVenueCard() {
+    const type = VENUE_TYPES[venueProfile.type];
+    const hoursText = venueProfile.hours.mode === '24-7'
+      ? 'Круглосуточно'
+      : 'Ежедневно ' + venueProfile.hours.open + '–' + venueProfile.hours.close;
+    const rows = [
+      ['Адрес', venueProfile.address],
+      ['Телефон', venueProfile.phone],
+      ['Часы работы', hoursText],
+      ['Парковка', venueProfile.parking],
+      ['Меню', venueProfile.menu],
+      ['Год открытия', String(venueProfile.openedYear)],
+      ['Кто открывал', venueProfile.founder]
+    ];
+    document.getElementById('homeVenueRows').innerHTML = rows
+      .map(r => '<div class="finance-row"><span>' + r[0] + '</span><strong>' + r[1] + '</strong></div>')
+      .join('');
+  }
+  document.getElementById('homeVenueOpenBtn').addEventListener('click', () => {
+    renderHomeVenueCard();
+    showHomeDetail('home-venue');
+  });
+  document.getElementById('homeVenueBackBtn').addEventListener('click', showHomeHome);
 
   function renderHomeImportant() {
     document.getElementById('homeImportantList').innerHTML = (HOME_DATA.important || [])
