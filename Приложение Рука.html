@@ -2498,9 +2498,9 @@
      цифры, чтобы читался как единица измерения, а не как второй разряд числа */
   .order-qty-x{opacity:.6; margin-right:1px;}
   /* ---------- МН-01: пустые слоты под виджеты ---------- */
-  .widget-slots{
+  .home-widget-slots{
     display:flex; flex-direction:column; gap:10px;
-    margin-top:16px;
+    margin-top:4px;
   }
   .widget-slot{
     display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;
@@ -2571,6 +2571,258 @@
     line-height:1.45;
     color:var(--text-soft);
     margin-top:4px;
+  }
+
+  /* ---------- МН-01: Главная ---------- */
+  .home-shift-header{margin-bottom:16px;}
+  .home-shift-name{
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    font-size:21px;
+    line-height:1.2;
+    color:var(--text-primary);
+  }
+  .home-shift-meta{
+    margin-top:4px;
+    font-size:12.5px;
+    color:var(--text-muted);
+  }
+
+  /* ---------- Объявление ---------- */
+  .home-announce-text{
+    margin-top:10px;
+    font-size:13px;
+    line-height:1.45;
+    color:var(--khaki-block-title);
+    display:-webkit-box;
+    -webkit-box-orient:vertical;
+    -webkit-line-clamp:3;
+    overflow:hidden;
+  }
+  .home-announce.is-expanded .home-announce-text{-webkit-line-clamp:unset; display:block;}
+  .home-announce-foot{
+    margin-top:8px;
+    font-size:11px;
+    color:var(--khaki-block-value);
+  }
+
+  /* ---------- Фокус смены ---------- */
+  .home-focus-name{
+    display:flex; align-items:center; gap:7px;
+    margin-top:2px;
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:17px;
+    color:var(--khaki-block-value);
+  }
+  .home-focus-dot{width:7px; height:7px; border-radius:50%; flex-shrink:0; background:var(--dot-green);}
+  .home-focus-reason{
+    margin-top:4px;
+    font-size:12.5px;
+    color:var(--khaki-block-title);
+  }
+  .home-focus-pitch{
+    margin-top:4px;
+    font-size:12px;
+    line-height:1.4;
+    color:var(--khaki-block-value);
+  }
+  .home-focus-counter-row{margin-top:10px;}
+
+  /* ---------- Цель смены ---------- */
+  .home-team-goal-caption{
+    margin-top:8px;
+    font-size:11.5px;
+    color:var(--khaki-block-value);
+  }
+
+  /* ---------- Остатки заготовки ---------- */
+  .home-stock-name{display:flex; align-items:center; gap:7px;}
+  .home-stock-dot{width:6px; height:6px; border-radius:50%; flex-shrink:0; background:var(--dot-red);}
+  .home-stock-more{
+    margin-top:6px;
+    font-size:11.5px;
+    text-align:right;
+    color:var(--khaki-block-value);
+  }
+
+  /* ---------- Пробки впереди ---------- */
+  .home-traffic-chart{
+    display:flex; align-items:flex-end; gap:10px;
+    margin-top:14px;
+  }
+  .home-traffic-col{
+    flex:1;
+    display:flex; flex-direction:column; align-items:center;
+    gap:6px;
+  }
+  .home-traffic-bar{
+    width:100%;
+    max-width:34px;
+    min-height:4px;
+    border-radius:6px 6px 0 0;
+    background:linear-gradient(180deg, var(--gold-light), var(--gold));
+  }
+  .home-traffic-hour{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    color:var(--khaki-block-value);
+  }
+  .home-traffic-caption{
+    margin-top:10px;
+    font-size:11.5px;
+    color:var(--khaki-block-title);
+  }
+
+  /* ---------- Блюдо дня ---------- */
+  .home-dish-photo{
+    display:flex; align-items:center; justify-content:center;
+    margin-top:12px;
+    height:110px;
+    border-radius:14px;
+    background:var(--khaki-block-track);
+  }
+  .home-dish-photo svg{width:34px; height:34px; stroke:var(--khaki-block-value); fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round;}
+  .home-dish-name{
+    margin-top:10px;
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:15px;
+    color:var(--khaki-block-title);
+  }
+  .home-dish-details{
+    margin-top:4px;
+    font-size:12.5px;
+    line-height:1.45;
+    color:var(--khaki-block-value);
+    display:-webkit-box;
+    -webkit-box-orient:vertical;
+    -webkit-line-clamp:2;
+    overflow:hidden;
+  }
+  .home-dish.is-expanded .home-dish-details{-webkit-line-clamp:unset; display:block;}
+
+  /* ---------- Дней без ЧП ---------- */
+  .home-incident{text-align:center; padding-top:20px; padding-bottom:20px;}
+  .home-incident-num{
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:500;
+    font-size:34px;
+    color:var(--gold);
+  }
+  .screen.dark .home-incident-num{color:var(--gold-light);}
+  .home-incident-label{
+    margin-top:6px;
+    font-size:12px;
+    color:var(--text-muted);
+  }
+
+  /* ---------- Спасибо ---------- */
+  .home-thanks-row{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:10px;
+    margin-top:10px;
+  }
+  .home-thanks-count{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:15px;
+    color:var(--khaki-block-title);
+  }
+  .home-thanks-btn{
+    flex-shrink:0;
+    background:linear-gradient(160deg, var(--gold-light), var(--gold));
+    border:none;
+    border-radius:999px;
+    padding:9px 14px;
+    font-family:'Manrope', sans-serif;
+    font-size:12px; font-weight:800;
+    color:var(--navy-deep);
+    cursor:pointer;
+  }
+  .home-thanks-btn:active{transform:scale(.97);}
+  .home-thanks-list{
+    display:flex; flex-direction:column;
+    margin-top:14px;
+    max-height:300px;
+    overflow-y:auto;
+    text-align:left;
+  }
+  .home-thanks-person{
+    display:flex; align-items:center; gap:10px;
+    padding:9px 2px;
+    border-bottom:1px solid var(--card-border);
+    cursor:pointer;
+  }
+  .home-thanks-person:last-child{border-bottom:none;}
+  .home-thanks-person:active{transform:scale(.99);}
+  .home-thanks-person.is-sent{cursor:default;}
+  .home-thanks-person.is-sent:active{transform:none;}
+  .home-thanks-person-info{flex:1; min-width:0; display:flex; flex-direction:column;}
+  .home-thanks-person-name{font-size:13px; font-weight:700; color:var(--text-primary);}
+  .home-thanks-person-role{font-size:11px; color:var(--text-muted); margin-top:1px;}
+  .home-thanks-person-check{font-size:11px; font-weight:700; color:var(--accent); flex-shrink:0;}
+
+  /* ---------- Кто сегодня с тобой ---------- */
+  .home-team-scroll{
+    display:flex; gap:14px;
+    margin-top:12px;
+    overflow-x:auto;
+    touch-action:pan-x;
+    padding-bottom:2px;
+  }
+  .home-team-person{
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    flex-shrink:0;
+    width:56px;
+    text-align:center;
+  }
+  .home-team-person-name{
+    font-size:10.5px; font-weight:700;
+    color:var(--khaki-block-title);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    max-width:56px;
+  }
+  .home-team-person-role{font-size:9.5px; color:var(--khaki-block-value);}
+
+  /* ---------- События дня ---------- */
+  .home-events-row{
+    display:flex; align-items:center; gap:10px;
+    padding:9px 0;
+  }
+  .home-events-row + .home-events-row{border-top:1px solid var(--card-border);}
+  .home-events-icon{
+    display:flex; align-items:center; justify-content:center;
+    width:30px; height:30px;
+    border-radius:50%;
+    background:var(--segment-track);
+    font-size:15px;
+    flex-shrink:0;
+  }
+  .home-events-text{font-size:12.5px; line-height:1.4; color:var(--text-primary);}
+
+  /* ---------- Пульс смены ---------- */
+  .home-pulse-question{
+    margin-top:10px;
+    font-size:13.5px; font-weight:700;
+    color:var(--khaki-block-title);
+  }
+  .home-pulse-options{display:flex; flex-direction:column; gap:8px; margin-top:12px;}
+  .home-pulse-option{
+    border:1px solid var(--khaki-block-border);
+    background:transparent;
+    border-radius:12px;
+    padding:10px;
+    font-family:'Manrope', sans-serif;
+    font-size:12.5px; font-weight:700;
+    color:var(--khaki-block-title);
+    cursor:pointer;
+  }
+  .home-pulse-option:active{transform:scale(.97);}
+  .home-pulse-done{
+    margin-top:12px;
+    font-size:12.5px;
+    color:var(--khaki-block-value);
   }
 
   /* ---------- МН-22: история стола ---------- */
@@ -4709,7 +4961,7 @@
         <div class="map-group-title">Главная</div>
         <button class="map-row" data-goto="мн-01">
           <span class="map-id">МН-01</span>
-          <span class="map-name">Главная<span class="map-note">Пока пустая — соберём позже</span></span>
+          <span class="map-name">Главная<span class="map-note">Шапка смены, объявление, фокус смены, цель смены, остатки заготовки, пробки впереди, блюдо дня, дней без ЧП, спасибо, кто сегодня с тобой, события дня, новости, пульс смены, слоты виджетов</span></span>
           <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
         </button>
 
@@ -4895,8 +5147,111 @@
         </button>
       </section>
 
-      <!-- ===== МН-01 · ГЛАВНАЯ (пусто, соберём позже) ===== -->
+      <!-- ===== МН-01 · ГЛАВНАЯ ===== -->
       <section class="panel" data-panel="home" hidden>
+
+        <!-- 1. Шапка смены -->
+        <div class="home-shift-header" id="homeShiftHeader">
+          <div class="home-shift-name" id="homeShiftName"></div>
+          <div class="home-shift-meta" id="homeShiftMeta"></div>
+        </div>
+
+        <!-- 2. Объявление -->
+        <div class="list-block khaki-variant home-announce" id="homeAnnounce" hidden>
+          <div class="list-block-head">
+            <span class="list-block-title">Объявление</span>
+          </div>
+          <div class="home-announce-text" id="homeAnnounceText"></div>
+          <div class="home-announce-foot" id="homeAnnounceFoot"></div>
+        </div>
+
+        <!-- 3. Фокус смены -->
+        <div class="stat-block home-focus" id="homeFocus" data-block="home-focus" role="button" tabindex="0" hidden>
+          <div class="stat-block-head">
+            <span class="stat-block-title">Фокус смены</span>
+            <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+          </div>
+          <div class="home-focus-name"><span class="home-focus-dot"></span><span id="homeFocusName"></span></div>
+          <div class="home-focus-reason" id="homeFocusReason"></div>
+          <div class="home-focus-pitch" id="homeFocusPitch"></div>
+          <div class="stat-block-row home-focus-counter-row"><span>Продано</span><strong id="homeFocusCounter"></strong></div>
+          <div class="progress-track"><div class="progress-fill" id="homeFocusFill"></div></div>
+        </div>
+
+        <!-- 4. Командный прогресс -->
+        <div class="list-block khaki-variant static-block home-team-goal" id="homeTeamGoal" hidden>
+          <div class="list-block-head">
+            <span class="list-block-title">Цель смены</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill" id="homeTeamGoalFill"></div></div>
+          <div class="home-team-goal-caption">метрика уточняется</div>
+        </div>
+
+        <!-- 5. Остатки заготовки -->
+        <div class="stat-block home-stock" id="homeStock" data-block="home-stock" role="button" tabindex="0" hidden>
+          <div class="stat-block-head">
+            <span class="stat-block-title">Остатки заготовки</span>
+            <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+          </div>
+          <div id="homeStockRows"></div>
+        </div>
+
+        <!-- 6. Пробки впереди -->
+        <div class="stat-block home-traffic" id="homeTraffic" data-block="home-traffic" role="button" tabindex="0" hidden>
+          <div class="stat-block-head">
+            <span class="stat-block-title">Пробки впереди</span>
+            <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+          </div>
+          <div class="home-traffic-chart" id="homeTrafficChart"></div>
+          <div class="home-traffic-caption" id="homeTrafficCaption"></div>
+        </div>
+
+        <!-- 7. Блюдо дня -->
+        <div class="list-block khaki-variant home-dish" id="homeDish" hidden>
+          <div class="list-block-head">
+            <span class="list-block-title">Блюдо дня</span>
+          </div>
+          <div class="home-dish-photo">
+            <svg viewBox="0 0 24 24"><path d="M7 3v7a2 2 0 0 0 2 2v9"/><path d="M7 3v9"/><path d="M11 3v9"/><path d="M17 3c-1.7 0-3 2-3 5s1.3 5 3 5v8"/></svg>
+          </div>
+          <div class="home-dish-name" id="homeDishName"></div>
+          <div class="home-dish-details" id="homeDishDetails"></div>
+        </div>
+
+        <!-- 8. Дней без ЧП -->
+        <div class="list-block static-block home-incident" id="homeIncident" hidden>
+          <div class="home-incident-num" id="homeIncidentNum"></div>
+          <div class="home-incident-label">дней без возвратов и опозданий</div>
+        </div>
+
+        <!-- 9. Спасибо -->
+        <div class="list-block khaki-variant static-block home-thanks" id="homeThanks" hidden>
+          <div class="list-block-head">
+            <span class="list-block-title">Спасибо</span>
+          </div>
+          <div class="home-thanks-row">
+            <span class="home-thanks-count" id="homeThanksCount"></span>
+            <button class="home-thanks-btn" id="homeThanksBtn">Сказать спасибо</button>
+          </div>
+        </div>
+
+        <!-- 10. Кто сегодня с тобой -->
+        <div class="stat-block home-team-today" id="homeTeamToday" data-block="home-team" role="button" tabindex="0" hidden>
+          <div class="stat-block-head">
+            <span class="stat-block-title">Кто сегодня с тобой</span>
+            <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+          </div>
+          <div class="home-team-scroll" id="homeTeamScroll"></div>
+        </div>
+
+        <!-- 11. События дня -->
+        <div class="list-block static-block home-events" id="homeEvents" hidden>
+          <div class="list-block-head">
+            <span class="list-block-title">События дня</span>
+          </div>
+          <div id="homeEventsRows"></div>
+        </div>
+
         <div class="list-block static-block news-block">
           <div class="list-block-head">
             <span class="list-block-title">Новости</span>
@@ -4936,13 +5291,17 @@
             </div>
           </div>
         </div>
-        <div class="widget-slots">
-          <button class="widget-slot">
-            <span class="widget-slot-plus">
-              <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-            </span>
-            <span class="widget-slot-text">Добавить виджет</span>
-          </button>
+
+        <!-- 12. Пульс смены -->
+        <div class="list-block khaki-variant static-block home-pulse" id="homePulse" hidden>
+          <div class="list-block-head">
+            <span class="list-block-title">Пульс смены</span>
+          </div>
+          <div id="homePulseBody"></div>
+        </div>
+
+        <!-- 13. Слоты виджетов -->
+        <div class="home-widget-slots">
           <button class="widget-slot">
             <span class="widget-slot-plus">
               <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
@@ -6755,6 +7114,17 @@
         <div class="modal-actions">
           <button class="modal-btn modal-btn-ghost" id="taskDirectCancel">Отмена</button>
           <button class="modal-btn modal-btn-gold" id="taskDirectConfirm">Подтвердить</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- МН-01: «Спасибо» — выбор коллеги из состава смены -->
+    <div class="modal-overlay" id="homeThanksOverlay" hidden>
+      <div class="modal-box">
+        <div class="modal-title">Кому сказать спасибо?</div>
+        <div class="home-thanks-list" id="homeThanksList"></div>
+        <div class="modal-actions-single">
+          <button class="modal-btn modal-btn-ghost" id="homeThanksClose">Закрыть</button>
         </div>
       </div>
     </div>
@@ -12932,6 +13302,269 @@
     document.getElementById('infoNote').classList.toggle('collapsed');
   });
 
+  /* ---------- Главная (МН-01) ---------- */
+  const HOME_DATA = {
+    restaurantName: 'Ресторан «Депо»',
+    shiftOpen: true,
+    shiftNumber: 412,
+    closesAt: Date.now() + (4 * 60 + 20) * 60000,
+    announcement: {
+      text: 'Сегодня вечером банкет на 40 гостей в отдельном зале — начало в 19:00. Официантам зала подойти к менеджеру за схемой рассадки и порядком подачи блюд.',
+      author: 'Игорь Соколов, управляющий',
+      time: '14:10'
+    },
+    focus: {
+      name: 'Стейк рибай',
+      reason: 'Залежался на складе — нужно продать до понедельника',
+      pitch: 'Предлагайте с соусом чимичурри, хорошо идёт под красное вино из карты.',
+      sold: 7,
+      total: 20
+    },
+    teamGoalProgress: 0.42,
+    stock: [
+      { name: 'Стейк рибай', qty: 12 },
+      { name: 'Утка', qty: 3 },
+      { name: 'Лимонный фреш', qty: 2 },
+      { name: 'Тартар из тунца', qty: 6 },
+      { name: 'Гренадин домашний', qty: 1 },
+      { name: 'Мятный сироп', qty: 9 }
+    ],
+    trafficAhead: [
+      { hour: '18:00', guests: 9, bookings: 2 },
+      { hour: '19:00', guests: 18, bookings: 3 },
+      { hour: '20:00', guests: 24, bookings: 5 }
+    ],
+    dishOfDay: {
+      name: 'Утка с айвой',
+      composition: 'Утиная грудка, печёная айва, соус деми-гляс, картофельное пюре с трюфельным маслом.',
+      pitch: 'Хорошо сочетается с полусухим рислингом. Готовится 20 минут — предупреждайте гостя заранее.'
+    },
+    incidentFreeDays: 14,
+    thanksWeek: 12,
+    team: [
+      { id: 'p1', name: 'Марина', role: 'официант', avatarText: 'МК', avatarClass: 'avatar-navy' },
+      { id: 'p2', name: 'Игорь', role: 'официант', avatarText: 'ИС', avatarClass: 'avatar-khaki' },
+      { id: 'p3', name: 'Анна', role: 'хостес', avatarText: 'АА', avatarClass: 'avatar-gold' },
+      { id: 'p4', name: 'Дмитрий', role: 'бар', avatarText: 'ДБ', avatarClass: 'avatar-navy' },
+      { id: 'p5', name: 'Дмитрий Орлов', role: 'су-шеф', avatarText: 'ДО', avatarClass: 'avatar-leather' }
+    ],
+    events: [
+      { icon: '🎂', text: 'День рождения — Анна, хостес' },
+      { icon: '🎉', text: 'Игорь работает в ресторане 2 года' },
+      { icon: '📅', text: 'Крупная бронь на вечер — банкет на 40 гостей, 19:00' }
+    ],
+    pulseOptions: ['Хорошо', 'Средне', 'Тяжело']
+  };
+
+  function saveThanksState() { try { localStorage.setItem('ruka:thanks', JSON.stringify(thanksState)); } catch (e) {} }
+  function loadThanksState() {
+    try {
+      const raw = localStorage.getItem('ruka:thanks');
+      if (!raw) return { count: HOME_DATA.thanksWeek, sentIds: [] };
+      const parsed = JSON.parse(raw);
+      return {
+        count: typeof parsed.count === 'number' ? parsed.count : HOME_DATA.thanksWeek,
+        sentIds: Array.isArray(parsed.sentIds) ? parsed.sentIds : []
+      };
+    } catch (e) { return { count: HOME_DATA.thanksWeek, sentIds: [] }; }
+  }
+  let thanksState = loadThanksState();
+
+  function savePulseState() { try { localStorage.setItem('ruka:pulse', JSON.stringify(pulseState)); } catch (e) {} }
+  function loadPulseState() {
+    try { const raw = localStorage.getItem('ruka:pulse'); return raw ? JSON.parse(raw) : null; }
+    catch (e) { return null; }
+  }
+  let pulseState = loadPulseState();
+
+  function renderHomeHeader() {
+    document.getElementById('homeShiftName').textContent = HOME_DATA.restaurantName;
+    const now = new Date();
+    const weekday = now.toLocaleDateString('ru-RU', { weekday: 'long' });
+    const dayMonth = now.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+    const dateStr = weekday.charAt(0).toUpperCase() + weekday.slice(1) + ', ' + dayMonth;
+    let tail;
+    if (HOME_DATA.shiftOpen) {
+      const left = Math.max(0, HOME_DATA.closesAt - Date.now());
+      const h = Math.floor(left / 3600000);
+      const m = Math.floor((left % 3600000) / 60000);
+      tail = 'До закрытия ' + h + ' ч ' + m + ' мин';
+    } else {
+      tail = 'Смена не открыта';
+    }
+    document.getElementById('homeShiftMeta').textContent = dateStr + ' · Смена №' + HOME_DATA.shiftNumber + ' · ' + tail;
+  }
+
+  function renderHomeAnnounce() {
+    const el = document.getElementById('homeAnnounce');
+    const a = HOME_DATA.announcement;
+    if (!a || !a.text) { el.hidden = true; return; }
+    el.hidden = false;
+    document.getElementById('homeAnnounceText').textContent = a.text;
+    document.getElementById('homeAnnounceFoot').textContent = [a.author, a.time].filter(Boolean).join(' · ');
+  }
+  document.getElementById('homeAnnounce').addEventListener('click', function () { this.classList.toggle('is-expanded'); });
+
+  function renderHomeFocus() {
+    const el = document.getElementById('homeFocus');
+    const f = HOME_DATA.focus;
+    if (!HOME_DATA.shiftOpen || !f || !f.name) { el.hidden = true; return; }
+    el.hidden = false;
+    document.getElementById('homeFocusName').textContent = f.name;
+    document.getElementById('homeFocusReason').textContent = f.reason || '';
+    document.getElementById('homeFocusPitch').textContent = f.pitch || '';
+    document.getElementById('homeFocusCounter').textContent = f.sold + ' из ' + f.total;
+    const pct = f.total ? Math.min(100, Math.round(f.sold / f.total * 100)) : 0;
+    document.getElementById('homeFocusFill').style.width = pct + '%';
+  }
+
+  function renderHomeTeamGoal() {
+    const el = document.getElementById('homeTeamGoal');
+    if (!HOME_DATA.shiftOpen) { el.hidden = true; return; }
+    el.hidden = false;
+    document.getElementById('homeTeamGoalFill').style.width = Math.round((HOME_DATA.teamGoalProgress || 0) * 100) + '%';
+  }
+
+  function renderHomeStock() {
+    const el = document.getElementById('homeStock');
+    const items = HOME_DATA.stock || [];
+    if (!HOME_DATA.shiftOpen || !items.length) { el.hidden = true; return; }
+    el.hidden = false;
+    const shown = items.slice(0, 5);
+    const rest = items.length - shown.length;
+    document.getElementById('homeStockRows').innerHTML = shown.map(i =>
+      '<div class="stat-block-row home-stock-row"><span class="home-stock-name">' +
+        (i.qty <= 3 ? '<span class="home-stock-dot"></span>' : '') +
+        i.name + '</span><strong>' + i.qty + '</strong></div>'
+    ).join('') + (rest > 0 ? '<div class="home-stock-more">ещё ' + rest + '</div>' : '');
+  }
+
+  function renderHomeTraffic() {
+    const el = document.getElementById('homeTraffic');
+    const rows = HOME_DATA.trafficAhead || [];
+    if (!HOME_DATA.shiftOpen || !rows.length) { el.hidden = true; return; }
+    el.hidden = false;
+    const max = Math.max.apply(null, rows.map(r => r.guests).concat(1));
+    const maxBarPx = 54;
+    document.getElementById('homeTrafficChart').innerHTML = rows.map(r =>
+      '<div class="home-traffic-col"><div class="home-traffic-bar" style="height:' + Math.max(6, Math.round(r.guests / max * maxBarPx)) + 'px"></div><span class="home-traffic-hour">' + r.hour + '</span></div>'
+    ).join('');
+    const peak = rows.reduce((a, b) => b.guests > a.guests ? b : a, rows[0]);
+    document.getElementById('homeTrafficCaption').textContent = peak.hour + ' — ' + peak.guests + ' гостей, ' + peak.bookings + ' брони';
+  }
+
+  function renderHomeDish() {
+    const el = document.getElementById('homeDish');
+    const d = HOME_DATA.dishOfDay;
+    if (!d || !d.name) { el.hidden = true; return; }
+    el.hidden = false;
+    document.getElementById('homeDishName').textContent = d.name;
+    document.getElementById('homeDishDetails').textContent = [d.composition, d.pitch].filter(Boolean).join(' ');
+  }
+  document.getElementById('homeDish').addEventListener('click', function () { this.classList.toggle('is-expanded'); });
+
+  function renderHomeIncident() {
+    const el = document.getElementById('homeIncident');
+    if (!HOME_DATA.shiftOpen || HOME_DATA.incidentFreeDays == null) { el.hidden = true; return; }
+    el.hidden = false;
+    document.getElementById('homeIncidentNum').textContent = HOME_DATA.incidentFreeDays;
+  }
+
+  function renderHomeThanks() {
+    const el = document.getElementById('homeThanks');
+    if (!HOME_DATA.shiftOpen) { el.hidden = true; return; }
+    el.hidden = false;
+    document.getElementById('homeThanksCount').textContent = thanksState.count + ' спасибо за неделю';
+  }
+  function renderHomeThanksList() {
+    document.getElementById('homeThanksList').innerHTML = (HOME_DATA.team || []).map(p => {
+      const sent = thanksState.sentIds.indexOf(p.id) !== -1;
+      return '<div class="home-thanks-person' + (sent ? ' is-sent' : '') + '" data-person="' + p.id + '">' +
+        '<div class="chat-avatar ' + p.avatarClass + '">' + p.avatarText + '</div>' +
+        '<div class="home-thanks-person-info"><span class="home-thanks-person-name">' + p.name + '</span><span class="home-thanks-person-role">' + p.role + '</span></div>' +
+        (sent ? '<span class="home-thanks-person-check">Отправлено</span>' : '') +
+      '</div>';
+    }).join('');
+  }
+  document.getElementById('homeThanksBtn').addEventListener('click', () => {
+    renderHomeThanksList();
+    document.getElementById('homeThanksOverlay').hidden = false;
+  });
+  document.getElementById('homeThanksClose').addEventListener('click', () => {
+    document.getElementById('homeThanksOverlay').hidden = true;
+  });
+  document.getElementById('homeThanksList').addEventListener('click', e => {
+    const row = e.target.closest('.home-thanks-person');
+    if (!row || row.classList.contains('is-sent')) return;
+    thanksState.sentIds.push(row.dataset.person);
+    thanksState.count++;
+    saveThanksState();
+    renderHomeThanks();
+    renderHomeThanksList();
+  });
+
+  function renderHomeTeamToday() {
+    const el = document.getElementById('homeTeamToday');
+    const team = HOME_DATA.team || [];
+    if (!HOME_DATA.shiftOpen || !team.length) { el.hidden = true; return; }
+    el.hidden = false;
+    document.getElementById('homeTeamScroll').innerHTML = team.map(p =>
+      '<div class="home-team-person"><div class="chat-avatar ' + p.avatarClass + '">' + p.avatarText + '</div>' +
+      '<span class="home-team-person-name">' + p.name + '</span><span class="home-team-person-role">' + p.role + '</span></div>'
+    ).join('');
+  }
+
+  function renderHomeEvents() {
+    const el = document.getElementById('homeEvents');
+    const rows = HOME_DATA.events || [];
+    if (!HOME_DATA.shiftOpen || !rows.length) { el.hidden = true; return; }
+    el.hidden = false;
+    document.getElementById('homeEventsRows').innerHTML = rows.map(ev =>
+      '<div class="home-events-row"><span class="home-events-icon">' + ev.icon + '</span><span class="home-events-text">' + ev.text + '</span></div>'
+    ).join('');
+  }
+
+  function homePulseShouldShow() {
+    if (!HOME_DATA.shiftOpen) return false;
+    return (HOME_DATA.closesAt - Date.now()) <= 60 * 60000;
+  }
+  function renderHomePulse() {
+    const el = document.getElementById('homePulse');
+    if (!homePulseShouldShow()) { el.hidden = true; return; }
+    el.hidden = false;
+    const body = document.getElementById('homePulseBody');
+    if (pulseState && pulseState.shiftNumber === HOME_DATA.shiftNumber) {
+      body.innerHTML = '<div class="home-pulse-done">Ответ записан</div>';
+      return;
+    }
+    body.innerHTML = '<div class="home-pulse-question">Как прошла смена?</div><div class="home-pulse-options">' +
+      HOME_DATA.pulseOptions.map((o, i) => '<button class="home-pulse-option" data-pulse-option="' + i + '">' + o + '</button>').join('') +
+      '</div>';
+  }
+  document.getElementById('homePulseBody').addEventListener('click', e => {
+    const btn = e.target.closest('[data-pulse-option]'); if (!btn) return;
+    pulseState = { shiftNumber: HOME_DATA.shiftNumber, answer: HOME_DATA.pulseOptions[btn.dataset.pulseOption] };
+    savePulseState();
+    renderHomePulse();
+  });
+
+  function renderHome() {
+    renderHomeHeader();
+    renderHomeAnnounce();
+    renderHomeFocus();
+    renderHomeTeamGoal();
+    renderHomeStock();
+    renderHomeTraffic();
+    renderHomeDish();
+    renderHomeIncident();
+    renderHomeThanks();
+    renderHomeTeamToday();
+    renderHomeEvents();
+    renderHomePulse();
+  }
+  renderHome();
+  setInterval(() => { renderHomeHeader(); renderHomePulse(); }, 60000);
+
   /* ---------- Мессенджер: папки + чаты ---------- */
   const chatData = [
     { id: 'hr', name: 'Ресторан «Депо» · Руководитель', preview: 'Заявка на должность отправлена', time: '9:40', unread: 1, folder: ['hall'], avatarText: 'РД', avatarClass: 'avatar-gold',
@@ -14616,7 +15249,7 @@
     btn.addEventListener('click', () => setRoute(TAB_ROUTE[btn.dataset.tab]));
   });
 
-  const BLOCK_ROUTE = { finance:'мн-03', startstop:'мн-04', visitors:'мн-20', staff:'мн-21' };
+  const BLOCK_ROUTE = { finance:'мн-03', startstop:'мн-04', visitors:'мн-20', staff:'мн-21', 'home-focus':'мн-04', 'home-stock':'мн-04', 'home-traffic':'мн-13', 'home-team':'мн-21' };
   document.querySelectorAll('[data-block]').forEach(block => {
     block.addEventListener('click', () => setRoute(BLOCK_ROUTE[block.dataset.block]));
   });
