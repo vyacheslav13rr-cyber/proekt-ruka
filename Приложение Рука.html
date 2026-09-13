@@ -216,10 +216,18 @@
     opacity:.8;
   }
 
-  /* ---------- МН-01: шапка ----------
-     Цвет и золотая нитка снизу — те же, что у обычной шапки на всех
-     экранах; на главной меняется только содержимое (название заведения
-     и дата вместо заголовка вкладки), не фактура */
+  /* ---------- МН-01: шапка (фактура — только на главной) ---------- */
+  .app-header.is-home{
+    padding:20px 24px 24px;
+    background:
+      linear-gradient(155deg, rgba(198,153,47,0.18), transparent 60%),
+      linear-gradient(155deg, var(--navy), var(--navy-deep));
+  }
+  .app-header.is-home::after{
+    height:3px;
+    background:linear-gradient(90deg, var(--gold-light), var(--gold), var(--gold-light));
+    opacity:1;
+  }
   .app-header-home[hidden]{display:none;}
   .app-header-home-name-row{
     display:flex; align-items:center; justify-content:space-between; gap:8px;
@@ -13540,6 +13548,7 @@
      пока открыт корень главной; на любом детальном экране (в т.ч. «Смены»
      и «Профиля») шапка возвращается к обычному виду с заголовком экрана */
   function setAppHeaderMode(isHome) {
+    document.getElementById('appHeader').classList.toggle('is-home', isHome);
     document.getElementById('screenTitle').hidden = isHome;
     document.getElementById('screenSub').hidden = isHome;
     document.getElementById('appHeaderHome').hidden = !isHome;
