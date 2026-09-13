@@ -216,17 +216,11 @@
     opacity:.8;
   }
 
-  /* ---------- МН-01: шапка (фактура — только на главной) ---------- */
+  /* ---------- МН-01: шапка ----------
+     цвет фона и золотая нитка снизу — те же, что у обычной шапки на всех
+     экранах; на главной меняются только увеличенные вертикальные отступы */
   .app-header.is-home{
     padding:20px 24px 24px;
-    background:
-      linear-gradient(155deg, rgba(198,153,47,0.18), transparent 60%),
-      linear-gradient(155deg, var(--navy), var(--navy-deep));
-  }
-  .app-header.is-home::after{
-    height:3px;
-    background:linear-gradient(90deg, var(--gold-light), var(--gold), var(--gold-light));
-    opacity:1;
   }
   .app-header-home[hidden]{display:none;}
   .app-header-home-name-row{
@@ -2685,11 +2679,17 @@
   .home-thanks-person-role{font-size:11px; color:var(--text-muted); margin-top:1px;}
   .home-thanks-person-check{font-size:11px; font-weight:700; color:var(--accent); flex-shrink:0;}
 
-  /* ---------- События дня ---------- */
+  /* ---------- События дня: карусель ---------- */
+  #homeEventsRows{touch-action:pan-y;}
   .home-events-row{
     padding:5px 0;
   }
-  .home-events-row + .home-events-row{border-top:1px solid var(--card-border);}
+  .home-events-dots{display:flex; justify-content:center; gap:5px; margin-top:6px;}
+  .home-events-dot{
+    width:5px; height:5px; border-radius:50%;
+    background:var(--card-border);
+  }
+  .home-events-dot.active{background:var(--gold);}
   .home-events-head{display:flex; align-items:center; gap:6px; margin-bottom:4px;}
   .home-events-icon{
     display:flex; align-items:center; justify-content:center;
@@ -13289,10 +13289,13 @@
        профессиональный праздник, повышение. personalChat — только когда
        есть привязанный к человеку тред и есть кого поздравлять лично
        (не выводится для проф. праздника и даты заведения — это не про
-       конкретного человека). Демо временно сокращено до одного события —
-       остальные типы поддержаны кодом и добавляются сюда же */
+       конкретного человека) */
     events: [
-      { type: 'birthday', icon: '🎂', text: 'День рождения — Анна, хостес', personalChat: 'c4' }
+      { type: 'birthday', icon: '🎂', text: 'День рождения — Анна, хостес', personalChat: 'c4' },
+      { type: 'anniversary', icon: '🎉', text: 'Игорь работает в ресторане 2 года', personalChat: 'c3' },
+      { type: 'venue-date', icon: '📅', text: '5 лет ресторану «Депо»' },
+      { type: 'pro-holiday', icon: '🍸', text: 'Профессиональный праздник — День бармена' },
+      { type: 'promotion', icon: '⭐', text: 'Дмитрий Орлов — повышение до бренд-шефа' }
     ]
   };
 
@@ -13508,27 +13511,53 @@
     if (hasStatsAccess) showHomeDetail('home-thanks-breakdown');
   });
 
+  /* ---------- События дня: карусель ----------
+     Несколько событий не показываются списком — по одному, со сменой
+     каждые 5 минут; можно и самому пролистать свайпом в любую сторону
+     (свайп сбрасывает и перезапускает таймер). Реакции запоминаются
+     отдельно на каждое событие (homeEventReactions по индексу) */
+  let homeEventIndex = 0;
+  let homeEventTimer = null;
+  const homeEventReactions = {};   // { [индекс события]: Set(эмодзи) }
+
+  function renderHomeEventDots(count, active) {
+    if (count <= 1) return '';
+    let dots = '';
+    for (let i = 0; i < count; i++) dots += '<span class="home-events-dot' + (i === active ? ' active' : '') + '"></span>';
+    return '<div class="home-events-dots">' + dots + '</div>';
+  }
+
   function renderHomeEvents() {
     const el = document.getElementById('homeEvents');
     const rows = HOME_DATA.events || [];
     if (!HOME_DATA.shiftOpen || !rows.length) { el.hidden = true; return; }
     el.hidden = false;
-    document.getElementById('homeEventsRows').innerHTML = rows.map((ev, i) =>
+    if (homeEventIndex >= rows.length) homeEventIndex = 0;
+    const i = homeEventIndex;
+    const ev = rows[i];
+    const active = homeEventReactions[i] || new Set();
+
+    document.getElementById('homeEventsRows').innerHTML =
       '<div class="home-events-row">' +
         '<div class="home-events-head"><span class="home-events-icon">' + ev.icon + '</span><span class="home-events-text">' + ev.text + '</span></div>' +
         '<div class="home-events-controls">' +
           '<div class="home-events-reactions">' +
-            ['👍', '❤️', '🎉', '👏'].map(e => '<button class="home-events-reaction" data-event="' + i + '">' + e + '</button>').join('') +
+            ['👍', '❤️', '🎉', '👏'].map(e => '<button class="home-events-reaction' + (active.has(e) ? ' active' : '') + '" data-emoji="' + e + '">' + e + '</button>').join('') +
           '</div>' +
           '<div class="home-events-actions">' +
             (ev.personalChat ? '<button class="home-events-btn is-primary" data-event-chat="' + ev.personalChat + '">Лично</button>' : '') +
             '<button class="home-events-btn" data-event-chat="c1">В общем чате</button>' +
           '</div>' +
         '</div>' +
-      '</div>'
-    ).join('');
+      '</div>' +
+      renderHomeEventDots(rows.length, i);
+
     document.querySelectorAll('.home-events-reaction').forEach(btn => {
-      btn.addEventListener('click', () => btn.classList.toggle('active'));
+      btn.addEventListener('click', () => {
+        const set = homeEventReactions[i] || (homeEventReactions[i] = new Set());
+        if (set.has(btn.dataset.emoji)) set.delete(btn.dataset.emoji); else set.add(btn.dataset.emoji);
+        btn.classList.toggle('active');
+      });
     });
     document.querySelectorAll('[data-event-chat]').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -13538,6 +13567,41 @@
       });
     });
   }
+
+  function goToHomeEvent(delta) {
+    const rows = HOME_DATA.events || [];
+    if (rows.length < 2) return;
+    homeEventIndex = (homeEventIndex + delta + rows.length) % rows.length;
+    renderHomeEvents();
+    restartHomeEventTimer();
+  }
+
+  function restartHomeEventTimer() {
+    clearInterval(homeEventTimer);
+    if ((HOME_DATA.events || []).length > 1) {
+      homeEventTimer = setInterval(() => goToHomeEvent(1), 5 * 60 * 1000);
+    }
+  }
+
+  /* свайп влево/вправо по карточке события — вручную на pointer-событиях,
+     как перетаскивание папок чатов (folderTabsEl) в этом же файле */
+  (() => {
+    const el = document.getElementById('homeEventsRows');
+    let dragging = false, startX = 0, moved = false;
+    el.addEventListener('pointerdown', e => { dragging = true; moved = false; startX = e.clientX; });
+    el.addEventListener('pointermove', e => {
+      if (!dragging) return;
+      if (Math.abs(e.clientX - startX) > 4) moved = true;
+    });
+    el.addEventListener('pointerup', e => {
+      if (!dragging) return;
+      dragging = false;
+      const dx = e.clientX - startX;
+      if (Math.abs(dx) > 30) goToHomeEvent(dx < 0 ? 1 : -1);
+    });
+    /* клик по кнопке/реакции внутри карточки — не считаем свайпом */
+    el.addEventListener('click', e => { if (moved) { e.stopPropagation(); e.preventDefault(); } }, true);
+  })();
 
   /* ---------- Показ детальных экранов Главной ----------
      Свои независимые show/hide, как у экранов «Профиля» — общий
@@ -13584,6 +13648,7 @@
     renderHomeThanks();
     renderHomeThanksBreakdown();
     renderHomeEvents();
+    restartHomeEventTimer();
   }
   renderHome();
   setInterval(renderHomeHeader, 60000);
