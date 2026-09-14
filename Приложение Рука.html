@@ -2751,7 +2751,8 @@
   .home-contest-row strong{font-family:'IBM Plex Mono', monospace; font-size:14px; color:var(--khaki-block-value); font-weight:500;}
 
   /* ---------- Загрузка зала ---------- */
-  .home-hallload-body{display:flex; align-items:center; gap:16px; margin-top:8px;}
+  .home-hallload-body{display:flex; align-items:flex-start; gap:16px; margin-top:8px;}
+  .home-hallload-ring-col{display:flex; flex-direction:column; align-items:flex-start; gap:8px; flex-shrink:0;}
   .home-hallload-ring-wrap{position:relative; flex-shrink:0; width:100px; height:100px;}
   .home-hallload-ring{width:100px; height:100px; transform:rotate(-90deg); transform-origin:50% 50%;}
   .home-hallload-track{fill:none; stroke:var(--khaki-block-track); stroke-width:11;}
@@ -2775,6 +2776,8 @@
   .home-hallload-info-row strong{font-family:'IBM Plex Mono', monospace; font-size:15px; color:var(--khaki-block-value); font-weight:500;}
   .home-hallload-peak-line{font-size:11.5px; color:var(--khaki-block-title); margin-top:2px;}
   .home-hallload-updated{margin-top:10px; font-size:10.5px; color:var(--khaki-block-title); opacity:.75; text-align:right;}
+  /* на «Главной» (не на детальном экране) «Обновлено» — под кружком, слева */
+  .home-hallload-ring-col .home-hallload-updated{margin-top:0; text-align:left;}
   .home-hallload-zones{margin-top:12px;}
   .stat-block.no-drill{cursor:default;}
   .stat-block.no-drill:active{transform:none;}
@@ -2794,18 +2797,18 @@
 
   /* ---------- Спасибо ---------- */
   .home-thanks-row{
-    display:flex; align-items:center; justify-content:space-between;
+    display:flex; flex-direction:column; align-items:stretch;
     gap:10px;
-    margin-top:10px;
   }
   .home-thanks-count{
     font-family:'Fraunces', serif;
     font-weight:600;
     font-size:15px;
+    line-height:1.35;
     color:var(--khaki-block-title);
   }
   .home-thanks-btn{
-    flex-shrink:0;
+    display:block; width:100%; text-align:center;
     background:linear-gradient(160deg, var(--gold-light), var(--gold));
     border:none;
     border-radius:999px;
@@ -5287,22 +5290,24 @@
           </div>
           <div class="home-plashka">
             <div class="home-hallload-body">
-              <div class="home-hallload-ring-wrap">
-                <svg class="home-hallload-ring" viewBox="0 0 100 100">
-                  <defs>
-                    <linearGradient id="homeHallLoadGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stop-color="var(--gold-light)"/>
-                      <stop offset="100%" stop-color="var(--gold)"/>
-                    </linearGradient>
-                  </defs>
-                  <circle class="home-hallload-track" cx="50" cy="50" r="44"/>
-                  <circle class="home-hallload-peak" id="homeHallLoadPeakArc" cx="50" cy="50" r="44"/>
-                  <circle class="home-hallload-progress" id="homeHallLoadProgressArc" cx="50" cy="50" r="44"/>
-                </svg>
-                <div class="home-hallload-center">
-                  <span class="home-hallload-percent" id="homeHallLoadPercent">—%</span>
-                  <span class="home-hallload-caption">зала занято</span>
+              <div class="home-hallload-ring-col">
+                <div class="home-hallload-ring-wrap">
+                  <svg class="home-hallload-ring" viewBox="0 0 100 100">
+                    <defs>
+                      <linearGradient id="homeHallLoadGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="var(--gold-light)"/>
+                        <stop offset="100%" stop-color="var(--gold)"/>
+                      </linearGradient>
+                    </defs>
+                    <circle class="home-hallload-track" cx="50" cy="50" r="44"/>
+                    <circle class="home-hallload-progress" id="homeHallLoadProgressArc" cx="50" cy="50" r="44"/>
+                  </svg>
+                  <div class="home-hallload-center">
+                    <span class="home-hallload-percent" id="homeHallLoadPercent">—%</span>
+                    <span class="home-hallload-caption">зала занято</span>
+                  </div>
                 </div>
+                <div class="home-hallload-updated" id="homeHallLoadUpdated"></div>
               </div>
               <div class="home-hallload-info">
                 <div class="home-hallload-info-row"><strong id="homeHallLoadGuests">—</strong><span>гостей в зале</span></div>
@@ -5310,7 +5315,6 @@
                 <div class="home-hallload-peak-line" id="homeHallLoadPeakLine"></div>
               </div>
             </div>
-            <div class="home-hallload-updated" id="homeHallLoadUpdated"></div>
           </div>
         </div>
 
@@ -13746,11 +13750,14 @@
     const updatedAt = now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0');
 
     [
-      { arc: 'homeHallLoadProgressArc', peakArc: 'homeHallLoadPeakArc', percentEl: 'homeHallLoadPercent', guestsEl: 'homeHallLoadGuests', tablesEl: 'homeHallLoadTables', peakLineEl: 'homeHallLoadPeakLine', updatedEl: 'homeHallLoadUpdated' },
+      /* на «Главной» кольцо — только 2 цвета (трек + заполнение), без
+         отдельной дуги пика — она была едва заметна и путала с третьим
+         цветом; на детальном экране пик остаётся */
+      { arc: 'homeHallLoadProgressArc', percentEl: 'homeHallLoadPercent', guestsEl: 'homeHallLoadGuests', tablesEl: 'homeHallLoadTables', peakLineEl: 'homeHallLoadPeakLine', updatedEl: 'homeHallLoadUpdated' },
       { arc: 'homeHallLoadDetailProgressArc', peakArc: 'homeHallLoadDetailPeakArc', percentEl: 'homeHallLoadDetailPercent', guestsEl: 'homeHallLoadDetailGuests', tablesEl: 'homeHallLoadDetailTables', peakLineEl: 'homeHallLoadDetailPeakLine', updatedEl: 'homeHallLoadDetailUpdated' }
     ].forEach(m => {
       renderHomeHallLoadArc(document.getElementById(m.arc), percent / 100);
-      renderHomeHallLoadArc(document.getElementById(m.peakArc), peak.percent / 100);
+      if (m.peakArc) renderHomeHallLoadArc(document.getElementById(m.peakArc), peak.percent / 100);
       document.getElementById(m.percentEl).textContent = percent + '%';
       document.getElementById(m.guestsEl).textContent = guests;
       document.getElementById(m.tablesEl).textContent = openTables.length + ' из ' + tables.length;
