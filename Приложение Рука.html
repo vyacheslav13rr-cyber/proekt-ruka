@@ -158,17 +158,22 @@
     background:
       radial-gradient(120% 55% at 12% 0%, rgba(198,153,47,0.16), transparent 60%),
       linear-gradient(165deg, var(--beige) 0%, #E7D7B0 45%, #DCC89A 100%);
-    --khaki-block-bg:linear-gradient(160deg, #FBF3DC, #F2E2AE);
-    --khaki-block-border:rgba(198,153,47,0.28);
-    --khaki-block-title:#7D611E;
-    --khaki-block-track:rgba(198,153,47,0.16);
+    --khaki-block-bg:linear-gradient(160deg, #FDF8EC, #F6EBC9);
+    --khaki-block-border:rgba(198,153,47,0.24);
+    --khaki-block-title:#6B5219;
+    --khaki-block-track:rgba(198,153,47,0.14);
   }
+  /* тёмная тема: плашка должна быть заметно темнее текста на ней — раньше
+     фон и текст (оба «золотые») были слишком близки по светлоте и текст
+     буквально сливался с плашкой; здесь фон приглушённый и глубокий, а
+     текст (--khaki-block-title/value, не переопределены — светлые по
+     умолчанию) на нём чётко читается */
   .screen.dark.home-tab{
     background:
       radial-gradient(120% 55% at 12% 0%, rgba(233,203,126,0.14), transparent 60%),
       linear-gradient(165deg, var(--navy) 0%, #1B3654 45%, var(--navy-deep) 100%);
-    --khaki-block-bg:linear-gradient(160deg, #A17F2E, #6E5316);
-    --khaki-block-border:rgba(233,203,126,0.28);
+    --khaki-block-bg:linear-gradient(160deg, #5C461E, #392B12);
+    --khaki-block-border:rgba(233,203,126,0.22);
     --khaki-block-track:rgba(233,203,126,0.16);
   }
 
