@@ -163,19 +163,28 @@
     --khaki-block-title:#6B5219;
     --khaki-block-track:rgba(198,153,47,0.14);
   }
-  /* тёмная тема: плашка должна быть заметно темнее текста на ней — раньше
-     фон и текст (оба «золотые») были слишком близки по светлоте и текст
-     буквально сливался с плашкой; здесь фон приглушённый и глубокий, а
-     текст (--khaki-block-title/value, не переопределены — светлые по
-     умолчанию) на нём чётко читается */
+  /* тёмная тема: тёмная плашка со светлым текстом уже дважды не давала
+     уверенного контраста (то фон и текст сливались, то — сделав фон
+     темнее — стало «слишком темно, не видно»). Вместо этого плашка здесь
+     той же светлой золотистой заливки и с тем же тёмным текстом, что и в
+     светлой теме — просто светлая карточка на тёмном фоне блока, читается
+     спокойно, без «слияния» */
   .screen.dark.home-tab{
     background:
       radial-gradient(120% 55% at 12% 0%, rgba(233,203,126,0.14), transparent 60%),
       linear-gradient(165deg, var(--navy) 0%, #1B3654 45%, var(--navy-deep) 100%);
-    --khaki-block-bg:linear-gradient(160deg, #5C461E, #392B12);
-    --khaki-block-border:rgba(233,203,126,0.22);
-    --khaki-block-track:rgba(233,203,126,0.16);
+    --khaki-block-bg:linear-gradient(160deg, #FDF8EC, #F6EBC9);
+    --khaki-block-border:rgba(110,74,52,0.22);
+    --khaki-block-title:#6B5219;
+    --khaki-block-value:var(--navy);
+    --khaki-block-track:rgba(198,153,47,0.16);
   }
+  /* кружок-таймер/счётчик/активная миниатюра живут в шапке блока — там,
+     где фон остался тёмным (нейтральным), а не на светлой плашке — им
+     нужен свой, светлый цвет вместо потемневшего --khaki-block-value */
+  .screen.dark.home-tab .home-deck-ring{background:conic-gradient(var(--gold-light) calc(var(--p, 0) * 1%), var(--khaki-block-track) 0);}
+  .screen.dark.home-tab .home-deck-count{color:var(--gold-light);}
+  .screen.dark.home-tab .home-deck-chip.active{border-color:var(--gold-light);}
 
   .notch{
     position:absolute;
@@ -2856,15 +2865,15 @@
     display:flex; align-items:center; justify-content:center;
     width:26px; height:26px;
     border-radius:50%;
-    background:var(--segment-track);
+    background:var(--khaki-block-track);
     font-size:14px;
     flex-shrink:0;
   }
-  .home-events-text{font-size:13px; line-height:1.4; color:var(--text-primary);}
+  .home-events-text{font-size:13px; line-height:1.4; color:var(--khaki-block-title);}
 
   .home-events-reactions{display:flex; gap:5px; flex-wrap:wrap; margin-top:9px;}
   .home-events-reaction{
-    border:1px solid var(--card-border);
+    border:1px solid var(--khaki-block-border);
     background:none;
     border-radius:9px;
     padding:3px 7px;
@@ -2875,8 +2884,8 @@
     transition:border-color .15s ease, background .15s ease;
   }
   .home-events-reaction.active{border-color:var(--gold); background:rgba(198,153,47,0.12);}
-  .home-events-reaction-count{font-family:'IBM Plex Mono', monospace; font-size:10px; color:var(--text-muted);}
-  .home-events-reaction.active .home-events-reaction-count{color:var(--accent);}
+  .home-events-reaction-count{font-family:'IBM Plex Mono', monospace; font-size:10px; color:var(--khaki-block-title); opacity:.75;}
+  .home-events-reaction.active .home-events-reaction-count{color:var(--khaki-block-value); opacity:1;}
   @keyframes homeEventsPop{
     0%{transform:scale(1) rotate(0);}
     40%{transform:scale(1.35) rotate(-8deg);}
