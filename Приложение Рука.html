@@ -2594,10 +2594,27 @@
      самой шапке (.app-header-home, см. выше); в контенте они не дублируются */
   #homeRoot{margin-top:14px;}   /* тот же отступ от шапки, что у .shift-list на «Смене» */
 
+  /* правый кластер в шапке блока: (кружок+счётчик, если есть) → инфо-иконка
+     → шеврон (если есть) — сама шапка уже flex space-between, слева просто
+     заголовок */
+  .home-head-actions{display:flex; align-items:center; gap:8px; flex-shrink:0;}
+
+  /* «плашка» с текстом внутри блока — как в «Важной информации»/«Событиях
+     дня» (там это .home-deck-card), только для более простых блоков без
+     колоды: тот же карточный вид (фон/рамка/тень), просто оборачивает
+     содержимое блока целиком */
+  .home-plashka{
+    margin-top:10px;
+    border-radius:13px;
+    background:var(--khaki-block-bg);
+    border:1px solid var(--khaki-block-border);
+    box-shadow:0 8px 18px var(--card-shadow), 0 0 0 1.5px color-mix(in srgb, var(--khaki-block-value) 30%, transparent);
+    padding:12px 13px;
+  }
+
   /* инфо-иконка «что за блок» — есть у каждого блока Главной, открывает
      общую подсказку (#homeBlockInfoOverlay); цвет подстраивается под
      карточку через .khaki-variant/.stat-block ниже */
-  .home-title-row{display:flex; align-items:center; gap:6px; min-width:0;}
   .home-info-btn{
     display:flex; align-items:center; justify-content:center;
     width:17px; height:17px; flex-shrink:0;
@@ -5196,13 +5213,13 @@
         <!-- 1. Важная информация -->
         <div class="list-block khaki-variant static-block" id="homeImportant">
           <div class="list-block-head">
-            <span class="home-title-row">
-              <span class="list-block-title">Важная информация</span>
+            <span class="list-block-title">Важная информация</span>
+            <span class="home-head-actions">
+              <span class="home-deck-meta" id="homeImportantMeta" hidden>
+                <span class="home-deck-ring" id="homeImportantRing"></span>
+                <span class="home-deck-count" id="homeImportantCount"></span>
+              </span>
               <button class="home-info-btn" data-info="important" aria-label="Что за блок">i</button>
-            </span>
-            <span class="home-deck-meta" id="homeImportantMeta" hidden>
-              <span class="home-deck-ring" id="homeImportantRing"></span>
-              <span class="home-deck-count" id="homeImportantCount"></span>
             </span>
           </div>
           <div class="home-deck-stage" id="homeImportantStage">
@@ -5218,13 +5235,13 @@
         <!-- 2. События дня -->
         <div class="list-block static-block home-events" id="homeEvents" hidden>
           <div class="list-block-head">
-            <span class="home-title-row">
-              <span class="list-block-title">События дня</span>
+            <span class="list-block-title">События дня</span>
+            <span class="home-head-actions">
+              <span class="home-deck-meta" id="homeEventsMeta" hidden>
+                <span class="home-deck-ring" id="homeEventsRing"></span>
+                <span class="home-deck-count" id="homeEventsCount"></span>
+              </span>
               <button class="home-info-btn" data-info="events" aria-label="Что за блок">i</button>
-            </span>
-            <span class="home-deck-meta" id="homeEventsMeta" hidden>
-              <span class="home-deck-ring" id="homeEventsRing"></span>
-              <span class="home-deck-count" id="homeEventsCount"></span>
             </span>
           </div>
           <div class="home-deck-stage" id="homeEventsStage">
@@ -5240,88 +5257,98 @@
         <!-- 3. Загрузка зала -->
         <div class="stat-block" id="homeHallLoad">
           <div class="stat-block-head">
-            <span class="home-title-row">
-              <span class="stat-block-title">Загрузка зала</span>
+            <span class="stat-block-title">Загрузка зала</span>
+            <span class="home-head-actions">
               <button class="home-info-btn" data-info="hallload" aria-label="Что за блок">i</button>
+              <svg class="chevron" id="homeHallLoadChevron" viewBox="0 0 24 24" hidden><path d="M9 5l7 7-7 7"/></svg>
             </span>
-            <svg class="chevron" id="homeHallLoadChevron" viewBox="0 0 24 24" hidden><path d="M9 5l7 7-7 7"/></svg>
           </div>
-          <div class="home-hallload-body">
-            <div class="home-hallload-ring-wrap">
-              <svg class="home-hallload-ring" viewBox="0 0 100 100">
-                <defs>
-                  <linearGradient id="homeHallLoadGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="var(--gold-light)"/>
-                    <stop offset="100%" stop-color="var(--gold)"/>
-                  </linearGradient>
-                </defs>
-                <circle class="home-hallload-track" cx="50" cy="50" r="44"/>
-                <circle class="home-hallload-peak" id="homeHallLoadPeakArc" cx="50" cy="50" r="44"/>
-                <circle class="home-hallload-progress" id="homeHallLoadProgressArc" cx="50" cy="50" r="44"/>
-              </svg>
-              <div class="home-hallload-center">
-                <span class="home-hallload-percent" id="homeHallLoadPercent">—%</span>
-                <span class="home-hallload-caption">зала занято</span>
+          <div class="home-plashka">
+            <div class="home-hallload-body">
+              <div class="home-hallload-ring-wrap">
+                <svg class="home-hallload-ring" viewBox="0 0 100 100">
+                  <defs>
+                    <linearGradient id="homeHallLoadGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="var(--gold-light)"/>
+                      <stop offset="100%" stop-color="var(--gold)"/>
+                    </linearGradient>
+                  </defs>
+                  <circle class="home-hallload-track" cx="50" cy="50" r="44"/>
+                  <circle class="home-hallload-peak" id="homeHallLoadPeakArc" cx="50" cy="50" r="44"/>
+                  <circle class="home-hallload-progress" id="homeHallLoadProgressArc" cx="50" cy="50" r="44"/>
+                </svg>
+                <div class="home-hallload-center">
+                  <span class="home-hallload-percent" id="homeHallLoadPercent">—%</span>
+                  <span class="home-hallload-caption">зала занято</span>
+                </div>
+              </div>
+              <div class="home-hallload-info">
+                <div class="home-hallload-info-row"><strong id="homeHallLoadGuests">—</strong><span>гостей в зале</span></div>
+                <div class="home-hallload-info-row"><strong id="homeHallLoadTables">—</strong><span>столов занято</span></div>
+                <div class="home-hallload-peak-line" id="homeHallLoadPeakLine"></div>
               </div>
             </div>
-            <div class="home-hallload-info">
-              <div class="home-hallload-info-row"><strong id="homeHallLoadGuests">—</strong><span>гостей в зале</span></div>
-              <div class="home-hallload-info-row"><strong id="homeHallLoadTables">—</strong><span>столов занято</span></div>
-              <div class="home-hallload-peak-line" id="homeHallLoadPeakLine"></div>
-            </div>
+            <div class="home-hallload-updated" id="homeHallLoadUpdated"></div>
           </div>
-          <div class="home-hallload-updated" id="homeHallLoadUpdated"></div>
         </div>
 
         <!-- 4. Конкурс продаж -->
         <div class="list-block khaki-variant static-block" id="homeContest">
           <div class="list-block-head">
-            <span class="home-title-row">
-              <span class="list-block-title">Конкурс продаж</span>
+            <span class="list-block-title">Конкурс продаж</span>
+            <span class="home-head-actions">
               <button class="home-info-btn" data-info="contest" aria-label="Что за блок">i</button>
             </span>
           </div>
-          <div id="homeContestRows"></div>
+          <div class="home-plashka">
+            <div id="homeContestRows"></div>
+          </div>
         </div>
 
         <!-- 5. Благодарю! -->
         <div class="list-block khaki-variant static-block home-thanks" id="homeThanks" hidden>
           <div class="list-block-head">
-            <span class="home-title-row">
-              <span class="list-block-title">Благодарю!</span>
+            <span class="list-block-title">Благодарю!</span>
+            <span class="home-head-actions">
               <button class="home-info-btn" data-info="thanks" aria-label="Что за блок">i</button>
+              <svg class="chevron" id="homeThanksChevron" viewBox="0 0 24 24" hidden><path d="M9 5l7 7-7 7"/></svg>
             </span>
-            <svg class="chevron" id="homeThanksChevron" viewBox="0 0 24 24" hidden><path d="M9 5l7 7-7 7"/></svg>
           </div>
-          <div class="home-thanks-row">
-            <span class="home-thanks-count" id="homeThanksCount"></span>
-            <button class="home-thanks-btn" id="homeThanksBtn">Сказать спасибо</button>
+          <div class="home-plashka">
+            <div class="home-thanks-row">
+              <span class="home-thanks-count" id="homeThanksCount"></span>
+              <button class="home-thanks-btn" id="homeThanksBtn">Сказать спасибо</button>
+            </div>
           </div>
         </div>
 
         <!-- 6. Новости -->
-        <div class="list-block static-block news-block">
+        <div class="list-block khaki-variant static-block news-block">
           <div class="list-block-head">
-            <span class="home-title-row">
-              <span class="list-block-title" id="homeNewsTitle">Новости</span>
+            <span class="list-block-title" id="homeNewsTitle">Новости</span>
+            <span class="home-head-actions">
               <button class="home-info-btn" data-info="news" aria-label="Что за блок">i</button>
             </span>
           </div>
-          <div class="news-list" id="homeNewsRows"></div>
+          <div class="home-plashka">
+            <div class="news-list" id="homeNewsRows"></div>
+          </div>
         </div>
 
         <!-- 7. Держим планку (всегда последний блок) -->
-        <div class="list-block static-block">
+        <div class="list-block khaki-variant static-block">
           <div class="list-block-head">
-            <span class="home-title-row">
-              <span class="list-block-title">Держим планку</span>
+            <span class="list-block-title">Держим планку</span>
+            <span class="home-head-actions">
               <button class="home-info-btn" data-info="streaks" aria-label="Что за блок">i</button>
             </span>
           </div>
-          <div class="home-streaks-row">
-            <div class="home-streak-item"><strong id="homeStreakReturns">—</strong><span>дней без возвратов</span></div>
-            <div class="home-streak-divider"></div>
-            <div class="home-streak-item"><strong id="homeStreakLate">—</strong><span>дней без опозданий</span></div>
+          <div class="home-plashka">
+            <div class="home-streaks-row">
+              <div class="home-streak-item"><strong id="homeStreakReturns">—</strong><span>дней без возвратов</span></div>
+              <div class="home-streak-divider"></div>
+              <div class="home-streak-item"><strong id="homeStreakLate">—</strong><span>дней без опозданий</span></div>
+            </div>
           </div>
         </div>
 
