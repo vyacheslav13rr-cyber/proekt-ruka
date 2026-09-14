@@ -2572,17 +2572,74 @@
      самой шапке (.app-header-home, см. выше); в контенте они не дублируются */
 
   /* ---------- Важная информация ---------- */
-  .home-important-list{display:flex; flex-direction:column; gap:8px; margin-top:10px;}
-  .home-important-row{
-    display:flex; align-items:flex-start; gap:8px;
-    font-size:13px; line-height:1.4;
-    color:var(--khaki-block-title);
-  }
+  /* один пост на виду (клэмп на 2 строки), сам листается раз в 5 минут
+     плавным затуханием; тап по посту — разворот целиком и кнопка
+     «Ознакомлен»; миниатюры внизу тянутся как папки чатов (.folder-tabs) */
   .home-important-dot{
     flex-shrink:0; width:7px; height:7px; border-radius:50%;
     margin-top:5px;
     background:var(--gold);
   }
+  .home-important-row-inner{display:flex; align-items:flex-start; gap:8px;}
+
+  .home-important-meta{display:flex; align-items:center; gap:6px;}
+  .home-important-meta[hidden]{display:none;}
+  .home-important-ring{
+    width:12px; height:12px; border-radius:50%; flex-shrink:0; opacity:.55;
+    background:conic-gradient(var(--khaki-block-value) calc(var(--p, 0) * 1%), var(--khaki-block-track) 0);
+    -webkit-mask-image:radial-gradient(farthest-side, transparent calc(100% - 2.4px), #000 calc(100% - 2.4px));
+    mask-image:radial-gradient(farthest-side, transparent calc(100% - 2.4px), #000 calc(100% - 2.4px));
+  }
+  .home-important-count{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; font-weight:500;
+    color:var(--khaki-block-value); background:var(--khaki-block-track);
+    padding:2px 8px; border-radius:999px;
+  }
+
+  .home-important-stage{position:relative; margin-top:10px;}
+  .home-important-back{position:absolute; inset:0; border-radius:13px; background:var(--khaki-block-track);}
+  .home-important-back.back1{transform:scale(.94) translateY(6px); opacity:.55;}
+  .home-important-back.back2{transform:scale(.88) translateY(11px); opacity:.3;}
+  .home-important-stage.single .home-important-back{display:none;}
+  .home-important-card{
+    position:relative; border-radius:13px;
+    background:var(--khaki-block-bg); border:1px solid var(--khaki-block-border);
+    box-shadow:0 8px 18px var(--card-shadow), 0 0 0 1.5px color-mix(in srgb, var(--khaki-block-value) 40%, transparent);
+    padding:10px 12px;
+    cursor:pointer;
+  }
+  .home-important-stage.expanded .home-important-card{cursor:default;}
+
+  .home-important-body{transition:opacity .3s ease;}
+  .home-important-body.fade{opacity:0;}
+  .home-important-body p{font-size:13px; line-height:1.4; color:var(--khaki-block-title); margin:0;}
+  .home-important-body p.clamped{
+    display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; line-clamp:2; overflow:hidden;
+  }
+  .home-important-ack{
+    display:block; width:100%; text-align:center; margin-top:10px;
+    padding:8px; border-radius:11px; border:none;
+    background:linear-gradient(160deg, var(--gold-light), var(--gold)); color:var(--navy-deep);
+    font-family:'Manrope', sans-serif; font-size:12px; font-weight:800; cursor:pointer;
+  }
+
+  .home-important-strip{
+    display:flex; gap:6px; margin-top:9px; overflow-x:auto; padding-bottom:2px;
+    scrollbar-width:none; -ms-overflow-style:none;
+    cursor:grab; user-select:none; touch-action:pan-x; -webkit-overflow-scrolling:touch;
+    mask-image:linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
+    -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
+  }
+  .home-important-strip[hidden]{display:none;}
+  .home-important-strip:active{cursor:grabbing;}
+  .home-important-strip::-webkit-scrollbar{display:none;}
+  .home-important-chip{
+    flex-shrink:0; max-width:150px; padding:5px 10px; border-radius:999px;
+    border:1px solid var(--khaki-block-border); background:transparent;
+    font-family:'Manrope', sans-serif; font-size:10.5px; color:var(--khaki-block-title); opacity:.65;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer;
+  }
+  .home-important-chip.active{opacity:1; border-color:var(--khaki-block-value); background:var(--khaki-block-track);}
 
   /* ---------- Конкурс продаж ---------- */
   .home-contest-row{
@@ -5067,8 +5124,19 @@
         <div class="list-block khaki-variant static-block" id="homeImportant">
           <div class="list-block-head">
             <span class="list-block-title">Важная информация</span>
+            <span class="home-important-meta" id="homeImportantMeta" hidden>
+              <span class="home-important-ring" id="homeImportantRing"></span>
+              <span class="home-important-count" id="homeImportantCount"></span>
+            </span>
           </div>
-          <div class="home-important-list" id="homeImportantList"></div>
+          <div class="home-important-stage" id="homeImportantStage">
+            <div class="home-important-back back2"></div>
+            <div class="home-important-back back1"></div>
+            <div class="home-important-card" id="homeImportantCardWrap">
+              <div class="home-important-body" id="homeImportantBody"></div>
+            </div>
+          </div>
+          <div class="home-important-strip" id="homeImportantStrip" hidden></div>
         </div>
 
         <!-- 2. События дня -->
@@ -13231,7 +13299,8 @@
     shiftNumber: 412,
     important: [
       'Завтра, 11:00 — выездная проверка СЭС, проверьте чек-лист закрытия смены',
-      'С 1 числа новый способ приёма чаевых картой — инструкция у управляющего'
+      'С 1 числа новый способ приёма чаевых картой — инструкция у управляющего',
+      'Годовая проверка вентиляции и холодильного оборудования — с понедельника по четверг. Сервисная бригада заходит в цеха группами по 15–20 минут, начиная с холодного цеха. Освободите доступ к щитам и не блокируйте технические двери коробками — вопросы по графику к бренд-шефу в общем чате'
     ],
     contest: { place: 2, placesTotal: 12, toFirstPlace: 4800, progress: 0.78 },
     hallLoadPeak: { percent: 82, time: '20:30' },   // демо-прогноз пика, не связан с текущей занятостью
@@ -13349,11 +13418,110 @@
   });
   document.getElementById('homeVenueBackBtn').addEventListener('click', showHomeHome);
 
+  let homeImportantIndex = 0;
+  let homeImportantExpanded = false;
+  let homeImportantTimer = null;
+  let homeImportantChangedAt = Date.now();
+  const HOME_IMPORTANT_INTERVAL_MS = 5 * 60 * 1000;
+
   function renderHomeImportant() {
-    document.getElementById('homeImportantList').innerHTML = (HOME_DATA.important || [])
-      .map(text => '<div class="home-important-row"><span class="home-important-dot"></span><span>' + text + '</span></div>')
-      .join('');
+    const items = HOME_DATA.important || [];
+    const wrap = document.getElementById('homeImportant');
+    if (!items.length) { wrap.hidden = true; return; }
+    wrap.hidden = false;
+    if (homeImportantIndex >= items.length) homeImportantIndex = 0;
+    const multi = items.length > 1;
+
+    document.getElementById('homeImportantBody').innerHTML =
+      '<div class="home-important-row-inner">' +
+        '<span class="home-important-dot"></span>' +
+        '<p class="' + (homeImportantExpanded ? '' : 'clamped') + '">' + items[homeImportantIndex] + '</p>' +
+      '</div>' +
+      (homeImportantExpanded ? '<button class="home-important-ack" id="homeImportantAck">Ознакомлен</button>' : '');
+
+    document.getElementById('homeImportantStage').classList.toggle('expanded', homeImportantExpanded);
+    document.getElementById('homeImportantStage').classList.toggle('single', !multi);
+
+    document.getElementById('homeImportantMeta').hidden = !multi;
+    const stripEl = document.getElementById('homeImportantStrip');
+    stripEl.hidden = !multi;
+    if (multi) {
+      document.getElementById('homeImportantCount').textContent = (homeImportantIndex + 1) + '/' + items.length;
+      stripEl.innerHTML = items.map((text, i) =>
+        '<button class="home-important-chip' + (i === homeImportantIndex ? ' active' : '') + '" data-i="' + i + '">' + text + '</button>'
+      ).join('');
+      stripEl.querySelectorAll('.home-important-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          if (homeImportantStripMoved) return;
+          goToHomeImportant(Number(chip.dataset.i));
+        });
+      });
+    }
   }
+
+  function goToHomeImportant(index) {
+    const items = HOME_DATA.important || [];
+    if (!items.length || homeImportantExpanded) return;
+    const body = document.getElementById('homeImportantBody');
+    body.classList.add('fade');
+    setTimeout(() => {
+      homeImportantIndex = ((index % items.length) + items.length) % items.length;
+      renderHomeImportant();
+      body.classList.remove('fade');
+    }, 260);
+  }
+
+  function restartHomeImportantTimer() {
+    clearInterval(homeImportantTimer);
+    homeImportantChangedAt = Date.now();
+    const items = HOME_DATA.important || [];
+    if (items.length > 1) {
+      homeImportantTimer = setInterval(() => goToHomeImportant(homeImportantIndex + 1), HOME_IMPORTANT_INTERVAL_MS);
+    }
+  }
+
+  /* тап по посту — разворот целиком и кнопка «Ознакомлен»; пока пост
+     развёрнут, автосмена стоит на паузе */
+  document.getElementById('homeImportantCardWrap').addEventListener('click', e => {
+    if (e.target.closest('#homeImportantAck')) {
+      homeImportantExpanded = false;
+      renderHomeImportant();
+      restartHomeImportantTimer();
+      return;
+    }
+    if (!homeImportantExpanded && (HOME_DATA.important || []).length) {
+      homeImportantExpanded = true;
+      clearInterval(homeImportantTimer);
+      renderHomeImportant();
+    }
+  });
+
+  /* малозаметное кольцо у счётчика — сколько времени осталось до автосмены;
+     считаем по фактическому времени, а не по тикам, чтобы не плыло на
+     свёрнутой вкладке */
+  setInterval(() => {
+    const items = HOME_DATA.important || [];
+    if (items.length <= 1 || homeImportantExpanded) return;
+    const pct = Math.min(100, Math.round((Date.now() - homeImportantChangedAt) / HOME_IMPORTANT_INTERVAL_MS * 100));
+    document.getElementById('homeImportantRing').style.setProperty('--p', pct);
+  }, 1000);
+
+  /* перетаскивание миниатюр мышью/пальцем — как папки чатов (folderTabsEl) в этом же файле */
+  let homeImportantStripDragActive = false, homeImportantStripMoved = false, homeImportantStripStartX = 0, homeImportantStripScrollLeft = 0;
+  const homeImportantStripEl = document.getElementById('homeImportantStrip');
+  homeImportantStripEl.addEventListener('pointerdown', e => {
+    homeImportantStripDragActive = true;
+    homeImportantStripMoved = false;
+    homeImportantStripStartX = e.clientX;
+    homeImportantStripScrollLeft = homeImportantStripEl.scrollLeft;
+  });
+  homeImportantStripEl.addEventListener('pointermove', e => {
+    if (!homeImportantStripDragActive) return;
+    const dx = e.clientX - homeImportantStripStartX;
+    if (Math.abs(dx) > 4) homeImportantStripMoved = true;
+    homeImportantStripEl.scrollLeft = homeImportantStripScrollLeft - dx;
+  });
+  window.addEventListener('pointerup', () => { homeImportantStripDragActive = false; });
 
   function renderHomeContest() {
     const c = HOME_DATA.contest;
@@ -13601,6 +13769,7 @@
   function renderHome() {
     renderHomeHeader();
     renderHomeImportant();
+    restartHomeImportantTimer();
     renderHomeContest();
     renderHomeHallLoad();
     renderHomeStreaks();
