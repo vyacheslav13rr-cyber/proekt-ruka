@@ -149,18 +149,27 @@
     flex-direction:column;
     transition:background .3s ease;
   }
-  /* только на «Главной» — тот же бежевый/хаки или синий/золотой, но
-     градиентом вместо ровной заливки, чтобы экран не выглядел плоским;
-     остальные вкладки остаются на обычном var(--content-bg) */
+  /* только на «Главной» — градиент вместо ровной заливки, чтобы экран не
+     выглядел плоским; остальные вкладки остаются на обычном var(--content-bg).
+     Заодно блоки на «Главной» (через --khaki-block-*) становятся нежно
+     золотистыми вместо цвета хаки — переопределение только в этой области,
+     «Смена» и другие вкладки со своим хаки-цветом не затрагиваются */
   .screen.home-tab{
     background:
       radial-gradient(120% 55% at 12% 0%, rgba(198,153,47,0.16), transparent 60%),
       linear-gradient(165deg, var(--beige) 0%, #E7D7B0 45%, #DCC89A 100%);
+    --khaki-block-bg:linear-gradient(160deg, #FBF3DC, #F2E2AE);
+    --khaki-block-border:rgba(198,153,47,0.28);
+    --khaki-block-title:#7D611E;
+    --khaki-block-track:rgba(198,153,47,0.16);
   }
   .screen.dark.home-tab{
     background:
       radial-gradient(120% 55% at 12% 0%, rgba(233,203,126,0.14), transparent 60%),
       linear-gradient(165deg, var(--navy) 0%, #1B3654 45%, var(--navy-deep) 100%);
+    --khaki-block-bg:linear-gradient(160deg, #A17F2E, #6E5316);
+    --khaki-block-border:rgba(233,203,126,0.28);
+    --khaki-block-track:rgba(233,203,126,0.16);
   }
 
   .notch{
@@ -2585,6 +2594,25 @@
      самой шапке (.app-header-home, см. выше); в контенте они не дублируются */
   #homeRoot{margin-top:14px;}   /* тот же отступ от шапки, что у .shift-list на «Смене» */
 
+  /* инфо-иконка «что за блок» — есть у каждого блока Главной, открывает
+     общую подсказку (#homeBlockInfoOverlay); цвет подстраивается под
+     карточку через .khaki-variant/.stat-block ниже */
+  .home-title-row{display:flex; align-items:center; gap:6px; min-width:0;}
+  .home-info-btn{
+    display:flex; align-items:center; justify-content:center;
+    width:17px; height:17px; flex-shrink:0;
+    border:1.4px solid currentColor; border-radius:50%;
+    background:none; padding:0;
+    font-family:'Fraunces', serif; font-style:italic; font-weight:600;
+    font-size:10.5px; line-height:1;
+    color:var(--text-muted);
+    opacity:.55;
+    cursor:pointer;
+  }
+  .home-info-btn:active{opacity:1; transform:scale(.92);}
+  .list-block.khaki-variant .home-info-btn,
+  .stat-block .home-info-btn{color:var(--khaki-block-title);}
+
   /* ---------- Общая «колода»: один пост/событие на виду, сам листается
      плавным затуханием, миниатюры внизу тянутся как папки чатов
      (.folder-tabs); используется и «Важной информацией», и «Событиями дня» */
@@ -2636,7 +2664,25 @@
 
   /* ---------- Важная информация ---------- */
   /* один пост на виду (клэмп на 2 строки), тема выделена над текстом; тап
-     по посту — разворот целиком и кнопка «Ознакомлен» */
+     по посту — разворот целиком и кнопка «Ознакомлен». Объявления — в
+     гармоничном синем цвете, а не в общем золоте остальных блоков
+     «Главной»: переопределяем --khaki-block-* только внутри #homeImportant,
+     это сильнее, чем заливка от .screen.home-tab выше */
+  #homeImportant{
+    --khaki-block-bg:linear-gradient(160deg, #EAF2FA, #D6E6F4);
+    --khaki-block-border:rgba(30,51,80,0.22);
+    --khaki-block-title:#2E4E75;
+    --khaki-block-value:var(--gold);
+    --khaki-block-track:rgba(30,51,80,0.14);
+  }
+  .screen.dark #homeImportant{
+    --khaki-block-bg:linear-gradient(160deg, #35597F, #1E3A5C);
+    --khaki-block-border:rgba(233,203,126,0.26);
+    --khaki-block-title:#E4EDF8;
+    --khaki-block-value:var(--gold-light);
+    --khaki-block-track:rgba(255,255,255,0.14);
+  }
+  #homeImportantCardWrap{touch-action:pan-y;}
   .home-important-dot{
     flex-shrink:0; width:7px; height:7px; border-radius:50%;
     margin-top:5px;
@@ -5150,7 +5196,10 @@
         <!-- 1. Важная информация -->
         <div class="list-block khaki-variant static-block" id="homeImportant">
           <div class="list-block-head">
-            <span class="list-block-title">Важная информация</span>
+            <span class="home-title-row">
+              <span class="list-block-title">Важная информация</span>
+              <button class="home-info-btn" data-info="important" aria-label="Что за блок">i</button>
+            </span>
             <span class="home-deck-meta" id="homeImportantMeta" hidden>
               <span class="home-deck-ring" id="homeImportantRing"></span>
               <span class="home-deck-count" id="homeImportantCount"></span>
@@ -5169,7 +5218,10 @@
         <!-- 2. События дня -->
         <div class="list-block static-block home-events" id="homeEvents" hidden>
           <div class="list-block-head">
-            <span class="list-block-title">События дня</span>
+            <span class="home-title-row">
+              <span class="list-block-title">События дня</span>
+              <button class="home-info-btn" data-info="events" aria-label="Что за блок">i</button>
+            </span>
             <span class="home-deck-meta" id="homeEventsMeta" hidden>
               <span class="home-deck-ring" id="homeEventsRing"></span>
               <span class="home-deck-count" id="homeEventsCount"></span>
@@ -5188,7 +5240,10 @@
         <!-- 3. Загрузка зала -->
         <div class="stat-block" id="homeHallLoad">
           <div class="stat-block-head">
-            <span class="stat-block-title">Загрузка зала</span>
+            <span class="home-title-row">
+              <span class="stat-block-title">Загрузка зала</span>
+              <button class="home-info-btn" data-info="hallload" aria-label="Что за блок">i</button>
+            </span>
             <svg class="chevron" id="homeHallLoadChevron" viewBox="0 0 24 24" hidden><path d="M9 5l7 7-7 7"/></svg>
           </div>
           <div class="home-hallload-body">
@@ -5221,7 +5276,10 @@
         <!-- 4. Конкурс продаж -->
         <div class="list-block khaki-variant static-block" id="homeContest">
           <div class="list-block-head">
-            <span class="list-block-title">Конкурс продаж</span>
+            <span class="home-title-row">
+              <span class="list-block-title">Конкурс продаж</span>
+              <button class="home-info-btn" data-info="contest" aria-label="Что за блок">i</button>
+            </span>
           </div>
           <div id="homeContestRows"></div>
         </div>
@@ -5229,7 +5287,10 @@
         <!-- 5. Благодарю! -->
         <div class="list-block khaki-variant static-block home-thanks" id="homeThanks" hidden>
           <div class="list-block-head">
-            <span class="list-block-title">Благодарю!</span>
+            <span class="home-title-row">
+              <span class="list-block-title">Благодарю!</span>
+              <button class="home-info-btn" data-info="thanks" aria-label="Что за блок">i</button>
+            </span>
             <svg class="chevron" id="homeThanksChevron" viewBox="0 0 24 24" hidden><path d="M9 5l7 7-7 7"/></svg>
           </div>
           <div class="home-thanks-row">
@@ -5241,14 +5302,22 @@
         <!-- 6. Новости -->
         <div class="list-block static-block news-block">
           <div class="list-block-head">
-            <span class="list-block-title" id="homeNewsTitle">Новости</span>
+            <span class="home-title-row">
+              <span class="list-block-title" id="homeNewsTitle">Новости</span>
+              <button class="home-info-btn" data-info="news" aria-label="Что за блок">i</button>
+            </span>
           </div>
           <div class="news-list" id="homeNewsRows"></div>
         </div>
 
         <!-- 7. Держим планку (всегда последний блок) -->
         <div class="list-block static-block">
-          <div class="list-block-head"><span class="list-block-title">Держим планку</span></div>
+          <div class="list-block-head">
+            <span class="home-title-row">
+              <span class="list-block-title">Держим планку</span>
+              <button class="home-info-btn" data-info="streaks" aria-label="Что за блок">i</button>
+            </span>
+          </div>
           <div class="home-streaks-row">
             <div class="home-streak-item"><strong id="homeStreakReturns">—</strong><span>дней без возвратов</span></div>
             <div class="home-streak-divider"></div>
@@ -7113,6 +7182,17 @@
         <div class="home-thanks-list" id="homeThanksList"></div>
         <div class="modal-actions-single">
           <button class="modal-btn modal-btn-ghost" id="homeThanksClose">Закрыть</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- МН-01: «Что за блок» — общая подсказка для всех блоков Главной -->
+    <div class="modal-overlay" id="homeBlockInfoOverlay" hidden>
+      <div class="modal-box">
+        <div class="modal-title" id="homeBlockInfoTitle"></div>
+        <p class="modal-note" id="homeBlockInfoText"></p>
+        <div class="modal-actions-single">
+          <button class="modal-btn modal-btn-ghost" id="homeBlockInfoClose">Понятно</button>
         </div>
       </div>
     </div>
@@ -13524,9 +13604,32 @@
     }
   }
 
+  /* свайп влево/вправо прямо по посту — вручную на pointer-событиях, как
+     у «Событий дня»/«Новостей»; тап (без сдвига) — разворот и «Ознакомлен» */
+  const homeImportantCardWrapEl = document.getElementById('homeImportantCardWrap');
+  let homeImportantSwipeActive = false, homeImportantSwipeStartX = 0, homeImportantSwipeMoved = false;
+  homeImportantCardWrapEl.addEventListener('pointerdown', e => {
+    homeImportantSwipeActive = true;
+    homeImportantSwipeMoved = false;
+    homeImportantSwipeStartX = e.clientX;
+  });
+  homeImportantCardWrapEl.addEventListener('pointermove', e => {
+    if (!homeImportantSwipeActive) return;
+    if (Math.abs(e.clientX - homeImportantSwipeStartX) > 4) homeImportantSwipeMoved = true;
+  });
+  homeImportantCardWrapEl.addEventListener('pointerup', e => {
+    if (!homeImportantSwipeActive) return;
+    homeImportantSwipeActive = false;
+    const dx = e.clientX - homeImportantSwipeStartX;
+    if (Math.abs(dx) > 30 && !homeImportantExpanded && (HOME_DATA.important || []).length > 1) {
+      goToHomeImportant(homeImportantIndex + (dx < 0 ? 1 : -1));
+    }
+  });
+
   /* тап по посту — разворот целиком и кнопка «Ознакомлен»; пока пост
      развёрнут, автосмена стоит на паузе */
-  document.getElementById('homeImportantCardWrap').addEventListener('click', e => {
+  homeImportantCardWrapEl.addEventListener('click', e => {
+    if (homeImportantSwipeMoved) return;   // это был свайп, а не тап
     if (e.target.closest('#homeImportantAck')) {
       homeImportantExpanded = false;
       renderHomeImportant();
@@ -13875,6 +13978,30 @@
   document.getElementById('homeThanksBackBtn').addEventListener('click', showHomeHome);
   document.getElementById('homeHallLoad').addEventListener('click', () => {
     if (hasStatsAccess) showHomeDetail('home-hallload');
+  });
+
+  /* ---------- «Что за блок» — общая подсказка по инфо-иконке ---------- */
+  const HOME_BLOCK_INFO = {
+    important: { title: 'Важная информация', text: 'Срочные объявления от управляющего — техосмотры, проверки, важные изменения. Листайте свайпом или миниатюрами внизу, тапните пост, чтобы прочитать целиком.' },
+    events: { title: 'События дня', text: 'Дни рождения, юбилеи и праздники сотрудников на сегодня. Отреагируйте эмодзи или нажмите на событие, чтобы поздравить.' },
+    hallload: { title: 'Загрузка зала', text: 'Сколько гостей и столов сейчас занято — ориентир, насколько загружен зал прямо сейчас.' },
+    contest: { title: 'Конкурс продаж', text: 'Ваше место в конкурсе продаж этой смены и сколько не хватает до первого места.' },
+    thanks: { title: 'Благодарю!', text: 'Скажите спасибо коллеге за помощь в смене — счётчик показывает, сколько раз уже поблагодарили за сегодня.' },
+    news: { title: 'Новости', text: 'Новости заведения: обновления меню, события, изменения в команде.' },
+    streaks: { title: 'Держим планку', text: 'Сколько дней подряд без возвратов и без опозданий — общая дисциплина смены.' }
+  };
+  document.querySelectorAll('.home-info-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const info = HOME_BLOCK_INFO[btn.dataset.info];
+      if (!info) return;
+      document.getElementById('homeBlockInfoTitle').textContent = info.title;
+      document.getElementById('homeBlockInfoText').textContent = info.text;
+      document.getElementById('homeBlockInfoOverlay').hidden = false;
+    });
+  });
+  document.getElementById('homeBlockInfoClose').addEventListener('click', () => {
+    document.getElementById('homeBlockInfoOverlay').hidden = true;
   });
 
   function renderHome() {
