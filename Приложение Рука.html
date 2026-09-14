@@ -230,11 +230,6 @@
     transition:opacity .15s ease;
   }
   .app-header-home-name-row:active{opacity:.8;}
-  .app-header-home-name-row .chevron{
-    width:18px; height:18px; flex-shrink:0;
-    stroke:var(--cream); fill:none;
-    stroke-width:2; stroke-linecap:round; stroke-linejoin:round;
-  }
   .app-header-home-name{
     font-family:'Fraunces', serif;
     font-weight:600;
@@ -246,6 +241,12 @@
     margin-top:3px;
     font-size:12.5px;
     color:var(--khaki);
+    font-family:'Manrope', sans-serif;
+  }
+  .app-header-home-shift{
+    margin-top:2px;
+    font-size:12px;
+    color:var(--gold-light);
     font-family:'Manrope', sans-serif;
   }
   /* знак РУКА — виден на каждом экране, он же кнопка чата с ассистентом */
@@ -2530,8 +2531,8 @@
   /* «×» перед количеством в «Курсах» (см. qtyRow) — чуть приглушённее самой
      цифры, чтобы читался как единица измерения, а не как второй разряд числа */
   .order-qty-x{opacity:.6; margin-right:1px;}
-  /* ---------- МН-01: виджет «Новости» ---------- */
-  .news-list{display:flex; flex-direction:column; margin-top:12px;}
+  /* ---------- МН-01: виджет «Новости» (карусель, по одной за раз) ---------- */
+  .news-list{display:flex; flex-direction:column; margin-top:12px; touch-action:pan-y;}
   .news-item{padding:11px 0;}
   .news-item:first-child{padding-top:0;}
   .news-item:last-child{padding-bottom:0;}
@@ -4816,9 +4817,9 @@
       <div class="app-header-home" id="appHeaderHome" hidden>
         <div class="app-header-home-name-row" id="homeVenueOpenBtn">
           <span class="app-header-home-name" id="homeShiftName"></span>
-          <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
         </div>
         <div class="app-header-home-date" id="homeShiftDate"></div>
+        <div class="app-header-home-shift" id="homeShiftLineHeader"></div>
       </div>
       <button class="header-back" id="headerBack" hidden>
         <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
@@ -5155,40 +5156,7 @@
           <div class="list-block-head">
             <span class="list-block-title" id="homeNewsTitle">Новости</span>
           </div>
-          <div class="news-list">
-            <div class="news-item">
-              <div class="news-item-top">
-                <span class="news-tag">Меню</span>
-                <span class="news-date">2 сентября</span>
-              </div>
-              <div class="news-title">Осеннее меню от шеф-повара</div>
-              <div class="news-text">В карте — крем-суп из тыквы с кедровым маслом, утка с айвой и новый десерт «Груша, мёд, грецкий орех».</div>
-            </div>
-            <div class="news-item">
-              <div class="news-item-top">
-                <span class="news-tag">Событие</span>
-                <span class="news-date">5 сентября</span>
-              </div>
-              <div class="news-title">Вечер живого джаза</div>
-              <div class="news-text">В пятницу с 20:00 в зале играет трио — контрабас, фортепиано, саксофон. Столики у сцены бронируются отдельно.</div>
-            </div>
-            <div class="news-item">
-              <div class="news-item-top">
-                <span class="news-tag">Команда</span>
-                <span class="news-date">30 августа</span>
-              </div>
-              <div class="news-title">Новый су-шеф в команде</div>
-              <div class="news-text">К нам присоединился Дмитрий Орлов — ранее работал в «Белом Кролике». Первую неделю проведёт на линии вместе с поварами цеха.</div>
-            </div>
-            <div class="news-item">
-              <div class="news-item-top">
-                <span class="news-tag">Кухня</span>
-                <span class="news-date">28 августа</span>
-              </div>
-              <div class="news-title">Обновили линию раздачи</div>
-              <div class="news-text">Заменили тепловую витрину и модуль подогрева тарелок — время выдачи блюд должно сократиться.</div>
-            </div>
-          </div>
+          <div class="news-list" id="homeNewsRows"></div>
         </div>
 
         </div>
@@ -6375,7 +6343,7 @@
               <span class="profile-avatar" id="profileCardAvatar">ДВ</span>
               <div class="profile-card-id">
                 <span class="profile-card-name" id="profileCardName">Дарья Волкова</span>
-                <span class="profile-card-role" id="profileCardRole">Управляющая · Ресторан «Депо»</span>
+                <span class="profile-card-role" id="profileCardRole">Управляющая · Ресторан «Москва»</span>
               </div>
             </div>
             <div class="profile-card-rows">
@@ -6458,7 +6426,7 @@
             <div class="settings-divider"></div>
             <div class="profile-field-row profile-field-static">
               <span class="profile-field-label">Заведение</span>
-              <span class="profile-field-value">Ресторан «Депо»</span>
+              <span class="profile-field-value">Ресторан «Москва»</span>
             </div>
             <div class="settings-divider"></div>
             <div class="profile-field-row profile-field-static">
@@ -7187,7 +7155,7 @@
 
         <div class="auth-note-box">
           <svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg>
-          <span class="auth-note-box-text">Код приглашения от заведения уже проверен: «Ресторан «Депо»»</span>
+          <span class="auth-note-box-text">Код приглашения от заведения уже проверен: «Ресторан «Москва»»</span>
         </div>
 
         <div class="auth-field-row">
@@ -7348,7 +7316,7 @@
         <div class="auth-splash-mid">
           <div class="auth-splash-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></div>
           <div class="auth-title">Ссылка устарела</div>
-          <div class="auth-sub">Код приглашения для «Ресторан «Депо»» больше не действует</div>
+          <div class="auth-sub">Код приглашения для «Ресторан «Москва»» больше не действует</div>
           <div class="auth-splash-meta">Действовал до 3 сентября, 18:00</div>
         </div>
         <button class="auth-btn auth-btn-primary" id="expiredRequestBtn">Запросить новую ссылку</button>
@@ -7372,7 +7340,7 @@
 
         <div class="auth-field">
           <span class="auth-field-label">Название ресторана</span>
-          <input class="auth-field-input" type="text" placeholder="Ресторан «Депо»">
+          <input class="auth-field-input" type="text" placeholder="Ресторан «Москва»">
         </div>
         <div class="auth-field-row">
           <div class="auth-field">
@@ -7503,7 +7471,7 @@
     lastName: 'Волкова',
     position: 'Управляющая',
     positionKey: 'Управляющий',   // должность из справочника ролей (docs/roles.md) без согласования по роду — по ней проверяется STATS_ACCESS_ROLES
-    restaurant: 'Ресторан «Депо»',
+    restaurant: 'Ресторан «Москва»',
     hiredAt: '12 марта 2022',
     phone: '+7 999 123-45-67',
     email: 'd.volkova@depo-rest.ru',
@@ -7535,7 +7503,7 @@
   };
   const venueProfile = {
     type: 'restaurant',
-    name: 'Депо',
+    name: 'Москва',
     /* mode: 'scheduled' — часы работы ниже; '24-7' — круглосуточно.
        Единственный источник времени закрытия/открытия для шапки и строки
        смены — счётчик считается от него, а не от графика сотрудника */
@@ -13293,7 +13261,7 @@
     events: [
       { type: 'birthday', icon: '🎂', text: 'День рождения — Анна, хостес', personalChat: 'c4' },
       { type: 'anniversary', icon: '🎉', text: 'Игорь работает в ресторане 2 года', personalChat: 'c3' },
-      { type: 'venue-date', icon: '📅', text: '5 лет ресторану «Депо»' },
+      { type: 'venue-date', icon: '📅', text: '5 лет ресторану «Москва»' },
       { type: 'pro-holiday', icon: '🍸', text: 'Профессиональный праздник — День бармена' },
       { type: 'promotion', icon: '⭐', text: 'Дмитрий Орлов — повышение до бренд-шефа' }
     ]
@@ -13364,6 +13332,7 @@
     }
     /* режим '24-7' и «закрыто, но до открытия больше часа» — только номер смены */
     document.getElementById('homeShiftLine').textContent = line;
+    document.getElementById('homeShiftLineHeader').textContent = line;
   }
 
   function renderHomeVenueCard() {
@@ -13656,12 +13625,64 @@
   /* ---------- Новости ----------
      Заголовок собирается подстановкой типа заведения в родительном падеже
      (см. VENUE_TYPES) — счётчика непрочитанного нет, «Новости» всегда
-     последний блок на главной */
+     последний блок на главной. Сами новости — карусель по одной, как
+     «События дня» выше: смена каждые 5 минут, плюс свайп в любую сторону */
   document.getElementById('homeNewsTitle').textContent = 'Новости ' + VENUE_TYPES[venueProfile.type].genitive;
+
+  const NEWS_DATA = [
+    { tag: 'Меню', date: '2 сентября', title: 'Осеннее меню от шеф-повара', text: 'В карте — крем-суп из тыквы с кедровым маслом, утка с айвой и новый десерт «Груша, мёд, грецкий орех».' },
+    { tag: 'Событие', date: '5 сентября', title: 'Вечер живого джаза', text: 'В пятницу с 20:00 в зале играет трио — контрабас, фортепиано, саксофон. Столики у сцены бронируются отдельно.' },
+    { tag: 'Команда', date: '30 августа', title: 'Новый су-шеф в команде', text: 'К нам присоединился Дмитрий Орлов — ранее работал в «Белом Кролике». Первую неделю проведёт на линии вместе с поварами цеха.' },
+    { tag: 'Кухня', date: '28 августа', title: 'Обновили линию раздачи', text: 'Заменили тепловую витрину и модуль подогрева тарелок — время выдачи блюд должно сократиться.' }
+  ];
+  let homeNewsIndex = 0;
+  let homeNewsTimer = null;
+
+  function renderHomeNews() {
+    if (homeNewsIndex >= NEWS_DATA.length) homeNewsIndex = 0;
+    const n = NEWS_DATA[homeNewsIndex];
+    document.getElementById('homeNewsRows').innerHTML =
+      '<div class="news-item">' +
+        '<div class="news-item-top"><span class="news-tag">' + n.tag + '</span><span class="news-date">' + n.date + '</span></div>' +
+        '<div class="news-title">' + n.title + '</div>' +
+        '<div class="news-text">' + n.text + '</div>' +
+      '</div>' +
+      renderHomeEventDots(NEWS_DATA.length, homeNewsIndex);
+  }
+
+  function goToHomeNews(delta) {
+    if (NEWS_DATA.length < 2) return;
+    homeNewsIndex = (homeNewsIndex + delta + NEWS_DATA.length) % NEWS_DATA.length;
+    renderHomeNews();
+    restartHomeNewsTimer();
+  }
+
+  function restartHomeNewsTimer() {
+    clearInterval(homeNewsTimer);
+    if (NEWS_DATA.length > 1) {
+      homeNewsTimer = setInterval(() => goToHomeNews(1), 5 * 60 * 1000);
+    }
+  }
+
+  /* свайп влево/вправо — тот же приём, что у карусели «События дня» */
+  (() => {
+    const el = document.getElementById('homeNewsRows');
+    let dragging = false, startX = 0;
+    el.addEventListener('pointerdown', e => { dragging = true; startX = e.clientX; });
+    el.addEventListener('pointerup', e => {
+      if (!dragging) return;
+      dragging = false;
+      const dx = e.clientX - startX;
+      if (Math.abs(dx) > 30) goToHomeNews(dx < 0 ? 1 : -1);
+    });
+  })();
+
+  renderHomeNews();
+  restartHomeNewsTimer();
 
   /* ---------- Мессенджер: папки + чаты ---------- */
   const chatData = [
-    { id: 'hr', name: 'Ресторан «Депо» · Руководитель', preview: 'Заявка на должность отправлена', time: '9:40', unread: 1, folder: ['hall'], avatarText: 'РД', avatarClass: 'avatar-gold',
+    { id: 'hr', name: 'Ресторан «Москва» · Руководитель', preview: 'Заявка на должность отправлена', time: '9:40', unread: 1, folder: ['hall'], avatarText: 'РМ', avatarClass: 'avatar-gold',
       messages: [
         { from: 'card', role: 'Хостес', note: 'Уточнение: старшая хостес', time: '9:40' },
         { from: 'me', text: 'Отправила заявку, жду подтверждения' }
