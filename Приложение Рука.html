@@ -2616,7 +2616,7 @@
      плашка/колода внутри него (иначе на одинаковом фоне «плашка на блоке»
      не читается — рамка блока и плашка сливаются в одно пятно). Заголовок
      и служебные иконки в шапке при этом возвращаем к обычным нейтральным
-     цветам текста, а не «золотому»/«синему» тону плашки */
+     цветам текста, а не золотистому тону плашки */
   #homeImportant,
   #homeContest,
   #homeThanks,
@@ -2642,8 +2642,10 @@
   .screen.home-tab .news-block .home-info-btn{
     color:var(--text-muted);
   }
-  #homeThanks .chevron,
-  #homeHallLoad .chevron{stroke:var(--text-muted);}
+  #homeThanks .chevron{stroke:var(--text-muted);}
+  /* «Загрузка зала» без стрелки — кликабельно только название */
+  #homeHallLoadTitle.is-clickable{cursor:pointer;}
+  #homeHallLoadTitle.is-clickable:active{opacity:.7;}
 
   /* инфо-иконка «что за блок» — есть у каждого блока Главной, открывает
      общую подсказку (#homeBlockInfoOverlay); цвет подстраивается под
@@ -2714,24 +2716,9 @@
 
   /* ---------- Важная информация ---------- */
   /* один пост на виду (клэмп на 2 строки), тема выделена над текстом; тап
-     по посту — разворот целиком и кнопка «Ознакомлен». Объявления — в
-     гармоничном синем цвете, а не в общем золоте остальных блоков
-     «Главной»: переопределяем --khaki-block-* только внутри #homeImportant,
-     это сильнее, чем заливка от .screen.home-tab выше */
-  #homeImportant{
-    --khaki-block-bg:linear-gradient(160deg, #EAF2FA, #D6E6F4);
-    --khaki-block-border:rgba(30,51,80,0.22);
-    --khaki-block-title:#2E4E75;
-    --khaki-block-value:var(--gold);
-    --khaki-block-track:rgba(30,51,80,0.14);
-  }
-  .screen.dark #homeImportant{
-    --khaki-block-bg:linear-gradient(160deg, #35597F, #1E3A5C);
-    --khaki-block-border:rgba(233,203,126,0.26);
-    --khaki-block-title:#E4EDF8;
-    --khaki-block-value:var(--gold-light);
-    --khaki-block-track:rgba(255,255,255,0.14);
-  }
+     по посту — разворот целиком и кнопка «Ознакомлен». Плашка — того же
+     золотистого цвета, что и у остальных блоков «Главной» (общие
+     --khaki-block-* из .screen.home-tab), отдельного цвета здесь больше нет */
   #homeImportantCardWrap{touch-action:pan-y;}
   .home-important-dot{
     flex-shrink:0; width:7px; height:7px; border-radius:50%;
@@ -5288,12 +5275,11 @@
         </div>
 
         <!-- 3. Загрузка зала -->
-        <div class="stat-block" id="homeHallLoad">
+        <div class="stat-block no-drill" id="homeHallLoad">
           <div class="stat-block-head">
-            <span class="stat-block-title">Загрузка зала</span>
+            <span class="stat-block-title" id="homeHallLoadTitle">Загрузка зала</span>
             <span class="home-head-actions">
               <button class="home-info-btn" data-info="hallload" aria-label="Что за блок">i</button>
-              <svg class="chevron" id="homeHallLoadChevron" viewBox="0 0 24 24" hidden><path d="M9 5l7 7-7 7"/></svg>
             </span>
           </div>
           <div class="home-plashka">
@@ -13776,15 +13762,16 @@
       return '<div class="finance-row"><span>' + ZONE_NAMES[zone] + '</span><strong>' + zoneOpen + ' из ' + zoneTables.length + '</strong></div>';
     }).join('');
 
-    const block = document.getElementById('homeHallLoad');
-    block.classList.toggle('no-drill', !hasStatsAccess);
-    document.getElementById('homeHallLoadChevron').hidden = !hasStatsAccess;
+    /* сам блок больше не кликабелен целиком — только название (см. ниже,
+       клик и role/tabindex повешены на #homeHallLoadTitle) */
+    const titleEl = document.getElementById('homeHallLoadTitle');
+    titleEl.classList.toggle('is-clickable', hasStatsAccess);
     if (hasStatsAccess) {
-      block.setAttribute('role', 'button');
-      block.setAttribute('tabindex', '0');
+      titleEl.setAttribute('role', 'button');
+      titleEl.setAttribute('tabindex', '0');
     } else {
-      block.removeAttribute('role');
-      block.removeAttribute('tabindex');
+      titleEl.removeAttribute('role');
+      titleEl.removeAttribute('tabindex');
     }
   }
 
@@ -14039,7 +14026,7 @@
   }
   document.getElementById('homeHallLoadBackBtn').addEventListener('click', showHomeHome);
   document.getElementById('homeThanksBackBtn').addEventListener('click', showHomeHome);
-  document.getElementById('homeHallLoad').addEventListener('click', () => {
+  document.getElementById('homeHallLoadTitle').addEventListener('click', () => {
     if (hasStatsAccess) showHomeDetail('home-hallload');
   });
 
