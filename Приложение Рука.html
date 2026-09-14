@@ -149,6 +149,19 @@
     flex-direction:column;
     transition:background .3s ease;
   }
+  /* только на «Главной» — тот же бежевый/хаки или синий/золотой, но
+     градиентом вместо ровной заливки, чтобы экран не выглядел плоским;
+     остальные вкладки остаются на обычном var(--content-bg) */
+  .screen.home-tab{
+    background:
+      radial-gradient(120% 55% at 12% 0%, rgba(198,153,47,0.16), transparent 60%),
+      linear-gradient(165deg, var(--beige) 0%, #E7D7B0 45%, #DCC89A 100%);
+  }
+  .screen.dark.home-tab{
+    background:
+      radial-gradient(120% 55% at 12% 0%, rgba(233,203,126,0.14), transparent 60%),
+      linear-gradient(165deg, var(--navy) 0%, #1B3654 45%, var(--navy-deep) 100%);
+  }
 
   .notch{
     position:absolute;
@@ -2570,45 +2583,71 @@
   /* ---------- МН-01: Главная ---------- */
   /* название заведения, день недели, дата и номер смены — целиком в
      самой шапке (.app-header-home, см. выше); в контенте они не дублируются */
+  #homeRoot{margin-top:14px;}   /* тот же отступ от шапки, что у .shift-list на «Смене» */
 
-  /* ---------- Важная информация ---------- */
-  /* один пост на виду (клэмп на 2 строки), сам листается раз в 5 минут
-     плавным затуханием; тап по посту — разворот целиком и кнопка
-     «Ознакомлен»; миниатюры внизу тянутся как папки чатов (.folder-tabs) */
-  .home-important-dot{
-    flex-shrink:0; width:7px; height:7px; border-radius:50%;
-    margin-top:5px;
-    background:var(--gold);
-  }
-  .home-important-row-inner{display:flex; align-items:flex-start; gap:8px;}
-
-  .home-important-meta{display:flex; align-items:center; gap:6px;}
-  .home-important-meta[hidden]{display:none;}
-  .home-important-ring{
+  /* ---------- Общая «колода»: один пост/событие на виду, сам листается
+     плавным затуханием, миниатюры внизу тянутся как папки чатов
+     (.folder-tabs); используется и «Важной информацией», и «Событиями дня» */
+  .home-deck-meta{display:flex; align-items:center; gap:6px;}
+  .home-deck-meta[hidden]{display:none;}
+  .home-deck-ring{
     width:12px; height:12px; border-radius:50%; flex-shrink:0; opacity:.55;
     background:conic-gradient(var(--khaki-block-value) calc(var(--p, 0) * 1%), var(--khaki-block-track) 0);
     -webkit-mask-image:radial-gradient(farthest-side, transparent calc(100% - 2.4px), #000 calc(100% - 2.4px));
     mask-image:radial-gradient(farthest-side, transparent calc(100% - 2.4px), #000 calc(100% - 2.4px));
   }
-  .home-important-count{
+  .home-deck-count{
     font-family:'IBM Plex Mono', monospace; font-size:11px; font-weight:500;
     color:var(--khaki-block-value); background:var(--khaki-block-track);
     padding:2px 8px; border-radius:999px;
   }
 
-  .home-important-stage{position:relative; margin-top:10px;}
-  .home-important-back{position:absolute; inset:0; border-radius:13px; background:var(--khaki-block-track);}
-  .home-important-back.back1{transform:scale(.94) translateY(6px); opacity:.55;}
-  .home-important-back.back2{transform:scale(.88) translateY(11px); opacity:.3;}
-  .home-important-stage.single .home-important-back{display:none;}
-  .home-important-card{
+  .home-deck-stage{position:relative; margin-top:10px;}
+  .home-deck-back{position:absolute; inset:0; border-radius:13px; background:var(--khaki-block-track);}
+  .home-deck-back.back1{transform:scale(.94) translateY(6px); opacity:.55;}
+  .home-deck-back.back2{transform:scale(.88) translateY(11px); opacity:.3;}
+  .home-deck-stage.single .home-deck-back{display:none;}
+  .home-deck-card{
     position:relative; border-radius:13px;
     background:var(--khaki-block-bg); border:1px solid var(--khaki-block-border);
     box-shadow:0 8px 18px var(--card-shadow), 0 0 0 1.5px color-mix(in srgb, var(--khaki-block-value) 40%, transparent);
     padding:10px 12px;
     cursor:pointer;
   }
-  .home-important-stage.expanded .home-important-card{cursor:default;}
+  .home-deck-stage.expanded .home-deck-card{cursor:default;}
+
+  .home-deck-strip{
+    display:flex; gap:6px; margin-top:9px; overflow-x:auto; padding-bottom:2px;
+    scrollbar-width:none; -ms-overflow-style:none;
+    cursor:grab; user-select:none; touch-action:pan-x; -webkit-overflow-scrolling:touch;
+    mask-image:linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
+    -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
+  }
+  .home-deck-strip[hidden]{display:none;}
+  .home-deck-strip:active{cursor:grabbing;}
+  .home-deck-strip::-webkit-scrollbar{display:none;}
+  .home-deck-chip{
+    flex-shrink:0; max-width:150px; padding:5px 10px; border-radius:999px;
+    border:1px solid var(--khaki-block-border); background:transparent;
+    font-family:'Manrope', sans-serif; font-size:10.5px; color:var(--khaki-block-title); opacity:.65;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer;
+  }
+  .home-deck-chip.active{opacity:1; border-color:var(--khaki-block-value); background:var(--khaki-block-track);}
+
+  /* ---------- Важная информация ---------- */
+  /* один пост на виду (клэмп на 2 строки), тема выделена над текстом; тап
+     по посту — разворот целиком и кнопка «Ознакомлен» */
+  .home-important-dot{
+    flex-shrink:0; width:7px; height:7px; border-radius:50%;
+    margin-top:5px;
+    background:var(--gold);
+  }
+  .home-important-row-inner{display:flex; align-items:flex-start; gap:8px;}
+  .home-important-text-wrap{flex:1; min-width:0;}
+  .home-important-topic{
+    font-family:'Manrope', sans-serif; font-weight:800; font-size:12.5px;
+    color:var(--khaki-block-value); margin:0 0 2px;
+  }
 
   .home-important-body{transition:opacity .3s ease;}
   .home-important-body.fade{opacity:0;}
@@ -2622,24 +2661,6 @@
     background:linear-gradient(160deg, var(--gold-light), var(--gold)); color:var(--navy-deep);
     font-family:'Manrope', sans-serif; font-size:12px; font-weight:800; cursor:pointer;
   }
-
-  .home-important-strip{
-    display:flex; gap:6px; margin-top:9px; overflow-x:auto; padding-bottom:2px;
-    scrollbar-width:none; -ms-overflow-style:none;
-    cursor:grab; user-select:none; touch-action:pan-x; -webkit-overflow-scrolling:touch;
-    mask-image:linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
-    -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
-  }
-  .home-important-strip[hidden]{display:none;}
-  .home-important-strip:active{cursor:grabbing;}
-  .home-important-strip::-webkit-scrollbar{display:none;}
-  .home-important-chip{
-    flex-shrink:0; max-width:150px; padding:5px 10px; border-radius:999px;
-    border:1px solid var(--khaki-block-border); background:transparent;
-    font-family:'Manrope', sans-serif; font-size:10.5px; color:var(--khaki-block-title); opacity:.65;
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer;
-  }
-  .home-important-chip.active{opacity:1; border-color:var(--khaki-block-value); background:var(--khaki-block-track);}
 
   /* ---------- Конкурс продаж ---------- */
   .home-contest-row{
@@ -2731,60 +2752,66 @@
   .home-thanks-person-role{font-size:11px; color:var(--text-muted); margin-top:1px;}
   .home-thanks-person-check{font-size:11px; font-weight:700; color:var(--accent); flex-shrink:0;}
 
-  /* ---------- События дня: карусель ---------- */
+  /* ---------- События дня: та же колода, что и «Важная информация» ----------
+     дни рождения/юбилеи и т.п. по одному, эмодзи-реакции со счётчиком и
+     мини-анимацией по тапу; кнопка «Поздравить» — только после тапа по
+     самому событию (заменяет прежние отдельные «Лично»/«В общем чате») */
   #homeEventsRows{touch-action:pan-y;}
-  .home-events-row{
-    padding:5px 0;
-  }
   .home-events-dots{display:flex; justify-content:center; gap:5px; margin-top:6px;}
   .home-events-dot{
     width:5px; height:5px; border-radius:50%;
     background:var(--card-border);
   }
   .home-events-dot.active{background:var(--gold);}
-  .home-events-head{display:flex; align-items:center; gap:6px; margin-bottom:4px;}
+  .home-events-head{display:flex; align-items:center; gap:8px;}
   .home-events-icon{
     display:flex; align-items:center; justify-content:center;
-    width:19px; height:19px;
+    width:26px; height:26px;
     border-radius:50%;
     background:var(--segment-track);
-    font-size:10px;
+    font-size:14px;
     flex-shrink:0;
   }
-  .home-events-text{font-size:10px; line-height:1.3; color:var(--text-primary);}
-  /* реакции и кнопки — одна компактная плашка под заголовком события */
-  .home-events-controls{display:flex; align-items:center; gap:4px; flex-wrap:wrap; margin-left:25px;}
-  .home-events-reactions{display:flex; gap:3px;}
+  .home-events-text{font-size:13px; line-height:1.4; color:var(--text-primary);}
+
+  .home-events-reactions{display:flex; gap:5px; flex-wrap:wrap; margin-top:9px;}
   .home-events-reaction{
     border:1px solid var(--card-border);
     background:none;
-    border-radius:7px;
-    padding:1px 4px;
-    font-size:9.5px;
-    line-height:1.4;
+    border-radius:9px;
+    padding:3px 7px;
+    display:inline-flex; align-items:center; gap:4px;
+    font-size:13px;
+    line-height:1.2;
     cursor:pointer;
     transition:border-color .15s ease, background .15s ease;
   }
   .home-events-reaction.active{border-color:var(--gold); background:rgba(198,153,47,0.12);}
-  .home-events-actions{display:flex; gap:4px; flex-wrap:wrap;}
-  .home-events-btn{
-    border:1px solid var(--gold);
-    background:none;
-    color:var(--accent);
-    border-radius:7px;
-    padding:3px 6px;
-    font-family:'Manrope', sans-serif;
-    font-size:9px; font-weight:700;
-    white-space:nowrap;
-    cursor:pointer;
-    transition:background .15s ease, transform .15s ease;
+  .home-events-reaction-count{font-family:'IBM Plex Mono', monospace; font-size:10px; color:var(--text-muted);}
+  .home-events-reaction.active .home-events-reaction-count{color:var(--accent);}
+  @keyframes homeEventsPop{
+    0%{transform:scale(1) rotate(0);}
+    40%{transform:scale(1.35) rotate(-8deg);}
+    70%{transform:scale(.95) rotate(4deg);}
+    100%{transform:scale(1) rotate(0);}
   }
-  .home-events-btn:active{transform:scale(.97);}
-  .home-events-btn.is-primary{
+  .home-events-reaction.pop .home-events-reaction-emoji{display:inline-block; animation:homeEventsPop .38s ease;}
+
+  .home-events-congrats{margin-top:9px;}
+  .home-events-congrats[hidden]{display:none;}
+  .home-events-btn{
+    display:block; width:100%; text-align:center;
+    border:1px solid transparent;
     background:linear-gradient(160deg, var(--gold-light), var(--gold));
     color:var(--navy-deep);
-    border-color:transparent;
+    border-radius:10px;
+    padding:7px 10px;
+    font-family:'Manrope', sans-serif;
+    font-size:11.5px; font-weight:800;
+    cursor:pointer;
+    transition:transform .15s ease;
   }
+  .home-events-btn:active{transform:scale(.97);}
 
   /* ---------- МН-22: история стола ---------- */
   .history-meta{
@@ -5124,38 +5151,41 @@
         <div class="list-block khaki-variant static-block" id="homeImportant">
           <div class="list-block-head">
             <span class="list-block-title">Важная информация</span>
-            <span class="home-important-meta" id="homeImportantMeta" hidden>
-              <span class="home-important-ring" id="homeImportantRing"></span>
-              <span class="home-important-count" id="homeImportantCount"></span>
+            <span class="home-deck-meta" id="homeImportantMeta" hidden>
+              <span class="home-deck-ring" id="homeImportantRing"></span>
+              <span class="home-deck-count" id="homeImportantCount"></span>
             </span>
           </div>
-          <div class="home-important-stage" id="homeImportantStage">
-            <div class="home-important-back back2"></div>
-            <div class="home-important-back back1"></div>
-            <div class="home-important-card" id="homeImportantCardWrap">
+          <div class="home-deck-stage" id="homeImportantStage">
+            <div class="home-deck-back back2"></div>
+            <div class="home-deck-back back1"></div>
+            <div class="home-deck-card" id="homeImportantCardWrap">
               <div class="home-important-body" id="homeImportantBody"></div>
             </div>
           </div>
-          <div class="home-important-strip" id="homeImportantStrip" hidden></div>
+          <div class="home-deck-strip" id="homeImportantStrip" hidden></div>
         </div>
 
         <!-- 2. События дня -->
         <div class="list-block static-block home-events" id="homeEvents" hidden>
           <div class="list-block-head">
             <span class="list-block-title">События дня</span>
+            <span class="home-deck-meta" id="homeEventsMeta" hidden>
+              <span class="home-deck-ring" id="homeEventsRing"></span>
+              <span class="home-deck-count" id="homeEventsCount"></span>
+            </span>
           </div>
-          <div id="homeEventsRows"></div>
+          <div class="home-deck-stage" id="homeEventsStage">
+            <div class="home-deck-back back2"></div>
+            <div class="home-deck-back back1"></div>
+            <div class="home-deck-card" id="homeEventsCardWrap">
+              <div id="homeEventsRows"></div>
+            </div>
+          </div>
+          <div class="home-deck-strip" id="homeEventsStrip" hidden></div>
         </div>
 
-        <!-- 3. Конкурс продаж -->
-        <div class="list-block khaki-variant static-block" id="homeContest">
-          <div class="list-block-head">
-            <span class="list-block-title">Конкурс продаж</span>
-          </div>
-          <div id="homeContestRows"></div>
-        </div>
-
-        <!-- 4. Загрузка зала -->
+        <!-- 3. Загрузка зала -->
         <div class="stat-block" id="homeHallLoad">
           <div class="stat-block-head">
             <span class="stat-block-title">Загрузка зала</span>
@@ -5188,20 +5218,18 @@
           <div class="home-hallload-updated" id="homeHallLoadUpdated"></div>
         </div>
 
-        <!-- 5. Держим планку -->
-        <div class="list-block static-block">
-          <div class="list-block-head"><span class="list-block-title">Держим планку</span></div>
-          <div class="home-streaks-row">
-            <div class="home-streak-item"><strong id="homeStreakReturns">—</strong><span>дней без возвратов</span></div>
-            <div class="home-streak-divider"></div>
-            <div class="home-streak-item"><strong id="homeStreakLate">—</strong><span>дней без опозданий</span></div>
+        <!-- 4. Конкурс продаж -->
+        <div class="list-block khaki-variant static-block" id="homeContest">
+          <div class="list-block-head">
+            <span class="list-block-title">Конкурс продаж</span>
           </div>
+          <div id="homeContestRows"></div>
         </div>
 
-        <!-- 6. Спасибо -->
+        <!-- 5. Благодарю! -->
         <div class="list-block khaki-variant static-block home-thanks" id="homeThanks" hidden>
           <div class="list-block-head">
-            <span class="list-block-title">Спасибо</span>
+            <span class="list-block-title">Благодарю!</span>
             <svg class="chevron" id="homeThanksChevron" viewBox="0 0 24 24" hidden><path d="M9 5l7 7-7 7"/></svg>
           </div>
           <div class="home-thanks-row">
@@ -5210,12 +5238,22 @@
           </div>
         </div>
 
-        <!-- 7. Новости (всегда последний блок) -->
+        <!-- 6. Новости -->
         <div class="list-block static-block news-block">
           <div class="list-block-head">
             <span class="list-block-title" id="homeNewsTitle">Новости</span>
           </div>
           <div class="news-list" id="homeNewsRows"></div>
+        </div>
+
+        <!-- 7. Держим планку (всегда последний блок) -->
+        <div class="list-block static-block">
+          <div class="list-block-head"><span class="list-block-title">Держим планку</span></div>
+          <div class="home-streaks-row">
+            <div class="home-streak-item"><strong id="homeStreakReturns">—</strong><span>дней без возвратов</span></div>
+            <div class="home-streak-divider"></div>
+            <div class="home-streak-item"><strong id="homeStreakLate">—</strong><span>дней без опозданий</span></div>
+          </div>
         </div>
 
         </div>
@@ -5258,7 +5296,7 @@
         </div>
 
         <!-- Детальный экран: Спасибо, разбор по людям — только роли из STATS_ACCESS_ROLES -->
-        <div class="shift-detail" data-detail="home-thanks-breakdown" data-title="Спасибо" data-subtitle="Разбор по людям за смену" hidden>
+        <div class="shift-detail" data-detail="home-thanks-breakdown" data-title="Благодарю!" data-subtitle="Разбор по людям за смену" hidden>
           <button class="back-btn" id="homeThanksBackBtn">
             <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
             Назад
@@ -7482,6 +7520,7 @@
       titleEl.textContent = titles[tab][0];
       subEl.textContent = titles[tab][1];
       setAppHeaderMode(tab === 'home');
+      screenEl.classList.toggle('home-tab', tab === 'home');
 
       newChatFab.hidden = tab !== 'messenger';
 
@@ -7508,6 +7547,7 @@
 
   const themeToggle = document.getElementById('themeToggle');
   const screenEl = document.getElementById('screen');
+  screenEl.classList.add('home-tab');   // по умолчанию открыта «Главная»
 
   /* тема и закрепление меню переживают перезагрузку приложения */
   function savePref(key, value) {
@@ -13298,9 +13338,9 @@
     shiftOpen: true,
     shiftNumber: 412,
     important: [
-      'Завтра, 11:00 — выездная проверка СЭС, проверьте чек-лист закрытия смены',
-      'С 1 числа новый способ приёма чаевых картой — инструкция у управляющего',
-      'Годовая проверка вентиляции и холодильного оборудования — с понедельника по четверг. Сервисная бригада заходит в цеха группами по 15–20 минут, начиная с холодного цеха. Освободите доступ к щитам и не блокируйте технические двери коробками — вопросы по графику к бренд-шефу в общем чате'
+      { topic: 'Проверка СЭС', text: 'Завтра, 11:00 — выездная проверка, проверьте чек-лист закрытия смены' },
+      { topic: 'Новый приём чаевых', text: 'С 1 числа — новый способ приёма чаевых картой, инструкция у управляющего' },
+      { topic: 'Техосмотр вентиляции и оборудования', text: 'С понедельника по четверг — плановый техосмотр систем вентиляции и холодильного оборудования на кухне и в баре. Сервисная бригада заходит в цеха группами по 15–20 минут, начиная с холодного цеха. Освободите доступ к щитам и не блокируйте технические двери коробками — вопросы по графику к бренд-шефу в общем чате.' }
     ],
     contest: { place: 2, placesTotal: 12, toFirstPlace: 4800, progress: 0.78 },
     hallLoadPeak: { percent: 82, time: '20:30' },   // демо-прогноз пика, не связан с текущей занятостью
@@ -13319,11 +13359,11 @@
        (не выводится для проф. праздника и даты заведения — это не про
        конкретного человека) */
     events: [
-      { type: 'birthday', icon: '🎂', text: 'День рождения — Анна, хостес', personalChat: 'c4' },
-      { type: 'anniversary', icon: '🎉', text: 'Игорь работает в ресторане 2 года', personalChat: 'c3' },
-      { type: 'venue-date', icon: '📅', text: '5 лет ресторану «Москва»' },
-      { type: 'pro-holiday', icon: '🍸', text: 'Профессиональный праздник — День бармена' },
-      { type: 'promotion', icon: '⭐', text: 'Дмитрий Орлов — повышение до бренд-шефа' }
+      { type: 'birthday', icon: '🎂', text: 'День рождения — Анна, хостес', personalChat: 'c4', reactions: { '👍': 4, '❤️': 6, '🎉': 2, '👏': 1 } },
+      { type: 'anniversary', icon: '🎉', text: 'Игорь работает в ресторане 2 года', personalChat: 'c3', reactions: { '👍': 3, '❤️': 1, '🎉': 5, '👏': 2 } },
+      { type: 'venue-date', icon: '📅', text: '5 лет ресторану «Москва»', reactions: { '👍': 7, '❤️': 3, '🎉': 4, '👏': 0 } },
+      { type: 'pro-holiday', icon: '🍸', text: 'Профессиональный праздник — День бармена', reactions: { '👍': 2, '❤️': 0, '🎉': 3, '👏': 1 } },
+      { type: 'promotion', icon: '⭐', text: 'Дмитрий Орлов — повышение до бренд-шефа', reactions: { '👍': 5, '❤️': 2, '🎉': 1, '👏': 3 } }
     ]
   };
 
@@ -13432,10 +13472,14 @@
     if (homeImportantIndex >= items.length) homeImportantIndex = 0;
     const multi = items.length > 1;
 
+    const item = items[homeImportantIndex];
     document.getElementById('homeImportantBody').innerHTML =
       '<div class="home-important-row-inner">' +
         '<span class="home-important-dot"></span>' +
-        '<p class="' + (homeImportantExpanded ? '' : 'clamped') + '">' + items[homeImportantIndex] + '</p>' +
+        '<div class="home-important-text-wrap">' +
+          '<p class="home-important-topic">' + item.topic + '</p>' +
+          '<p class="' + (homeImportantExpanded ? '' : 'clamped') + '">' + item.text + '</p>' +
+        '</div>' +
       '</div>' +
       (homeImportantExpanded ? '<button class="home-important-ack" id="homeImportantAck">Ознакомлен</button>' : '');
 
@@ -13447,10 +13491,10 @@
     stripEl.hidden = !multi;
     if (multi) {
       document.getElementById('homeImportantCount').textContent = (homeImportantIndex + 1) + '/' + items.length;
-      stripEl.innerHTML = items.map((text, i) =>
-        '<button class="home-important-chip' + (i === homeImportantIndex ? ' active' : '') + '" data-i="' + i + '">' + text + '</button>'
+      stripEl.innerHTML = items.map((it, i) =>
+        '<button class="home-deck-chip' + (i === homeImportantIndex ? ' active' : '') + '" data-i="' + i + '">' + it.topic + '</button>'
       ).join('');
-      stripEl.querySelectorAll('.home-important-chip').forEach(chip => {
+      stripEl.querySelectorAll('.home-deck-chip').forEach(chip => {
         chip.addEventListener('click', () => {
           if (homeImportantStripMoved) return;
           goToHomeImportant(Number(chip.dataset.i));
@@ -13638,14 +13682,17 @@
     if (hasStatsAccess) showHomeDetail('home-thanks-breakdown');
   });
 
-  /* ---------- События дня: карусель ----------
-     Несколько событий не показываются списком — по одному, со сменой
-     каждые 5 минут; можно и самому пролистать свайпом в любую сторону
-     (свайп сбрасывает и перезапускает таймер). Реакции запоминаются
-     отдельно на каждое событие (homeEventReactions по индексу) */
+  /* ---------- События дня: та же колода, что и «Важная информация» ----------
+     Одно событие на виду, само листается раз в 5 минут (плюс свайп и
+     миниатюры внизу). Реакции — с собственным счётчиком на каждый эмодзи
+     и мини-анимацией по тапу; «Поздравить» вместо старых «Лично»/«В общем
+     чате» — появляется только после тапа по самому событию */
   let homeEventIndex = 0;
   let homeEventTimer = null;
+  let homeEventChangedAt = Date.now();
+  let homeEventCongratsShown = false;
   const homeEventReactions = {};   // { [индекс события]: Set(эмодзи) }
+  const HOME_EVENT_INTERVAL_MS = 5 * 60 * 1000;
 
   function renderHomeEventDots(count, active) {
     if (count <= 1) return '';
@@ -13655,60 +13702,107 @@
   }
 
   function renderHomeEvents() {
-    const el = document.getElementById('homeEvents');
-    const rows = HOME_DATA.events || [];
-    if (!HOME_DATA.shiftOpen || !rows.length) { el.hidden = true; return; }
-    el.hidden = false;
-    if (homeEventIndex >= rows.length) homeEventIndex = 0;
-    const i = homeEventIndex;
-    const ev = rows[i];
-    const active = homeEventReactions[i] || new Set();
+    const items = HOME_DATA.events || [];
+    const wrap = document.getElementById('homeEvents');
+    if (!HOME_DATA.shiftOpen || !items.length) { wrap.hidden = true; return; }
+    wrap.hidden = false;
+    if (homeEventIndex >= items.length) homeEventIndex = 0;
+    const multi = items.length > 1;
+    const ev = items[homeEventIndex];
+    const active = homeEventReactions[homeEventIndex] || new Set();
 
     document.getElementById('homeEventsRows').innerHTML =
-      '<div class="home-events-row">' +
-        '<div class="home-events-head"><span class="home-events-icon">' + ev.icon + '</span><span class="home-events-text">' + ev.text + '</span></div>' +
-        '<div class="home-events-controls">' +
-          '<div class="home-events-reactions">' +
-            ['👍', '❤️', '🎉', '👏'].map(e => '<button class="home-events-reaction' + (active.has(e) ? ' active' : '') + '" data-emoji="' + e + '">' + e + '</button>').join('') +
-          '</div>' +
-          '<div class="home-events-actions">' +
-            (ev.personalChat ? '<button class="home-events-btn is-primary" data-event-chat="' + ev.personalChat + '">Лично</button>' : '') +
-            '<button class="home-events-btn" data-event-chat="c1">В общем чате</button>' +
-          '</div>' +
-        '</div>' +
+      '<div class="home-events-head"><span class="home-events-icon">' + ev.icon + '</span><span class="home-events-text">' + ev.text + '</span></div>' +
+      '<div class="home-events-reactions">' +
+        ['👍', '❤️', '🎉', '👏'].map(e => {
+          const count = (ev.reactions && ev.reactions[e] || 0) + (active.has(e) ? 1 : 0);
+          return '<button class="home-events-reaction' + (active.has(e) ? ' active' : '') + '" data-emoji="' + e + '">' +
+            '<span class="home-events-reaction-emoji">' + e + '</span>' +
+            '<span class="home-events-reaction-count">' + count + '</span>' +
+          '</button>';
+        }).join('') +
       '</div>' +
-      renderHomeEventDots(rows.length, i);
+      '<div class="home-events-congrats" id="homeEventsCongrats"' + (homeEventCongratsShown ? '' : ' hidden') + '>' +
+        '<button class="home-events-btn" id="homeEventsCongratsBtn">Поздравить</button>' +
+      '</div>';
+
+    document.getElementById('homeEventsStage').classList.toggle('single', !multi);
+    document.getElementById('homeEventsMeta').hidden = !multi;
+    const stripEl = document.getElementById('homeEventsStrip');
+    stripEl.hidden = !multi;
+    if (multi) {
+      document.getElementById('homeEventsCount').textContent = (homeEventIndex + 1) + '/' + items.length;
+      stripEl.innerHTML = items.map((e, i) =>
+        '<button class="home-deck-chip' + (i === homeEventIndex ? ' active' : '') + '" data-i="' + i + '">' + e.icon + ' ' + e.text + '</button>'
+      ).join('');
+      stripEl.querySelectorAll('.home-deck-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          if (homeEventsStripMoved) return;
+          goToHomeEvent(Number(chip.dataset.i) - homeEventIndex);
+        });
+      });
+    }
 
     document.querySelectorAll('.home-events-reaction').forEach(btn => {
       btn.addEventListener('click', () => {
-        const set = homeEventReactions[i] || (homeEventReactions[i] = new Set());
-        if (set.has(btn.dataset.emoji)) set.delete(btn.dataset.emoji); else set.add(btn.dataset.emoji);
-        btn.classList.toggle('active');
+        const set = homeEventReactions[homeEventIndex] || (homeEventReactions[homeEventIndex] = new Set());
+        const wasActive = set.has(btn.dataset.emoji);
+        if (wasActive) set.delete(btn.dataset.emoji); else set.add(btn.dataset.emoji);
+        renderHomeEvents();
+        if (!wasActive) {
+          const revived = document.querySelector('.home-events-reaction[data-emoji="' + btn.dataset.emoji + '"]');
+          if (revived) {
+            revived.classList.add('pop');
+            setTimeout(() => revived.classList.remove('pop'), 380);
+          }
+        }
       });
     });
-    document.querySelectorAll('[data-event-chat]').forEach(btn => {
-      btn.addEventListener('click', () => {
+
+    const congratsBtn = document.getElementById('homeEventsCongratsBtn');
+    if (congratsBtn) {
+      congratsBtn.addEventListener('click', e => {
+        e.stopPropagation();
         gotoTab('messenger');
         resetMessenger();
-        openChat(btn.dataset.eventChat);
+        openChat(ev.personalChat || 'c1');
       });
-    });
+    }
   }
 
   function goToHomeEvent(delta) {
-    const rows = HOME_DATA.events || [];
-    if (rows.length < 2) return;
-    homeEventIndex = (homeEventIndex + delta + rows.length) % rows.length;
+    const items = HOME_DATA.events || [];
+    if (items.length < 2) return;
+    homeEventIndex = (homeEventIndex + delta + items.length) % items.length;
+    homeEventCongratsShown = false;
     renderHomeEvents();
     restartHomeEventTimer();
   }
 
   function restartHomeEventTimer() {
     clearInterval(homeEventTimer);
+    homeEventChangedAt = Date.now();
     if ((HOME_DATA.events || []).length > 1) {
-      homeEventTimer = setInterval(() => goToHomeEvent(1), 5 * 60 * 1000);
+      homeEventTimer = setInterval(() => goToHomeEvent(1), HOME_EVENT_INTERVAL_MS);
     }
   }
+
+  /* малозаметное кольцо у счётчика — сколько времени осталось до автосмены */
+  setInterval(() => {
+    const items = HOME_DATA.events || [];
+    if (items.length <= 1) return;
+    const pct = Math.min(100, Math.round((Date.now() - homeEventChangedAt) / HOME_EVENT_INTERVAL_MS * 100));
+    document.getElementById('homeEventsRing').style.setProperty('--p', pct);
+  }, 1000);
+
+  /* тап по событию (не по реакции и не по «Поздравить») — показать кнопку «Поздравить» */
+  document.getElementById('homeEventsCardWrap').addEventListener('click', e => {
+    if (e.target.closest('.home-events-reaction') || e.target.closest('#homeEventsCongratsBtn')) return;
+    if (!homeEventCongratsShown) {
+      homeEventCongratsShown = true;
+      renderHomeEvents();
+    }
+  });
 
   /* свайп влево/вправо по карточке события — вручную на pointer-событиях,
      как перетаскивание папок чатов (folderTabsEl) в этом же файле */
@@ -13729,6 +13823,23 @@
     /* клик по кнопке/реакции внутри карточки — не считаем свайпом */
     el.addEventListener('click', e => { if (moved) { e.stopPropagation(); e.preventDefault(); } }, true);
   })();
+
+  /* перетаскивание миниатюр мышью/пальцем — как папки чатов (folderTabsEl) в этом же файле */
+  let homeEventsStripDragActive = false, homeEventsStripMoved = false, homeEventsStripStartX = 0, homeEventsStripScrollLeft = 0;
+  const homeEventsStripEl = document.getElementById('homeEventsStrip');
+  homeEventsStripEl.addEventListener('pointerdown', e => {
+    homeEventsStripDragActive = true;
+    homeEventsStripMoved = false;
+    homeEventsStripStartX = e.clientX;
+    homeEventsStripScrollLeft = homeEventsStripEl.scrollLeft;
+  });
+  homeEventsStripEl.addEventListener('pointermove', e => {
+    if (!homeEventsStripDragActive) return;
+    const dx = e.clientX - homeEventsStripStartX;
+    if (Math.abs(dx) > 4) homeEventsStripMoved = true;
+    homeEventsStripEl.scrollLeft = homeEventsStripScrollLeft - dx;
+  });
+  window.addEventListener('pointerup', () => { homeEventsStripDragActive = false; });
 
   /* ---------- Показ детальных экранов Главной ----------
      Свои независимые show/hide, как у экранов «Профиля» — общий
@@ -13783,9 +13894,9 @@
 
   /* ---------- Новости ----------
      Заголовок собирается подстановкой типа заведения в родительном падеже
-     (см. VENUE_TYPES) — счётчика непрочитанного нет, «Новости» всегда
-     последний блок на главной. Сами новости — карусель по одной, как
-     «События дня» выше: смена каждые 5 минут, плюс свайп в любую сторону */
+     (см. VENUE_TYPES) — счётчика непрочитанного нет. Сами новости —
+     карусель по одной, как «События дня» выше: смена каждые 5 минут,
+     плюс свайп в любую сторону */
   document.getElementById('homeNewsTitle').textContent = 'Новости ' + VENUE_TYPES[venueProfile.type].genitive;
 
   const NEWS_DATA = [
