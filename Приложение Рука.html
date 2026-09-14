@@ -2612,6 +2612,39 @@
     padding:12px 13px;
   }
 
+  /* сам блок — нейтральная рамка (var(--surface)), цвет несёт только
+     плашка/колода внутри него (иначе на одинаковом фоне «плашка на блоке»
+     не читается — рамка блока и плашка сливаются в одно пятно). Заголовок
+     и служебные иконки в шапке при этом возвращаем к обычным нейтральным
+     цветам текста, а не «золотому»/«синему» тону плашки */
+  #homeImportant,
+  #homeContest,
+  #homeThanks,
+  #homeHallLoad,
+  #homeStreaks,
+  .screen.home-tab .news-block{
+    background:var(--surface);
+    border-color:var(--card-border);
+  }
+  #homeImportant > .list-block-head .list-block-title,
+  #homeContest > .list-block-head .list-block-title,
+  #homeThanks > .list-block-head .list-block-title,
+  #homeHallLoad > .stat-block-head .stat-block-title,
+  #homeStreaks > .list-block-head .list-block-title,
+  .screen.home-tab .news-block > .list-block-head .list-block-title{
+    color:var(--text-primary);
+  }
+  #homeImportant .home-info-btn,
+  #homeContest .home-info-btn,
+  #homeThanks .home-info-btn,
+  #homeHallLoad .home-info-btn,
+  #homeStreaks .home-info-btn,
+  .screen.home-tab .news-block .home-info-btn{
+    color:var(--text-muted);
+  }
+  #homeThanks .chevron,
+  #homeHallLoad .chevron{stroke:var(--text-muted);}
+
   /* инфо-иконка «что за блок» — есть у каждого блока Главной, открывает
      общую подсказку (#homeBlockInfoOverlay); цвет подстраивается под
      карточку через .khaki-variant/.stat-block ниже */
@@ -2819,7 +2852,7 @@
      дни рождения/юбилеи и т.п. по одному, эмодзи-реакции со счётчиком и
      мини-анимацией по тапу; кнопка «Поздравить» — только после тапа по
      самому событию (заменяет прежние отдельные «Лично»/«В общем чате») */
-  #homeEventsRows{touch-action:pan-y;}
+  #homeEventsRows, #homeEventsCardWrap{touch-action:pan-y;}
   .home-events-dots{display:flex; justify-content:center; gap:5px; margin-top:6px;}
   .home-events-dot{
     width:5px; height:5px; border-radius:50%;
@@ -5336,7 +5369,7 @@
         </div>
 
         <!-- 7. Держим планку (всегда последний блок) -->
-        <div class="list-block khaki-variant static-block">
+        <div class="list-block khaki-variant static-block" id="homeStreaks">
           <div class="list-block-head">
             <span class="list-block-title">Держим планку</span>
             <span class="home-head-actions">
@@ -13925,34 +13958,37 @@
     document.getElementById('homeEventsRing').style.setProperty('--p', pct);
   }, 1000);
 
-  /* тап по событию (не по реакции и не по «Поздравить») — показать кнопку «Поздравить» */
-  document.getElementById('homeEventsCardWrap').addEventListener('click', e => {
+  /* свайп влево/вправо прямо по событию — тот же приём, что и у поста в
+     «Важной информации» (единый обработчик на карточке); тап без сдвига —
+     показать кнопку «Поздравить» */
+  const homeEventsCardWrapEl = document.getElementById('homeEventsCardWrap');
+  let homeEventsSwipeActive = false, homeEventsSwipeStartX = 0, homeEventsSwipeMoved = false;
+  homeEventsCardWrapEl.addEventListener('pointerdown', e => {
+    homeEventsSwipeActive = true;
+    homeEventsSwipeMoved = false;
+    homeEventsSwipeStartX = e.clientX;
+  });
+  homeEventsCardWrapEl.addEventListener('pointermove', e => {
+    if (!homeEventsSwipeActive) return;
+    if (Math.abs(e.clientX - homeEventsSwipeStartX) > 4) homeEventsSwipeMoved = true;
+  });
+  homeEventsCardWrapEl.addEventListener('pointerup', e => {
+    if (!homeEventsSwipeActive) return;
+    homeEventsSwipeActive = false;
+    const dx = e.clientX - homeEventsSwipeStartX;
+    if (Math.abs(dx) > 30 && (HOME_DATA.events || []).length > 1) {
+      goToHomeEvent(dx < 0 ? 1 : -1);
+    }
+  });
+
+  homeEventsCardWrapEl.addEventListener('click', e => {
+    if (homeEventsSwipeMoved) return;   // это был свайп, а не тап
     if (e.target.closest('.home-events-reaction') || e.target.closest('#homeEventsCongratsBtn')) return;
     if (!homeEventCongratsShown) {
       homeEventCongratsShown = true;
       renderHomeEvents();
     }
   });
-
-  /* свайп влево/вправо по карточке события — вручную на pointer-событиях,
-     как перетаскивание папок чатов (folderTabsEl) в этом же файле */
-  (() => {
-    const el = document.getElementById('homeEventsRows');
-    let dragging = false, startX = 0, moved = false;
-    el.addEventListener('pointerdown', e => { dragging = true; moved = false; startX = e.clientX; });
-    el.addEventListener('pointermove', e => {
-      if (!dragging) return;
-      if (Math.abs(e.clientX - startX) > 4) moved = true;
-    });
-    el.addEventListener('pointerup', e => {
-      if (!dragging) return;
-      dragging = false;
-      const dx = e.clientX - startX;
-      if (Math.abs(dx) > 30) goToHomeEvent(dx < 0 ? 1 : -1);
-    });
-    /* клик по кнопке/реакции внутри карточки — не считаем свайпом */
-    el.addEventListener('click', e => { if (moved) { e.stopPropagation(); e.preventDefault(); } }, true);
-  })();
 
   /* перетаскивание миниатюр мышью/пальцем — как папки чатов (folderTabsEl) в этом же файле */
   let homeEventsStripDragActive = false, homeEventsStripMoved = false, homeEventsStripStartX = 0, homeEventsStripScrollLeft = 0;
