@@ -2638,10 +2638,11 @@
   .screen.home-tab .news-block .home-info-btn{
     color:var(--text-muted);
   }
-  #homeThanks .chevron{stroke:var(--text-muted);}
-  /* «Загрузка зала» без стрелки — кликабельно только название */
-  #homeHallLoadTitle.is-clickable{cursor:pointer;}
-  #homeHallLoadTitle.is-clickable:active{opacity:.7;}
+  /* «Загрузка зала» и «Благодарю!» без стрелки — кликабельно только название */
+  #homeHallLoadTitle.is-clickable,
+  #homeThanksTitle.is-clickable{cursor:pointer;}
+  #homeHallLoadTitle.is-clickable:active,
+  #homeThanksTitle.is-clickable:active{opacity:.7;}
 
   /* инфо-иконка «что за блок» — есть у каждого блока Главной, открывает
      общую подсказку (#homeBlockInfoOverlay); цвет подстраивается под
@@ -2755,6 +2756,12 @@
   .home-hallload-ring{width:100px; height:100px; transform:rotate(-90deg); transform-origin:50% 50%;}
   .home-hallload-track{fill:none; stroke:var(--khaki-block-track); stroke-width:11;}
   .home-hallload-peak{fill:none; stroke:var(--khaki-block-value); stroke-opacity:.22; stroke-width:11; stroke-linecap:round;}
+  /* в тёмной теме плашка сама тёмная (хаки-коричневая) — трек-подложка на
+     --khaki-block-track (чёрный полупрозрачный) в неё буквально пропадает,
+     и не видно, где кольцо вообще заканчивается; светлый полупрозрачный
+     трек и более заметный пик решают это */
+  .screen.dark .home-hallload-track{stroke:rgba(255,255,255,0.24);}
+  .screen.dark .home-hallload-peak{stroke:var(--gold-light); stroke-opacity:.4;}
   .home-hallload-progress{fill:none; stroke:url(#homeHallLoadGrad); stroke-width:11; stroke-linecap:round; transition:stroke-dashoffset .6s ease;}
   .home-hallload-center{
     position:absolute; inset:0;
@@ -5036,7 +5043,7 @@
         <div class="map-group-title">Главная</div>
         <button class="map-row" data-goto="мн-01">
           <span class="map-id">МН-01</span>
-          <span class="map-name">Главная<span class="map-note">Шапка смены, важная информация, события дня, конкурс продаж, загрузка зала, держим планку, спасибо, новости</span></span>
+          <span class="map-name">Главная<span class="map-note">Шапка смены, важная информация, события дня, конкурс продаж, загрузка зала, держим планку, благодарю, новости</span></span>
           <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
         </button>
 
@@ -5323,16 +5330,15 @@
         <!-- 5. Благодарю! -->
         <div class="list-block khaki-variant static-block home-thanks" id="homeThanks" hidden>
           <div class="list-block-head">
-            <span class="list-block-title">Благодарю!</span>
+            <span class="list-block-title" id="homeThanksTitle">Благодарю!</span>
             <span class="home-head-actions">
               <button class="home-info-btn" data-info="thanks" aria-label="Что за блок">i</button>
-              <svg class="chevron" id="homeThanksChevron" viewBox="0 0 24 24" hidden><path d="M9 5l7 7-7 7"/></svg>
             </span>
           </div>
           <div class="home-plashka">
             <div class="home-thanks-row">
               <span class="home-thanks-count" id="homeThanksCount"></span>
-              <button class="home-thanks-btn" id="homeThanksBtn">Сказать спасибо</button>
+              <button class="home-thanks-btn" id="homeThanksBtn">Благодарю</button>
             </div>
           </div>
         </div>
@@ -7220,7 +7226,7 @@
     <!-- МН-01: «Спасибо» — выбор коллеги из состава смены -->
     <div class="modal-overlay" id="homeThanksOverlay" hidden>
       <div class="modal-box">
-        <div class="modal-title">Кому сказать спасибо?</div>
+        <div class="modal-title">Кого благодарю?</div>
         <div class="home-thanks-list" id="homeThanksList"></div>
         <div class="modal-actions-single">
           <button class="modal-btn modal-btn-ghost" id="homeThanksClose">Закрыть</button>
@@ -13776,19 +13782,29 @@
     document.getElementById('homeStreakLate').textContent = HOME_DATA.streakLate;
   }
 
+  /* «благодарность/благодарности/благодарностей» — обычное русское
+     согласование числительного с существительным */
+  function pluralizeThanksNoun(n) {
+    const mod10 = n % 10, mod100 = n % 100;
+    if (mod10 === 1 && mod100 !== 11) return 'благодарность';
+    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return 'благодарности';
+    return 'благодарностей';
+  }
   function renderHomeThanks() {
     const el = document.getElementById('homeThanks');
     if (!HOME_DATA.shiftOpen) { el.hidden = true; return; }
     el.hidden = false;
-    document.getElementById('homeThanksCount').textContent = thanksState.count + ' спасибо за смену';
-    el.classList.toggle('static-block', !hasStatsAccess);
-    document.getElementById('homeThanksChevron').hidden = !hasStatsAccess;
+    document.getElementById('homeThanksCount').textContent = thanksState.count + ' ' + pluralizeThanksNoun(thanksState.count) + ' за смену';
+    /* сам блок больше не кликабелен целиком — только название (см. ниже,
+       клик и role/tabindex повешены на #homeThanksTitle) */
+    const titleEl = document.getElementById('homeThanksTitle');
+    titleEl.classList.toggle('is-clickable', hasStatsAccess);
     if (hasStatsAccess) {
-      el.setAttribute('role', 'button');
-      el.setAttribute('tabindex', '0');
+      titleEl.setAttribute('role', 'button');
+      titleEl.setAttribute('tabindex', '0');
     } else {
-      el.removeAttribute('role');
-      el.removeAttribute('tabindex');
+      titleEl.removeAttribute('role');
+      titleEl.removeAttribute('tabindex');
     }
   }
   function renderHomeThanksList() {
@@ -13816,7 +13832,7 @@
   });
   document.getElementById('homeThanksList').addEventListener('click', e => {
     const row = e.target.closest('.home-thanks-person');
-    if (!row || row.classList.contains('is-sent')) return;   // одному коллеге — не больше одного спасибо за смену
+    if (!row || row.classList.contains('is-sent')) return;   // одному коллеге — не больше одной благодарности за смену
     thanksState.sentIds.push(row.dataset.person);
     thanksState.count++;
     saveThanksState();
@@ -13824,7 +13840,7 @@
     renderHomeThanksList();
     renderHomeThanksBreakdown();
   });
-  document.getElementById('homeThanks').addEventListener('click', () => {
+  document.getElementById('homeThanksTitle').addEventListener('click', () => {
     if (hasStatsAccess) showHomeDetail('home-thanks-breakdown');
   });
 
@@ -14032,7 +14048,7 @@
     events: { title: 'События дня', text: 'Дни рождения, юбилеи и праздники сотрудников на сегодня. Отреагируйте эмодзи или нажмите на событие, чтобы поздравить.' },
     hallload: { title: 'Загрузка зала', text: 'Сколько гостей и столов сейчас занято — ориентир, насколько загружен зал прямо сейчас.' },
     contest: { title: 'Конкурс продаж', text: 'Ваше место в конкурсе продаж этой смены и сколько не хватает до первого места.' },
-    thanks: { title: 'Благодарю!', text: 'Скажите спасибо коллеге за помощь в смене — счётчик показывает, сколько раз уже поблагодарили за сегодня.' },
+    thanks: { title: 'Благодарю!', text: 'Поблагодарите коллегу за помощь в смене — счётчик показывает, сколько раз уже поблагодарили за сегодня.' },
     news: { title: 'Новости', text: 'Новости заведения: обновления меню, события, изменения в команде.' },
     streaks: { title: 'Держим планку', text: 'Сколько дней подряд без возвратов и без опозданий — общая дисциплина смены.' }
   };
