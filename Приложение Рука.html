@@ -2608,9 +2608,10 @@
 
   /* сам блок — нейтральная рамка (var(--surface)), цвет несёт только
      плашка/колода внутри него (иначе на одинаковом фоне «плашка на блоке»
-     не читается — рамка блока и плашка сливаются в одно пятно). Заголовок
-     и служебные иконки в шапке при этом возвращаем к обычным нейтральным
-     цветам текста, а не тону плашки (хаки, как на «Смене») */
+     не читается — рамка блока и плашка сливаются в одно пятно). Название
+     блока при этом — того же цвета хаки (--khaki-block-title), что и у
+     названий блоков на «Смене»; служебные иконки в шапке остаются
+     нейтральными */
   #homeImportant,
   #homeContest,
   #homeThanks,
@@ -2621,12 +2622,13 @@
     border-color:var(--card-border);
   }
   #homeImportant > .list-block-head .list-block-title,
+  #homeEvents > .list-block-head .list-block-title,
   #homeContest > .list-block-head .list-block-title,
   #homeThanks > .list-block-head .list-block-title,
   #homeHallLoad > .stat-block-head .stat-block-title,
   #homeStreaks > .list-block-head .list-block-title,
   .screen.home-tab .news-block > .list-block-head .list-block-title{
-    color:var(--text-primary);
+    color:var(--khaki-block-title);
   }
   #homeImportant .home-info-btn,
   #homeContest .home-info-btn,
