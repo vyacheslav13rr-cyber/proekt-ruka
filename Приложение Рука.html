@@ -309,29 +309,61 @@
   .notif-header-btn svg{width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
   .notif-header-btn[hidden]{display:none;}
 
-  /* памятка по экрану — тот же ряд значков в шапке, левее уведомлений/ассистента */
-  .screen-info-btn{
-    position:absolute;
-    top:15px; right:104px;
-    width:28px; height:28px;
-    padding:0; border:1px solid rgba(247,241,227,0.35);
-    border-radius:50%;
-    background:rgba(247,241,227,0.08);
-    color:var(--cream);
-    display:flex; align-items:center; justify-content:center;
+  /* памятка по экрану — значок инлайн в конце текста заголовка, см. #screenTitle */
+  .title-info{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:0; height:0; overflow:visible;
+    margin:0; padding:0; border:none; background:none;
+    vertical-align:super;
     cursor:pointer;
-    z-index:5;
   }
-  .screen-info-btn svg{width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;}
-  .screen-info-btn:active{transform:scale(.92);}
-  .screen-info-btn[hidden]{display:none;}
+  .title-info svg{
+    flex-shrink:0;
+    width:13px; height:13px;
+    margin-left:3px;
+    stroke:var(--khaki); fill:none;
+    stroke-width:1.6; stroke-linecap:round;
+    opacity:.55;
+  }
+  .title-info:active svg{opacity:.9;}
+  .title-info[hidden]{display:none;}
 
-  .screen-info-box{text-align:left; max-height:78vh; overflow-y:auto;}
-  .screen-info-box .modal-title{text-align:left;}
-  .screen-info-body{text-align:left; margin-top:8px;}
-  .screen-info-body p{margin-bottom:10px;}
-  .screen-info-body p:last-child{margin-bottom:0;}
-  .screen-info-body strong{color:var(--text-primary);}
+  /* памятка по экрану — нижняя шторка */
+  .sheet-overlay{
+    position:absolute; inset:0;
+    z-index:60;
+  }
+  .sheet-overlay[hidden]{display:none;}
+  .sheet-backdrop{
+    position:absolute; inset:0;
+    background:rgba(18,35,58,0.45);
+  }
+  .sheet-panel{
+    position:absolute; left:0; right:0; bottom:0;
+    max-height:70vh;
+    overflow-y:auto;
+    background:var(--surface);
+    border-radius:18px 18px 0 0;
+    padding:10px 20px calc(20px + env(safe-area-inset-bottom));
+    box-shadow:0 -12px 30px -10px rgba(0,0,0,0.4);
+  }
+  .sheet-handle{
+    width:36px; height:4px;
+    margin:2px auto 14px;
+    border-radius:999px;
+    background:var(--card-border);
+  }
+  .sheet-title{
+    font-family:'Fraunces', serif;
+    font-size:18px; font-weight:600;
+    color:var(--text-primary);
+    margin-bottom:8px;
+  }
+  .sheet-text{
+    font-size:13.5px; line-height:1.55;
+    color:var(--text-soft);
+  }
+  .sheet-close-btn{display:block; width:100%; margin-top:18px;}
   .notif-header-btn.is-active{animation:pickFrameBlinkSlow 2.6s ease-in-out infinite;}
   .notif-header-count{
     position:absolute; top:-3px; right:-3px;
@@ -5189,11 +5221,11 @@
         <svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M9.5 19a2.5 2.5 0 0 0 5 0"/></svg>
         <span class="notif-header-count" id="notifHeaderCount" hidden>0</span>
       </button>
-      <!-- памятка по экрану — видна любому сотруднику, независимо от роли и того, где именно он в приложении -->
-      <button class="screen-info-btn" id="screenInfoBtn" hidden aria-label="Что это за экран">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="8" r="1" fill="currentColor" stroke="none"/></svg>
-      </button>
-      <div class="screen-title" id="screenTitle">Карта экранов</div>
+      <!-- памятка по экрану: текст — в screenTitle (id не меняется, весь код пишет сюда),
+           значок — рядом, инлайн, зашит в конец заголовка; #screenTitleWrap только для layout/hidden -->
+      <div class="screen-title" id="screenTitleWrap">
+        <span id="screenTitle">Карта экранов</span><button class="title-info" id="titleInfoBtn" hidden aria-label="Что это за экран"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 7.5v0.3"/></svg></button>
+      </div>
       <div class="screen-sub" id="screenSub">МН-00 · служебный экран</div>
       <!-- МН-01: название заведения + дата вместо обычного заголовка вкладки -->
       <div class="app-header-home" id="appHeaderHome" hidden>
@@ -7494,14 +7526,14 @@
       </div>
     </div>
 
-    <!-- памятка по экрану — что это за экран, что в нём, для чего; общая для всех сотрудников -->
-    <div class="modal-overlay" id="screenInfoOverlay" hidden>
-      <div class="modal-box screen-info-box">
-        <div class="modal-title" id="screenInfoTitle"></div>
-        <div class="modal-note screen-info-body" id="screenInfoBody"></div>
-        <div class="modal-actions-single">
-          <button class="modal-btn modal-btn-ghost" id="screenInfoClose">Понятно</button>
-        </div>
+    <!-- памятка по экрану — что это за экран и что на нём делают; общая для всех сотрудников -->
+    <div class="sheet-overlay" id="screenInfoSheet" hidden>
+      <div class="sheet-backdrop" id="screenInfoBackdrop"></div>
+      <div class="sheet-panel">
+        <div class="sheet-handle"></div>
+        <div class="sheet-title" id="screenInfoTitle"></div>
+        <p class="sheet-text" id="screenInfoBody"></p>
+        <button class="modal-btn modal-btn-ghost sheet-close-btn" id="screenInfoClose">Понятно</button>
       </div>
     </div>
 
@@ -14311,7 +14343,7 @@
      и «Профиля») шапка возвращается к обычному виду с заголовком экрана */
   function setAppHeaderMode(isHome) {
     document.getElementById('appHeader').classList.toggle('is-home', isHome);
-    document.getElementById('screenTitle').hidden = isHome;
+    document.getElementById('screenTitleWrap').hidden = isHome;
     document.getElementById('screenSub').hidden = isHome;
     document.getElementById('appHeaderHome').hidden = !isHome;
   }
@@ -16093,58 +16125,83 @@
     syncScreenInfo(id);
   }
 
-  /* ---------- памятка по экрану — что это, что в нём, для чего ----------
-     Видна любому сотруднику независимо от должности и от того, в каком
-     именно месте приложения он находится — значок появляется только там,
-     где для текущего мн-XX есть текст ниже. Экраны без записи — значок
-     просто скрыт, это ожидаемо на этапе пилота (см. МН-01, МН-05, МН-09) */
+  /* ---------- памятка по экрану — что это за экран и что на нём делают ----------
+     Значок инлайн в конце #screenTitle, виден любому сотруднику независимо
+     от должности — нейтральный текст, без ролевых обращений. Один и тот же
+     механизм переиспользуется во всех файлах-должностях, меняется только
+     набор ключей SCREEN_INFO под конкретный файл. Ключ — id экрана в
+     нижнем регистре, значение — текст шторки. Экрана без ключа — значок
+     скрыт */
   const SCREEN_INFO = {
-    'мн-01': {
-      title: 'Главная',
-      body:
-        '<p>Стартовый экран — открывается первым при входе в приложение. Сверху в шапке — название заведения, дата и статус смены.</p>' +
-        '<p><strong>Что на экране:</strong> «Важная информация» и «События дня» — карточки с короткими уведомлениями; «Загрузка зала» — процент занятости, гостей и столов сейчас; «Мотивация команды» — витрина подарков за баллы; «Благодарю!» — сотрудник дня; «Новости» — объявления; «Держим планку» — счётчики дней без возвратов и опозданий.</p>' +
-        '<p><strong>Может появиться ещё:</strong> личные задачи на день, сводка по выручке одной строкой, ссылки на другие разделы.</p>' +
-        '<p><strong>Зачем нужен:</strong> дать общую картину смены и заведения одним взглядом, прежде чем идти в «Смену», «Мессенджер» или «Планировщик».</p>'
-    },
-    'мн-05': {
-      title: 'Мессенджер',
-      body:
-        '<p>Список рабочих чатов команды.</p>' +
-        '<p><strong>Что на экране:</strong> папки сверху (Все, Кухня, Бар, Зал, Поставщики) фильтруют список чатов под ними; каждый чат — переписка с сотрудником, отделом или поставщиком. Значок РУКА в шапке открывает личного ассистента — можно спросить, например, про состав блюда. Кнопка «+» внизу справа — новый чат.</p>' +
-        '<p><strong>Может появиться ещё:</strong> групповые чаты по сменам, закреплённые сообщения, вложения и голосовые.</p>' +
-        '<p><strong>Зачем нужен:</strong> рабочее общение внутри смены и с поставщиками без переключения на внешние мессенджеры.</p>'
-    },
-    'мн-09': {
-      title: 'Планировщик',
-      body:
-        '<p>Задачи и чек-листы смены — доски с колонками и карточками.</p>' +
-        '<p><strong>Что на экране:</strong> сверху — переключатель досок («Чек-лист», «Задачи на сегодня») и кнопка «+» для новой доски; внутри доски — колонки с карточками, карточки можно перетаскивать между колонками; кружок на карточке отмечает её выполненной и переносит в колонку «Выполнено»; значок-карандаш — переименование, удаление и настройка регулярной задачи по времени. Клик по самой карточке открывает её название и описание.</p>' +
-        '<p><strong>Может появиться ещё:</strong> сроки и ответственные на карточке, поиск по доскам, готовые шаблоны колонок для новых досок.</p>' +
-        '<p><strong>Зачем нужен:</strong> чек-лист открытия/закрытия смены и трекер разовых и регулярных задач — вместо бумажных листочков и напоминаний на словах.</p>'
-    }
+    'мн-00': 'Служебный экран. Список всех экранов прототипа с их ID — отсюда можно перейти в любой раздел.',
+    'мн-01': 'Главная. Общая картина смены и заведения: важная информация, события дня, загрузка зала, мотивация команды, благодарности и новости.',
+    'мн-02': 'Смена. Показатели текущей смены по блокам — Финансы, Старт/Стоп лист, Актив, Гости, Сотрудники; тап по блоку открывает подробности.',
+    'мн-03': 'Финансы за смену. Выручка, план и процент выполнения, средний чек, количество заказов, наличные и карта, чаевые и возвраты.',
+    'мн-04': 'Старт/Стоп лист. Меню бара и кухни с переключателем на каждой позиции, поиск по блюду и по ингредиенту.',
+    'мн-05': 'Список чатов. Переписка с сотрудниками, отделами и поставщиками — папки сверху фильтруют список.',
+    'мн-06': 'Чат. Переписка по конкретному чату.',
+    'мн-07': 'Ассистент. Личный помощник — можно спросить, например, про состав блюда.',
+    'мн-08': 'Новый чат. Выбор собеседника и начало переписки.',
+    'мн-09': 'Планировщик. Доски с колонками и карточками задач: чек-листы смены и разовые или регулярные задачи.',
+    'мн-10': 'Профиль. Карточка сотрудника, переключатель темы и настройки приложения.',
+    'мн-11': 'Актив смены. Сводка по разделам смены — заказы, резервы, бар, кухня — в одном месте.',
+    'мн-12': 'Заказы. Столы зала с открытыми счетами.',
+    'мн-13': 'Резервы. Бронирования на сегодня.',
+    'мн-14': 'Бар. Склад, списания, заготовки и остальные разделы бара.',
+    'мн-15': 'Кухня. Тикеты и отметки об отдаче блюд.',
+    'мн-16': 'Стол. Карточка счёта: позиции заказа, отправка на печать, курсы подачи и модификаторы.',
+    'мн-17': 'Гости за столом. Открытие свободного стола и число гостей.',
+    'мн-18': 'Карточка задачи. Название и описание задачи из планировщика.',
+    'мн-19': 'Расчёт. Счёт к оплате и предварительный чек.',
+    'мн-20': 'Гости. Поток гостей за смену, разбивка по залам и средний чек.',
+    'мн-21': 'Сотрудники. Состав смены и выручка по залу.',
+    'мн-22': 'История стола. Все действия по конкретному столу.',
+    'мн-23': 'История смены. Переносы, удаления и смена официанта по всем столам.',
+    'мн-24': 'Выбитый счёт. Экран кассира для пробитого счёта.',
+    'мн-25': 'Закрытые заказы. Рассчитанные счета за смену.',
+    'мн-26': 'Приветствие. Экран перед входом — регистрация или вход в существующий аккаунт.',
+    'мн-27': 'Регистрация сотрудника. Данные и должность — заявка уходит на подтверждение.',
+    'мн-28': 'Вход. Вход в аккаунт по телефону или email и паролю.',
+    'мн-29': 'Код устарел. Ссылка-приглашение больше не действует.',
+    'мн-32': 'Регистрация ресторана. Первая регистрация заведения, без подтверждения.',
+    'мн-33': 'Остатки. Склад бара.',
+    'мн-34': 'Списания. Журнал списаний за смену.',
+    'мн-35': 'Заготовки и маркировка. Заготовки бара и сроки годности.',
+    'мн-36': 'Приёмка товара. Поставки, принятые за смену.',
+    'мн-37': 'Инвентаризация. Подсчёт остатков и история.',
+    'мн-38': 'Меню. Состав и наличие позиций бара.',
+    'мн-39': 'Передача смены. Приём и сдача смены бара.',
+    'мн-40': 'Поставщики. Прайсы и условия оплаты.',
+    'мн-41': 'Заявки поставщикам. Заявки на поставку и их статус.',
+    'мн-42': 'Аналитика бара. Показатели за смену, неделю или месяц.',
+    'мн-43': 'Сотрудники. Бармены на смене.',
+    'мн-44': 'Мотивация и призы. Витрина подарков за баллы и постановка задач.'
   };
 
-  const screenInfoBtn = document.getElementById('screenInfoBtn');
-  const screenInfoOverlay = document.getElementById('screenInfoOverlay');
+  const titleInfoBtn = document.getElementById('titleInfoBtn');
+  const screenInfoSheet = document.getElementById('screenInfoSheet');
   const screenInfoTitle = document.getElementById('screenInfoTitle');
   const screenInfoBody = document.getElementById('screenInfoBody');
-  let screenInfoCurrentId = null;
 
   function syncScreenInfo(id) {
-    const info = SCREEN_INFO[id];
-    screenInfoCurrentId = info ? id : null;
-    screenInfoBtn.hidden = !info;
+    titleInfoBtn.hidden = !SCREEN_INFO[id];
   }
-  screenInfoBtn.addEventListener('click', () => {
-    const info = SCREEN_INFO[screenInfoCurrentId];
+  function openScreenInfoSheet() {
+    const info = SCREEN_INFO[currentRoute()];
     if (!info) return;
-    screenInfoTitle.textContent = info.title;
-    screenInfoBody.innerHTML = info.body;
-    screenInfoOverlay.hidden = false;
+    screenInfoTitle.textContent = titleEl.textContent;
+    screenInfoBody.textContent = info;
+    screenInfoSheet.hidden = false;
+  }
+  function closeScreenInfoSheet() {
+    screenInfoSheet.hidden = true;
+  }
+  titleInfoBtn.addEventListener('click', openScreenInfoSheet);
+  document.getElementById('screenInfoClose').addEventListener('click', closeScreenInfoSheet);
+  document.getElementById('screenInfoBackdrop').addEventListener('click', closeScreenInfoSheet);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !screenInfoSheet.hidden) closeScreenInfoSheet();
   });
-  document.getElementById('screenInfoClose').addEventListener('click', () => { screenInfoOverlay.hidden = true; });
-  screenInfoOverlay.addEventListener('click', e => { if (e.target === screenInfoOverlay) screenInfoOverlay.hidden = true; });
 
   function currentRoute() {
     try { return decodeURIComponent(location.hash.slice(1)).toLowerCase(); }
