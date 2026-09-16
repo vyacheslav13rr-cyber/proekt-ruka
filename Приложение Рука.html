@@ -5014,7 +5014,7 @@
   .planner-col-empty{font-size:12px; color:var(--text-muted); text-align:center; padding:8px 0;}
 
   .planner-card{
-    display:flex; align-items:flex-start; gap:8px;
+    display:flex; align-items:flex-start; gap:6px;
     background:var(--khaki-block-track);
     border:1px solid var(--card-border);
     border-radius:11px;
@@ -5033,7 +5033,37 @@
   }
   .planner-card-grip svg{width:14px; height:14px;}
   .planner-card-grip svg circle{fill:currentColor;}
-  .planner-card-text{flex:1; min-width:0; font-size:12.5px; line-height:1.4; color:var(--text-primary); word-break:break-word;}
+  .planner-card-body{flex:1; min-width:0; display:flex; flex-direction:column; gap:4px;}
+  .planner-card-text{font-size:12.5px; line-height:1.4; color:var(--text-primary); word-break:break-word;}
+  .planner-card.is-done .planner-card-text{text-decoration:line-through; color:var(--text-soft);}
+  .planner-card-time{
+    display:inline-flex; align-items:center; gap:3px; width:fit-content;
+    font-family:'IBM Plex Mono', monospace; font-size:10.5px; color:var(--text-muted);
+  }
+  .planner-card-time svg{width:11px; height:11px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+
+  .planner-card-done{
+    flex-shrink:0;
+    width:22px; height:22px;
+    margin-top:0;
+    border:none; background:none; padding:0;
+    color:var(--text-muted);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+  }
+  .planner-card-done svg{width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;}
+  .planner-card-done.is-done{color:var(--accent);}
+
+  .planner-card-edit-btn{
+    flex-shrink:0;
+    width:20px; height:20px;
+    margin-top:1px;
+    border:none; background:none; padding:0;
+    color:var(--text-muted);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+  }
+  .planner-card-edit-btn svg{width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
 
   .planner-add-card-btn{
     margin-top:10px;
@@ -5073,6 +5103,36 @@
   }
 
   #plannerModalInput{display:block; width:100%; margin-top:14px;}
+
+  .planner-modal-recurring{margin-top:14px; text-align:left;}
+  .planner-modal-check{
+    display:flex; align-items:center; gap:8px;
+    font-family:'Manrope', sans-serif; font-size:13px; font-weight:700;
+    color:var(--text-primary);
+    cursor:pointer;
+  }
+  .planner-modal-check input{width:16px; height:16px; accent-color:var(--gold);}
+  #plannerModalRecurringTime{display:block; width:100%; margin-top:8px;}
+  #plannerModalRecurringTime:disabled{opacity:.45;}
+
+  /* ---------- МН-18 · Карточка задачи ---------- */
+  .planner-card-desc{
+    display:block;
+    width:100%;
+    min-height:160px;
+    margin-top:4px;
+    background:var(--surface);
+    border:1px solid var(--card-border);
+    border-radius:14px;
+    padding:12px 14px;
+    font-family:'Manrope', sans-serif;
+    font-size:13px;
+    line-height:1.5;
+    color:var(--text-primary);
+    resize:vertical;
+  }
+  .planner-card-desc:focus{outline:none; border-color:var(--gold);}
+  .planner-card-desc::placeholder{color:var(--text-muted);}
 
 </style>
 </head>
@@ -5142,6 +5202,7 @@
         <p class="map-intro">Служебный экран прототипа. Все экраны файла с их ID. Переход — по клику или по хеш-роуту в адресной строке, например <strong>#мн-04</strong>.</p>
         <button class="map-reset" id="draftReset">Сбросить черновики и демо-данные</button>
         <button class="map-reset" id="pendingApprovalToggle">Демо: заявка на должность ожидает подтверждения</button>
+        <button class="map-reset" id="plannerTimeSkipBtn">Демо: прокрутить время — регулярные карточки в «Сегодня»</button>
 
         <div class="map-group-title">Вход</div>
         <button class="map-row" data-goto="мн-26">
@@ -5350,6 +5411,11 @@
         <button class="map-row" data-goto="мн-09">
           <span class="map-id">МН-09</span>
           <span class="map-name">Планировщик<span class="map-note">Доски, колонки, карточки задач</span></span>
+          <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <button class="map-row" data-goto="мн-18">
+          <span class="map-id">МН-18</span>
+          <span class="map-name">Карточка задачи<span class="map-note">Вход по клику на карточку в МН-09</span></span>
           <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
         </button>
         <button class="map-row" data-goto="мн-10">
@@ -6668,13 +6734,25 @@
 
       <!-- ===== МН-09 · ПЛАНИРОВЩИК ===== -->
       <section class="panel" data-panel="planner" hidden>
-        <div class="planner-topbar">
-          <div class="folder-tabs" id="plannerBoardTabs"></div>
-          <button class="planner-add-btn" id="plannerAddBoardBtn" aria-label="Новая доска">
-            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-          </button>
+        <div id="plannerBoardView">
+          <div class="planner-topbar">
+            <div class="folder-tabs" id="plannerBoardTabs"></div>
+            <button class="planner-add-btn" id="plannerAddBoardBtn" aria-label="Новая доска">
+              <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+          </div>
+          <div class="planner-columns" id="plannerColumns"></div>
         </div>
-        <div class="planner-columns" id="plannerColumns"></div>
+
+        <!-- МН-18: карточка задачи -->
+        <div class="shift-detail" data-detail="planner-card" data-title="Карточка задачи" id="plannerCardDetail" hidden>
+          <button class="back-btn" id="plannerCardBackBtn">
+            <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+            Назад
+          </button>
+          <div class="detail-title" id="plannerCardTitle"></div>
+          <textarea class="planner-card-desc" id="plannerCardDescInput" placeholder="Описание задачи…"></textarea>
+        </div>
       </section>
 
       <!-- ===== МН-10 · ПРОФИЛЬ ===== -->
@@ -7393,6 +7471,13 @@
       <div class="modal-box">
         <div class="modal-title" id="plannerModalTitle">Карточка</div>
         <input type="text" class="profile-field-input password-input" id="plannerModalInput" placeholder="Название" maxlength="60">
+        <div class="planner-modal-recurring" id="plannerModalRecurringRow" hidden>
+          <label class="planner-modal-check">
+            <input type="checkbox" id="plannerModalRecurringCheck">
+            <span>Регулярная задача — время</span>
+          </label>
+          <input type="time" class="profile-field-input password-input" id="plannerModalRecurringTime" disabled>
+        </div>
         <div class="modal-actions">
           <button class="modal-btn modal-btn-ghost" id="plannerModalCancel">Отмена</button>
           <button class="modal-btn modal-btn-gold" id="plannerModalSave">Сохранить</button>
@@ -7818,6 +7903,8 @@
       if (profileHomeReset) profileHomeReset.hidden = false;
       const homeRootReset = document.getElementById('homeRoot');
       if (homeRootReset) homeRootReset.hidden = false;
+      const plannerBoardViewReset = document.getElementById('plannerBoardView');
+      if (plannerBoardViewReset) plannerBoardViewReset.hidden = false;
       leaveShiftDetails();
 
       if (tab !== 'messenger') {
@@ -13908,14 +13995,16 @@
       /* на «Главной» кольцо — только 2 цвета (трек + заполнение), без
          отдельной дуги пика — она была едва заметна и путала с третьим
          цветом; на детальном экране пик остаётся */
-      { arc: 'homeHallLoadProgressArc', percentEl: 'homeHallLoadPercent', guestsEl: 'homeHallLoadGuests', tablesEl: 'homeHallLoadTables', peakLineEl: 'homeHallLoadPeakLine', updatedEl: 'homeHallLoadUpdated' },
+      { arc: 'homeHallLoadProgressArc', percentEl: 'homeHallLoadPercent', guestsEl: 'homeHallLoadGuests', tablesEl: 'homeHallLoadTables', compact: true, peakLineEl: 'homeHallLoadPeakLine', updatedEl: 'homeHallLoadUpdated' },
       { arc: 'homeHallLoadDetailProgressArc', peakArc: 'homeHallLoadDetailPeakArc', percentEl: 'homeHallLoadDetailPercent', guestsEl: 'homeHallLoadDetailGuests', tablesEl: 'homeHallLoadDetailTables', peakLineEl: 'homeHallLoadDetailPeakLine', updatedEl: 'homeHallLoadDetailUpdated' }
     ].forEach(m => {
       renderHomeHallLoadArc(document.getElementById(m.arc), percent / 100);
       if (m.peakArc) renderHomeHallLoadArc(document.getElementById(m.peakArc), peak.percent / 100);
       document.getElementById(m.percentEl).textContent = percent + '%';
       document.getElementById(m.guestsEl).textContent = guests;
-      document.getElementById(m.tablesEl).textContent = openTables.length + ' из ' + tables.length;
+      document.getElementById(m.tablesEl).textContent = m.compact
+        ? openTables.length + '/' + tables.length
+        : openTables.length + ' из ' + tables.length;
       document.getElementById(m.peakLineEl).textContent = 'Ближайший пик в ' + peak.time + ' (' + peak.percent + '%)';
       document.getElementById(m.updatedEl).textContent = 'Обновлено в ' + updatedAt;
     });
@@ -15800,6 +15889,13 @@
     'мн-15': () => { gotoTab('shift'); openSub('kitchen'); },
     'мн-16': () => { gotoTab('shift'); openOrder(currentTable ? currentTable.num : 4); },
     'мн-17': () => { gotoTab('shift'); openGuests(pendingTable ? pendingTable.num : 5); },
+    'мн-18': () => {
+      gotoTab('planner');
+      if (plannerOpenCard) { openPlannerCardDetail(plannerOpenCard.columnId, plannerOpenCard.cardId); return; }
+      const board = plannerBoard();
+      const col = board && board.columns.find(c => c.cards.length);
+      if (col) openPlannerCardDetail(col.id, col.cards[0].id);
+    },
     'мн-19': () => { gotoTab('shift'); if (!currentTable) openOrder(4); openPrecheck(precheckGuest); },
     'мн-20': () => { gotoTab('shift'); openBlock('visitors'); },
     'мн-21': () => { gotoTab('shift'); openBlock('staff'); },
@@ -16113,11 +16209,24 @@
   }
 
   function plannerCardTemplate(card) {
-    return '<div class="planner-card" data-card-id="' + card.id + '">' +
+    const doneIcon = card.done
+      ? '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>'
+      : '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/></svg>';
+    const timeBadge = (card.recurring && card.time)
+      ? '<span class="planner-card-time"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>' + plannerEsc(card.time) + '</span>'
+      : '';
+    return '<div class="planner-card' + (card.done ? ' is-done' : '') + '" data-card-id="' + card.id + '">' +
       '<span class="planner-card-grip" aria-label="Перетащить">' +
         '<svg viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>' +
       '</span>' +
-      '<span class="planner-card-text">' + plannerEsc(card.text) + '</span>' +
+      '<span class="planner-card-body">' +
+        '<span class="planner-card-text">' + plannerEsc(card.text) + '</span>' +
+        timeBadge +
+      '</span>' +
+      '<button class="planner-card-done' + (card.done ? ' is-done' : '') + '" data-done-toggle="' + card.id + '" aria-label="Отметить выполненной">' + doneIcon + '</button>' +
+      '<button class="planner-card-edit-btn" data-card-edit="' + card.id + '" aria-label="Настройки карточки">' +
+        '<svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>' +
+      '</button>' +
     '</div>';
   }
 
@@ -16155,14 +16264,25 @@
   const plannerModalTitle = document.getElementById('plannerModalTitle');
   const plannerModalInput = document.getElementById('plannerModalInput');
   const plannerModalDeleteRow = document.getElementById('plannerModalDeleteRow');
+  const plannerModalRecurringRow = document.getElementById('plannerModalRecurringRow');
+  const plannerModalRecurringCheck = document.getElementById('plannerModalRecurringCheck');
+  const plannerModalRecurringTime = document.getElementById('plannerModalRecurringTime');
   let plannerModalCtx = null;   // {kind:'board'|'column'|'card', action:'create'|'edit', columnId, cardId}
 
-  function openPlannerModal(ctx, title, value, showDelete) {
+  plannerModalRecurringCheck.addEventListener('change', () => {
+    plannerModalRecurringTime.disabled = !plannerModalRecurringCheck.checked;
+  });
+
+  function openPlannerModal(ctx, title, value, showDelete, recurring, time) {
     plannerModalCtx = ctx;
     plannerModalTitle.textContent = title;
     plannerModalInput.value = value || '';
     plannerModalInput.placeholder = ctx.kind === 'board' ? 'Название доски' : ctx.kind === 'column' ? 'Название колонки' : 'Текст карточки';
     plannerModalDeleteRow.hidden = !showDelete;
+    plannerModalRecurringRow.hidden = ctx.kind !== 'card';
+    plannerModalRecurringCheck.checked = !!recurring;
+    plannerModalRecurringTime.value = time || '';
+    plannerModalRecurringTime.disabled = !recurring;
     plannerModalOverlay.hidden = false;
     setTimeout(() => plannerModalInput.focus(), 0);
   }
@@ -16193,12 +16313,14 @@
         if (col) col.name = val;
       }
     } else if (ctx.kind === 'card') {
+      const recurring = plannerModalRecurringCheck.checked;
+      const time = recurring ? plannerModalRecurringTime.value : '';
       if (ctx.action === 'create') {
         const col = plannerFindColumn(ctx.columnId);
-        if (col) col.cards.push({ id:'card-' + Date.now(), text: val });
+        if (col) col.cards.push({ id:'card-' + Date.now(), text: val, description:'', done:false, recurring, time });
       } else {
         const card = plannerFindCard(ctx.columnId, ctx.cardId);
-        if (card) card.text = val;
+        if (card) { card.text = val; card.recurring = recurring; card.time = time; }
       }
     }
     savePlannerState();
@@ -16351,6 +16473,64 @@
     plannerCardDragMoved = false;
   });
 
+  /* отметка выполнения — карточка переезжает в колонку «Выполнено» той же доски */
+  function plannerMarkDone(colId, cardId) {
+    const fromCol = plannerFindColumn(colId);
+    const card = plannerFindCard(colId, cardId);
+    if (!fromCol || !card || card.done) return;
+    card.done = true;
+    const board = plannerBoard();
+    const doneCol = board.columns.find(c => c.name === 'Выполнено');
+    if (doneCol && doneCol.id !== fromCol.id) {
+      const idx = fromCol.cards.findIndex(t => t.id === cardId);
+      if (idx !== -1) {
+        const [c] = fromCol.cards.splice(idx, 1);
+        doneCol.cards.push(c);
+      }
+    }
+    savePlannerState();
+    renderPlanner();
+  }
+
+  /* ---------- МН-18 · карточка задачи: название + описание ---------- */
+  const plannerBoardViewEl = document.getElementById('plannerBoardView');
+  const plannerCardDetailEl = document.getElementById('plannerCardDetail');
+  const plannerCardTitleEl = document.getElementById('plannerCardTitle');
+  const plannerCardDescInput = document.getElementById('plannerCardDescInput');
+  let plannerOpenCard = null;   // {columnId, cardId}
+
+  function openPlannerCardDetail(colId, cardId) {
+    const card = plannerFindCard(colId, cardId);
+    if (!card) return;
+    plannerOpenCard = { columnId: colId, cardId: cardId };
+    plannerCardTitleEl.textContent = card.text;
+    plannerCardDescInput.value = card.description || '';
+    plannerBoardViewEl.hidden = true;
+    plannerCardDetailEl.hidden = false;
+    const col = plannerFindColumn(colId);
+    const board = plannerBoard();
+    titleEl.textContent = plannerCardDetailEl.dataset.title;
+    subEl.textContent = (board ? board.name : '') + (col ? ' · ' + col.name : '');
+  }
+  function closePlannerCardDetail() {
+    plannerCardDetailEl.hidden = true;
+    plannerBoardViewEl.hidden = false;
+    plannerOpenCard = null;
+    titleEl.textContent = titles.planner[0];
+    subEl.textContent = titles.planner[1];
+  }
+  document.getElementById('plannerCardBackBtn').addEventListener('click', () => {
+    closePlannerCardDetail();
+    setRoute('мн-09');
+  });
+  plannerCardDescInput.addEventListener('input', () => {
+    if (!plannerOpenCard) return;
+    const card = plannerFindCard(plannerOpenCard.columnId, plannerOpenCard.cardId);
+    if (!card) return;
+    card.description = plannerCardDescInput.value;
+    savePlannerState();
+  });
+
   plannerColumnsEl.addEventListener('click', e => {
     if (plannerCardDragMoved) { plannerCardDragMoved = false; return; }
     if (e.target.closest('.planner-card-grip')) return;
@@ -16371,12 +16551,54 @@
       openPlannerModal({ kind:'card', action:'create', columnId: addCardBtn.dataset.addCard }, 'Новая карточка', '', false);
       return;
     }
+    const doneBtn = e.target.closest('[data-done-toggle]');
+    if (doneBtn) {
+      const colId = doneBtn.closest('.planner-column').dataset.columnId;
+      plannerMarkDone(colId, doneBtn.dataset.doneToggle);
+      return;
+    }
+    const cardEditBtn = e.target.closest('[data-card-edit]');
+    if (cardEditBtn) {
+      const colId = cardEditBtn.closest('.planner-column').dataset.columnId;
+      const card = plannerFindCard(colId, cardEditBtn.dataset.cardEdit);
+      if (card) openPlannerModal({ kind:'card', action:'edit', columnId: colId, cardId: card.id }, 'Карточка', card.text, true, card.recurring, card.time);
+      return;
+    }
     const cardEl = e.target.closest('.planner-card');
     if (cardEl) {
       const colId = cardEl.closest('.planner-column').dataset.columnId;
-      const card = plannerFindCard(colId, cardEl.dataset.cardId);
-      if (card) openPlannerModal({ kind:'card', action:'edit', columnId: colId, cardId: card.id }, 'Карточка', card.text, true);
+      openPlannerCardDetail(colId, cardEl.dataset.cardId);
+      setRoute('мн-18');
     }
+  });
+
+  /* демо: «прокрутить время» — регулярные карточки переезжают в «Сегодня» своей доски */
+  document.getElementById('plannerTimeSkipBtn').addEventListener('click', () => {
+    let moved = 0;
+    plannerState.forEach(board => {
+      const todayCol = board.columns.find(c => c.name === 'Сегодня');
+      if (!todayCol) return;
+      board.columns.forEach(col => {
+        if (col.id === todayCol.id) return;
+        for (let i = col.cards.length - 1; i >= 0; i--) {
+          const card = col.cards[i];
+          if (card.recurring && card.time && !card.done) {
+            col.cards.splice(i, 1);
+            todayCol.cards.unshift(card);
+            moved++;
+          }
+        }
+      });
+    });
+    if (moved) { savePlannerState(); renderPlanner(); }
+    showToast(
+      '<div class="toast-line">' +
+        '<span class="toast-head">' +
+          '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg>' +
+          '<span class="toast-where">Время прокручено</span>' +
+        '</span>' +
+        '<span class="toast-items">' + (moved ? moved + ' регулярных карточек перенесено в «Сегодня»' : 'Нет карточек, которые нужно перенести') + '</span>' +
+      '</div>', 4000);
   });
 
   renderPlanner();
