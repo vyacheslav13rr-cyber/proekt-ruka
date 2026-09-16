@@ -7989,11 +7989,12 @@
       if (plannerBoardViewReset) plannerBoardViewReset.hidden = false;
       leaveShiftDetails();
 
-      if (tab !== 'messenger') {
-        chatThread.hidden = true;
-        folderTabsEl.hidden = false;
-        chatListEl.hidden = false;
-      }
+      /* как и остальные вкладки — нажатие «Мессенджер» всегда возвращает
+         к списку чатов, даже если уже стоим в нём и открыт тред */
+      chatThread.hidden = true;
+      folderTabsEl.hidden = false;
+      chatListEl.hidden = false;
+      currentChatId = null;
     });
   });
 
@@ -16756,7 +16757,10 @@
 
   renderPlanner();
 
-  newChatFab.addEventListener('click', () => goRoute('мн-08'));
+  /* только синхронизация хеша — сам экран уже открыт другим обработчиком
+     клика на эту же кнопку; goRoute() здесь заново вызвал бы ROUTES['мн-08']
+     и через neЁ programmatic newChatFab.click(), закольцовывая открытие */
+  newChatFab.addEventListener('click', () => setRoute('мн-08'));
 
   document.getElementById('chatBackBtn').addEventListener('click', () => {
     if (currentChatId === 'c2' && assistantReturnRoute) {
