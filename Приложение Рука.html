@@ -314,14 +314,13 @@
     display:inline-flex; align-items:center; justify-content:center;
     width:0; height:0; overflow:visible;
     margin:0; padding:0; border:none; background:none;
-    vertical-align:baseline;
+    vertical-align:super;
     cursor:pointer;
   }
   .title-info svg{
     flex-shrink:0;
     width:13px; height:13px;
-    margin-left:9px;
-    position:relative; top:-11px;
+    margin-left:3px;
     stroke:var(--khaki); fill:none;
     stroke-width:1.6; stroke-linecap:round;
     opacity:.55;
@@ -5231,7 +5230,7 @@
       <!-- МН-01: название заведения + дата вместо обычного заголовка вкладки -->
       <div class="app-header-home" id="appHeaderHome" hidden>
         <div class="app-header-home-name-row" id="homeVenueOpenBtn">
-          <span class="app-header-home-name" id="homeShiftName"></span>
+          <span class="app-header-home-name-wrap"><span class="app-header-home-name" id="homeShiftName"></span><button class="title-info" id="homeTitleInfoBtn" hidden aria-label="Что это за экран"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 7.5v0.3"/></svg></button></span>
         </div>
         <div class="app-header-home-date" id="homeShiftDate"></div>
         <div class="app-header-home-shift" id="homeShiftLineHeader"></div>
@@ -7077,6 +7076,16 @@
                 <button class="segmented-btn active" data-font-size="md">A</button>
                 <button class="segmented-btn" data-font-size="lg">A+</button>
               </div>
+            </div>
+            <div class="settings-divider"></div>
+            <div class="settings-row">
+              <div class="settings-row-text">
+                <span class="settings-row-title">Памятки экранов</span>
+                <span class="settings-row-note">Значок с описанием рядом с названием экрана</span>
+              </div>
+              <button class="switch" id="screenInfoSwitch" role="switch" aria-checked="true">
+                <span class="switch-thumb"></span>
+              </button>
             </div>
           </div>
         </div>
@@ -16180,14 +16189,38 @@
   };
 
   const titleInfoBtn = document.getElementById('titleInfoBtn');
+  const homeTitleInfoBtn = document.getElementById('homeTitleInfoBtn');
   const screenInfoSheet = document.getElementById('screenInfoSheet');
   const screenInfoTitle = document.getElementById('screenInfoTitle');
   const screenInfoBody = document.getElementById('screenInfoBody');
+  const screenInfoSwitch = document.getElementById('screenInfoSwitch');
+
+  /* тумблер «Памятки экранов» — Профиль → Настройки интерфейса. Ключ
+     ruka:screenInfo, по умолчанию включено (в отличие от loadPref,
+     где значение по умолчанию — false) */
+  function loadScreenInfoPref() {
+    try {
+      const raw = localStorage.getItem('ruka:screenInfo');
+      return raw === null ? true : raw === '1';
+    } catch (e) { return true; }
+  }
+  let screenInfoEnabled = loadScreenInfoPref();
+  screenInfoSwitch.setAttribute('aria-checked', String(screenInfoEnabled));
+  screenInfoSwitch.addEventListener('click', () => {
+    screenInfoEnabled = screenInfoSwitch.getAttribute('aria-checked') !== 'true';
+    screenInfoSwitch.setAttribute('aria-checked', String(screenInfoEnabled));
+    savePref('screenInfo', screenInfoEnabled);
+    syncScreenInfo(currentRoute());
+    if (!screenInfoEnabled) closeScreenInfoSheet();
+  });
 
   function syncScreenInfo(id) {
-    titleInfoBtn.hidden = !SCREEN_INFO[id];
+    const show = screenInfoEnabled && !!SCREEN_INFO[id];
+    titleInfoBtn.hidden = !show;
+    homeTitleInfoBtn.hidden = !show;
   }
   function openScreenInfoSheet() {
+    if (!screenInfoEnabled) return;
     const info = SCREEN_INFO[currentRoute()];
     if (!info) return;
     screenInfoTitle.textContent = titleEl.textContent;
@@ -16198,6 +16231,10 @@
     screenInfoSheet.hidden = true;
   }
   titleInfoBtn.addEventListener('click', openScreenInfoSheet);
+  homeTitleInfoBtn.addEventListener('click', e => {
+    e.stopPropagation();   // строка с названием заведения не должна открыть карточку ресторана
+    openScreenInfoSheet();
+  });
   document.getElementById('screenInfoClose').addEventListener('click', closeScreenInfoSheet);
   document.getElementById('screenInfoBackdrop').addEventListener('click', closeScreenInfoSheet);
   document.addEventListener('keydown', e => {
