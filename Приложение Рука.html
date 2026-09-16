@@ -176,11 +176,16 @@
   }
 
   /* ---------- Status bar ---------- */
+  /* фон — тот же navy, что и у .app-header (не зависит от вкладки/темы),
+     иначе на «Главной» сквозь прозрачную строку статуса просвечивает
+     собственный градиент .screen.home-tab и получается отдельная подложка
+     над шапкой вместо цельной страницы, как на «Смене» */
   .statusbar{
     display:flex;
     align-items:center;
     justify-content:space-between;
     padding:9px 28px 0;
+    background:var(--navy);
     color:var(--cream);
     font-family:'IBM Plex Mono', monospace;
     font-size:13px;
@@ -2732,7 +2737,7 @@
     font-family:'Manrope', sans-serif; font-size:12px; font-weight:800; cursor:pointer;
   }
 
-  /* ---------- Конкурс продаж ---------- */
+  /* ---------- Мотивация команды (бывш. «Конкурс продаж») ---------- */
   .home-contest-row{
     display:flex; justify-content:space-between; align-items:baseline;
     margin-top:10px;
@@ -2762,9 +2767,13 @@
   .home-hallload-percent{font-family:'Fraunces', serif; font-weight:600; font-size:22px; color:var(--khaki-block-value);}
   .home-hallload-caption{font-size:9.5px; color:var(--khaki-block-title); max-width:64px; line-height:1.2;}
   .home-hallload-info{display:flex; flex-direction:column; gap:5px; flex:1; min-width:0;}
-  .home-hallload-info-row{display:flex; align-items:baseline; gap:5px; font-size:13px; color:var(--khaki-block-title);}
+  .home-hallload-info-row{display:flex; align-items:baseline; gap:5px; font-size:13px; color:var(--khaki-block-title); white-space:nowrap;}
   .home-hallload-info-row strong{font-family:'IBM Plex Mono', monospace; font-size:15px; color:var(--khaki-block-value); font-weight:500;}
   .home-hallload-peak-line{font-size:11.5px; color:var(--khaki-block-title); margin-top:2px;}
+  /* на «Главной» строка пика — у нижнего края блока, вровень с «Обновлено»
+     под кольцом слева; на детальном экране (та же вёрстка) не трогаем */
+  #homeHallLoad .home-hallload-body{align-items:stretch;}
+  #homeHallLoadPeakLine{margin-top:auto;}
   .home-hallload-updated{margin-top:10px; font-size:10.5px; color:var(--khaki-block-title); opacity:.75; text-align:right;}
   /* на «Главной» (не на детальном экране) «Обновлено» — под кружком, слева */
   .home-hallload-ring-col .home-hallload-updated{margin-top:0; text-align:left;}
@@ -2836,6 +2845,9 @@
      мини-анимацией по тапу; кнопка «Поздравить» — только после тапа по
      самому событию (заменяет прежние отдельные «Лично»/«В общем чате») */
   #homeEventsRows, #homeEventsCardWrap{touch-action:pan-y;}
+  /* плавная смена — тот же приём, что у .home-important-body (fade) */
+  #homeEventsRows{transition:opacity .3s ease;}
+  #homeEventsRows.fade{opacity:0;}
   .home-events-dots{display:flex; justify-content:center; gap:5px; margin-top:6px;}
   .home-events-dot{
     width:5px; height:5px; border-radius:50%;
@@ -5301,17 +5313,17 @@
               </div>
               <div class="home-hallload-info">
                 <div class="home-hallload-info-row"><strong id="homeHallLoadGuests">—</strong><span>гостей в зале</span></div>
-                <div class="home-hallload-info-row"><strong id="homeHallLoadTables">—</strong><span>столов занято</span></div>
+                <div class="home-hallload-info-row"><strong id="homeHallLoadTables">—</strong><span>столов</span></div>
                 <div class="home-hallload-peak-line" id="homeHallLoadPeakLine"></div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- 4. Конкурс продаж -->
+        <!-- 4. Мотивация команды (бывш. «Конкурс продаж» — переименован, содержимое и критерии те же) -->
         <div class="list-block khaki-variant static-block" id="homeContest">
           <div class="list-block-head">
-            <span class="list-block-title">Конкурс продаж</span>
+            <span class="list-block-title">Мотивация команды</span>
             <span class="home-head-actions">
               <button class="home-info-btn" data-info="contest" aria-label="Что за блок">i</button>
             </span>
@@ -13761,7 +13773,7 @@
       document.getElementById(m.percentEl).textContent = percent + '%';
       document.getElementById(m.guestsEl).textContent = guests;
       document.getElementById(m.tablesEl).textContent = openTables.length + ' из ' + tables.length;
-      document.getElementById(m.peakLineEl).textContent = 'Ближайший пик — ~' + peak.percent + '% к ' + peak.time;
+      document.getElementById(m.peakLineEl).textContent = 'Ближайший пик в ' + peak.time + ' (' + peak.percent + '%)';
       document.getElementById(m.updatedEl).textContent = 'Обновлено в ' + updatedAt;
     });
 
@@ -13942,10 +13954,15 @@
   function goToHomeEvent(delta) {
     const items = HOME_DATA.events || [];
     if (items.length < 2) return;
-    homeEventIndex = (homeEventIndex + delta + items.length) % items.length;
-    homeEventCongratsShown = false;
-    renderHomeEvents();
-    restartHomeEventTimer();
+    const rows = document.getElementById('homeEventsRows');
+    rows.classList.add('fade');
+    setTimeout(() => {
+      homeEventIndex = (homeEventIndex + delta + items.length) % items.length;
+      homeEventCongratsShown = false;
+      renderHomeEvents();
+      rows.classList.remove('fade');
+      restartHomeEventTimer();
+    }, 260);
   }
 
   function restartHomeEventTimer() {
@@ -14054,7 +14071,7 @@
     important: { title: 'Важная информация', text: 'Срочные объявления от управляющего — техосмотры, проверки, важные изменения. Листайте свайпом или миниатюрами внизу, тапните пост, чтобы прочитать целиком.' },
     events: { title: 'События дня', text: 'Дни рождения, юбилеи и праздники сотрудников на сегодня. Отреагируйте эмодзи или нажмите на событие, чтобы поздравить.' },
     hallload: { title: 'Загрузка зала', text: 'Сколько гостей и столов сейчас занято — ориентир, насколько загружен зал прямо сейчас.' },
-    contest: { title: 'Конкурс продаж', text: 'Ваше место в конкурсе продаж этой смены и сколько не хватает до первого места.' },
+    contest: { title: 'Мотивация команды', text: 'Ваше место в конкурсе продаж этой смены и сколько не хватает до первого места.' },
     thanks: { title: 'Благодарю!', text: 'Поблагодарите коллегу за помощь в смене — счётчик показывает, сколько раз уже поблагодарили за сегодня.' },
     news: { title: 'Новости', text: 'Новости заведения: обновления меню, события, изменения в команде.' },
     streaks: { title: 'Держим планку', text: 'Сколько дней подряд без возвратов и без опозданий — общая дисциплина смены.' }
