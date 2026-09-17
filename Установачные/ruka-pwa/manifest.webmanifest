@@ -2,7 +2,7 @@
   "name": "РУКА — Менеджер",
   "short_name": "РУКА",
   "description": "РУКА — управление рестораном. Прототип приложения менеджера.",
-  "id": "/ruka-manager",
+  "id": "./index.html",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
