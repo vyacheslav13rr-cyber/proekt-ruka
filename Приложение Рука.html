@@ -5322,7 +5322,20 @@
   .reserve-view[hidden]{display:none;}
 
   .reserve-view-row{display:flex; align-items:center; gap:8px; margin:14px 0 12px;}
-  .reserve-view-row .segmented{flex:1; margin:0;}
+  .reserve-view-select{
+    flex:1;
+    height:38px;
+    padding:0 12px;
+    border-radius:12px;
+    border:1px solid var(--gold);
+    background:var(--khaki-block-bg);
+    color:var(--accent);
+    font-family:'Manrope', sans-serif;
+    font-size:13.5px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .reserve-view-select:focus{outline:none;}
 
   .reserve-grid{
     display:grid;
@@ -5350,18 +5363,11 @@
   }
   .reserve-card:active{transform:scale(.97);}
   .reserve-card-occasion{
-    position:absolute; top:7px; left:7px;
+    position:absolute; top:7px; right:7px;
     width:13px; height:13px;
     color:var(--gold);
-    order:-1;
   }
   .reserve-card-occasion svg{width:13px; height:13px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
-  .reserve-card-chevron{
-    position:absolute; top:7px; right:6px;
-    width:12px; height:12px;
-    color:var(--text-muted);
-  }
-  .reserve-card-chevron svg{width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
   .reserve-card-name{
     margin-top:13px;
     font-family:'Fraunces', serif;
@@ -6855,10 +6861,10 @@
           </button>
 
           <div class="reserve-view-row">
-            <div class="segmented" role="tablist" id="reserveViewSwitch">
-              <button class="segmented-btn active" data-reserve-view="tile">Плитка</button>
-              <button class="segmented-btn" data-reserve-view="scheme">Схема</button>
-            </div>
+            <select class="reserve-view-select" id="reserveViewSelect">
+              <option value="tile">Плитка</option>
+              <option value="scheme">Схема</option>
+            </select>
             <button class="hall-tool" id="reserveHistoryLinkBtn" aria-label="История резервов за смену">
               <svg viewBox="0 0 24 24"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3.2 4.6v3.6h3.6"/><path d="M12 7.6V12l3 1.8"/></svg>
             </button>
@@ -6876,6 +6882,9 @@
 
             <div class="detail-section-title">В зале</div>
             <div class="reserve-grid" id="reserveGridInhall"></div>
+
+            <div class="detail-section-title">Задерживаются</div>
+            <div class="reserve-grid" id="reserveGridLate"></div>
           </div>
 
           <div class="reserve-view" id="reserveSchemeView" hidden>
@@ -16805,9 +16814,8 @@
     const icon = r.occasion ? RESERVE_OCCASION_ICON[r.occasion] : '';
     return '<button class="reserve-card ' + reserveBorderClass(r) + '" data-reserve-open="' + r.id + '">' +
       (icon ? '<span class="reserve-card-occasion" title="' + RESERVE_OCCASION_NAME[r.occasion] + '"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + icon + '</svg></span>' : '') +
-      '<span class="reserve-card-chevron"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></span>' +
       '<span class="reserve-card-name">' + r.name + '</span>' +
-      '<span class="reserve-card-persons"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c1-4 4-6 7-6s6 2 7 6"/></svg>' + r.persons + ' гост' + guestWord(r.persons) + '</span>' +
+      '<span class="reserve-card-persons"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c1-4 4-6 7-6s6 2 7 6"/></svg>' + r.persons + '</span>' +
       '<span class="reserve-card-time">' + stampText(r.time) + '</span>' +
       '<span class="reserve-card-phone">' + r.phone + '</span>' +
     '</button>';
@@ -16819,10 +16827,12 @@
       const t = reserveTable(r.tableId);
       return t && reserveZoneMatch(t.zone);
     });
-    const waiting = active.filter(r => !r.arrived).sort((a, b) => a.time - b.time);
     const inhall = active.filter(r => r.arrived).sort((a, b) => a.time - b.time);
+    const late = active.filter(r => !r.arrived && reserveIsLate(r)).sort((a, b) => a.time - b.time);
+    const waiting = active.filter(r => !r.arrived && !reserveIsLate(r)).sort((a, b) => a.time - b.time);
     document.getElementById('reserveGridWaiting').innerHTML = waiting.length ? waiting.map(reserveCardHtml).join('') : '<div class="reserve-empty">Нет резервов</div>';
     document.getElementById('reserveGridInhall').innerHTML = inhall.length ? inhall.map(reserveCardHtml).join('') : '<div class="reserve-empty">Нет резервов</div>';
+    document.getElementById('reserveGridLate').innerHTML = late.length ? late.map(reserveCardHtml).join('') : '<div class="reserve-empty">Нет резервов</div>';
   }
 
   const RESERVE_SCHEME_ZONES = ['main', 'second', 'veranda'];
@@ -16844,17 +16854,15 @@
 
   function renderReserves() {
     const reservesDetail = document.querySelector('.shift-detail[data-detail="reserves"]');
+    document.getElementById('reserveViewSelect').value = reserveView;
     document.getElementById('reserveTileView').hidden = reserveView !== 'tile';
     document.getElementById('reserveSchemeView').hidden = reserveView !== 'scheme';
     if (reserveView === 'tile') renderReserveTiles(); else renderReserveScheme();
     newReserveFab.hidden = reserveView !== 'tile' || !reservesDetail || reservesDetail.hidden;
   }
 
-  document.getElementById('reserveViewSwitch').addEventListener('click', e => {
-    const btn = e.target.closest('[data-reserve-view]');
-    if (!btn) return;
-    reserveView = btn.dataset.reserveView;
-    document.querySelectorAll('#reserveViewSwitch .segmented-btn').forEach(b => b.classList.toggle('active', b === btn));
+  document.getElementById('reserveViewSelect').addEventListener('change', e => {
+    reserveView = e.target.value;
     renderReserves();
   });
 
