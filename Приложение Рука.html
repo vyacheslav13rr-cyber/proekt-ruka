@@ -365,6 +365,36 @@
     color:var(--text-soft);
   }
   .sheet-close-btn{display:block; width:100%; margin-top:18px;}
+
+  /* «Аналитика смены» (МН-46): боковая панель с одним пунктом-заглушкой —
+     тот же .sheet-overlay (фон-подложка на весь экран), но панель прижата
+     к правому краю, а не к нижнему */
+  .side-panel-overlay .sheet-backdrop{background:rgba(18,35,58,0.45);}
+  .side-panel{
+    position:absolute; top:0; right:0; bottom:0;
+    width:78%; max-width:300px;
+    overflow-y:auto;
+    background:var(--surface);
+    border-radius:18px 0 0 18px;
+    padding:calc(20px + env(safe-area-inset-top)) 18px 20px;
+    box-shadow:-12px 0 30px -10px rgba(0,0,0,0.4);
+  }
+  .side-panel-title{
+    font-family:'Fraunces', serif;
+    font-size:17px; font-weight:600;
+    color:var(--text-primary);
+    margin-bottom:14px;
+  }
+  .shift-analytics-topbar{display:flex; justify-content:flex-end; margin-bottom:6px;}
+  .side-panel-open-btn{
+    width:32px; height:32px;
+    border-radius:50%;
+    border:1px solid var(--card-border);
+    background:var(--surface);
+    color:var(--text-muted);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .side-panel-open-btn svg{width:17px; height:17px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round;}
   .notif-header-btn.is-active{animation:pickFrameBlinkSlow 2.6s ease-in-out infinite;}
   .notif-header-count{
     position:absolute; top:-3px; right:-3px;
@@ -409,12 +439,22 @@
     color:var(--cream);
     margin-top:0;
   }
+  /* подзаголовок шапки убран везде, кроме МН-01 (там своя строка —
+     .app-header-home-shift, не этот элемент); текст сюда по-прежнему
+     пишется кодом ниже (для internal-записи navStack и т.п.), но сам
+     элемент больше нигде не показывается */
   .screen-sub{
+    display:none;
+  }
+  /* единственное исключение — индикатор папки внутри треда мессенджера
+     (МН-06/МН-07), отдельный элемент, screen-sub тут ни при чём */
+  .screen-thread-folder{
     font-size:12.5px;
     color:var(--khaki);
     margin-top:3px;
     font-family:'Manrope', sans-serif;
   }
+  .screen-thread-folder[hidden]{display:none;}
   /* иконка гостя вместо слова «гостей» в подзаголовке экрана заказа */
   .screen-sub-guests{display:inline-flex; align-items:center; gap:3px;}
   .screen-sub-guests svg{
@@ -932,16 +972,25 @@
   }
 
   /* ---------- Мессенджер: папки + список чатов ---------- */
+  /* закреплена под шапкой (sticky): список чатов уходит под неё при
+     прокрутке; фон — сплошной, того же цвета, что и контент, иначе сквозь
+     полосу будут просвечивать чаты */
   .folder-tabs{
     display:flex;
-    gap:8px;
+    gap:6px;
     overflow-x:auto;
-    padding:14px 6px 12px 0;
+    padding:10px 6px 8px 0;
+    margin-top:-4px;
     margin-bottom:2px;
     cursor:grab;
     -webkit-overflow-scrolling:touch;
     user-select:none;
     touch-action:pan-x;
+    position:sticky;
+    top:0;
+    z-index:6;
+    background:var(--content-bg);
+    border-bottom:1px solid var(--gold);
   }
   .folder-tabs:active{cursor:grabbing;}
   .folder-tabs::-webkit-scrollbar{display:none;}
@@ -950,10 +999,10 @@
     border:1px solid var(--card-border);
     background:var(--surface);
     cursor:pointer;
-    padding:7px 14px;
+    padding:4.5px 11px;
     border-radius:999px;
     font-family:'Manrope', sans-serif;
-    font-size:12.5px;
+    font-size:11.5px;
     font-weight:700;
     color:var(--text-muted);
     white-space:nowrap;
@@ -1003,21 +1052,29 @@
   .chat-thread{
     display:flex;
     flex-direction:column;
-    margin-top:6px;
+    margin-top:0;
   }
+  /* название чата закреплено под шапкой (sticky): сообщения уходят под
+     него при прокрутке; тонкая золотая линия снизу — как у папок */
   .chat-thread-head{
     display:flex; align-items:center; gap:10px;
-    margin-bottom:16px;
+    padding:10px 0 12px;
+    margin-bottom:14px;
+    position:sticky;
+    top:0;
+    z-index:6;
+    background:var(--content-bg);
+    border-bottom:1px solid var(--gold);
   }
   .chat-thread-name{
     font-family:'Fraunces', serif;
     font-weight:600;
-    font-size:17px;
+    font-size:19px;
     color:var(--text-primary);
   }
   .chat-messages{
     display:flex; flex-direction:column; gap:9px;
-    margin-bottom:16px;
+    margin-bottom:96px;
   }
   .msg-bubble{
     max-width:78%;
@@ -1040,18 +1097,29 @@
     border-bottom-right-radius:5px;
     font-weight:600;
   }
+  /* поле ввода — в самый низ, вплотную над нижним меню; при скрытом меню
+     опускается к краю экрана — те же правила, что и у .profile-save-bar */
   .chat-input-bar{
+    position:absolute;
+    left:20px; right:20px;
+    bottom:calc(14px + 74px + 8px);
     display:flex; align-items:center; gap:8px;
     background:var(--surface);
     border:1px solid var(--card-border);
     border-radius:999px;
     padding:9px 8px 9px 16px;
+    box-shadow:0 12px 26px -14px var(--card-shadow);
+    z-index:18;
+    transition:bottom .3s ease;
   }
+  .screen.nav-hidden .chat-input-bar{bottom:14px;}
+  .chat-input-bar[hidden]{display:none;}
   .chat-input-bar input{
     flex:1;
     border:none; outline:none; background:transparent;
-    font-family:'Manrope', sans-serif; font-size:13px; color:var(--text-muted);
+    font-family:'Manrope', sans-serif; font-size:13px; color:var(--text-primary);
   }
+  .chat-send-btn[disabled]{opacity:.4; cursor:default;}
   .chat-send-btn{
     width:32px; height:32px;
     border-radius:50%;
@@ -4918,6 +4986,31 @@
     border-radius:4px;
   }
 
+  /* «Реквизиты ресторана» (МН-45): QR ведёт на публичную страницу с этими
+     же данными, доступную без входа в приложение — здесь декоративная
+     заглушка, как и .bar-label-qr выше */
+  .venue-requisites-qr-wrap{
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+    margin-top:16px; padding:16px;
+    background:var(--surface);
+    border:1px solid var(--card-border);
+    border-radius:14px;
+  }
+  .venue-requisites-qr{
+    width:88px; height:88px;
+    background:repeating-linear-gradient(45deg, var(--navy) 0 4px, transparent 4px 8px),
+               repeating-linear-gradient(-45deg, var(--navy) 0 4px, transparent 4px 8px);
+    background-blend-mode:multiply;
+    border-radius:6px;
+  }
+  .screen.dark .venue-requisites-qr{
+    background:repeating-linear-gradient(45deg, var(--gold-light) 0 4px, transparent 4px 8px),
+               repeating-linear-gradient(-45deg, var(--gold-light) 0 4px, transparent 4px 8px);
+  }
+  .venue-requisites-qr-note{
+    font-size:11px; color:var(--text-muted); text-align:center; line-height:1.35;
+  }
+
   .bar-scan-frame{
     position:relative;
     height:130px;
@@ -5227,6 +5320,9 @@
       <div class="screen-title" id="screenTitleWrap">
         <span id="screenTitle">Карта экранов</span><button class="title-info" id="titleInfoBtn" hidden aria-label="Что это за экран"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 7.5v0.3"/></svg></button>
       </div>
+      <!-- индикатор папки внутри треда мессенджера (МН-06/МН-07) — просто
+           метка местоположения, некликабельна; возврат только «Назад» -->
+      <div class="screen-thread-folder" id="screenThreadFolder" hidden></div>
       <div class="screen-sub" id="screenSub">МН-00 · служебный экран</div>
       <!-- МН-01: название заведения + дата вместо обычного заголовка вкладки -->
       <div class="app-header-home" id="appHeaderHome" hidden>
@@ -5484,6 +5580,16 @@
           <span class="map-name">Профиль<span class="map-note">Заглушка + переключатель темы</span></span>
           <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
         </button>
+        <button class="map-row" data-goto="мн-45">
+          <span class="map-id">МН-45</span>
+          <span class="map-name">Карточка ресторана<span class="map-note">Вход кликом по названию в шапке МН-01</span></span>
+          <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <button class="map-row" data-goto="мн-46">
+          <span class="map-id">МН-46</span>
+          <span class="map-name">Аналитика смены<span class="map-note">Вход кликом по «Смена» в шапке МН-02 · только менеджер</span></span>
+          <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
       </section>
 
       <!-- ===== МН-01 · ГЛАВНАЯ ===== -->
@@ -5633,13 +5739,24 @@
 
         </div>
 
-        <!-- Детальный экран: Карточка заведения -->
-        <div class="shift-detail" data-detail="home-venue" data-title="Карточка заведения" data-subtitle="Адрес, часы работы, парковка" hidden>
+        <!-- Детальный экран: Карточка ресторана/бара/кафе (заголовок — см. applyVenueWording) -->
+        <div class="shift-detail" data-detail="home-venue" data-title="Карточка ресторана" data-subtitle="Адрес, часы работы, парковка" hidden>
           <button class="back-btn" id="homeVenueBackBtn">
             <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
             Назад
           </button>
           <div class="finance-rows" id="homeVenueRows"></div>
+
+          <!-- видно только менеджеру и выше (isManagerRole); официанту блок
+               отсутствует целиком, а не серый/заблокированный -->
+          <div id="homeVenueRequisitesBlock" hidden>
+            <div class="detail-section-title" id="homeVenueRequisitesTitle">Реквизиты ресторана</div>
+            <div class="finance-rows" id="homeVenueRequisitesRows"></div>
+            <div class="venue-requisites-qr-wrap">
+              <div class="venue-requisites-qr"></div>
+              <span class="venue-requisites-qr-note">QR — публичная страница с реквизитами, доступна без входа в приложение</span>
+            </div>
+          </div>
         </div>
 
         <!-- Детальный экран: Загрузка зала — только роли из STATS_ACCESS_ROLES -->
@@ -6370,6 +6487,95 @@
           </div>
         </div>
 
+        <!-- МН-46: Аналитика смены — вход кликом по заголовку «Смена» в шапке
+             МН-02, видно менеджеру и выше (hasStatsAccess). Только сводные
+             цифры и итоги, без списков — за деталями ведут ссылки ниже,
+             каждая открывает свой обычный блок МН-02 -->
+        <div class="shift-detail" data-detail="shift-analytics" data-title="Аналитика смены" data-subtitle="Сводка за смену" hidden>
+          <button class="back-btn">
+            <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+            Назад
+          </button>
+          <div class="shift-analytics-topbar">
+            <button class="side-panel-open-btn" id="shiftAnalyticsSideBtn" aria-label="Ещё аналитика">
+              <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+            </button>
+          </div>
+          <div class="finance-rows">
+            <div class="finance-row"><span class="value-highlight">Смена</span><strong class="value-highlight" id="shiftAnalyticsNumber">№ —</strong></div>
+            <div class="finance-row"><span class="font-serif-match">Выручка</span><strong class="font-serif-match" id="shiftAnalyticsRevenue">—</strong></div>
+            <div class="finance-row"><span>План</span><strong id="shiftAnalyticsPlan">—</strong></div>
+            <div class="finance-row"><span>Выполнение плана</span><strong id="shiftAnalyticsPercent">—%</strong></div>
+          </div>
+
+          <div class="detail-section-title">Гости</div>
+          <div class="finance-rows">
+            <div class="finance-row"><span>Сейчас в зале</span><strong id="shiftAnalyticsGuests">—</strong></div>
+            <div class="finance-row"><span>Средний чек</span><strong>1 490 ₽</strong></div>
+          </div>
+
+          <div class="detail-section-title">Смена и меню</div>
+          <div class="finance-rows">
+            <div class="finance-row"><span>Состав смены</span><strong>11 из 12</strong></div>
+            <div class="finance-row"><span>Позиций в стопе</span><strong id="shiftAnalyticsStopCount">—</strong></div>
+            <div class="finance-row"><span>Загрузка зала</span><strong id="shiftAnalyticsHallLoad">—%</strong></div>
+          </div>
+
+          <div class="detail-section-title">Прошлые смены и прогноз</div>
+          <div class="finance-rows">
+            <div class="finance-row"><span>Вчера</span><strong>268 400 ₽ · 92% плана</strong></div>
+            <div class="finance-row"><span>Прошлая пятница</span><strong>301 100 ₽ · 104% плана</strong></div>
+            <div class="finance-row"><span>Прогноз на сегодня</span><strong>275 000 – 295 000 ₽</strong></div>
+          </div>
+
+          <div class="detail-section-title">Подробнее</div>
+          <div class="nav-rows" id="shiftAnalyticsLinks">
+            <button class="nav-row" data-analytics-link="finance">
+              <span class="nav-row-text"><span class="nav-row-name">Финансы</span></span>
+              <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+            </button>
+            <button class="nav-row" data-analytics-link="startstop">
+              <span class="nav-row-text"><span class="nav-row-name">Старт/Стоп лист</span></span>
+              <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+            </button>
+            <button class="nav-row" data-analytics-link="visitors">
+              <span class="nav-row-text"><span class="nav-row-name">Гости</span></span>
+              <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+            </button>
+            <button class="nav-row" data-analytics-link="staff">
+              <span class="nav-row-text"><span class="nav-row-name">Сотрудники</span></span>
+              <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- боковая панель «Аналитика смены»: пока один пункт-заглушка -->
+        <div class="sheet-overlay side-panel-overlay" id="shiftAnalyticsSideOverlay" hidden>
+          <div class="sheet-backdrop" id="shiftAnalyticsSideBackdrop"></div>
+          <div class="side-panel">
+            <div class="side-panel-title">Аналитика смены</div>
+            <div class="nav-rows">
+              <button class="nav-row" id="shiftAnalyticsFullBtn">
+                <span class="nav-row-text"><span class="nav-row-name">Развёрнутая аналитика</span><span class="nav-row-note">Динамика, сравнение смен, по сотрудникам</span></span>
+                <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- заглушка развёрнутой аналитики — экран соберём позже -->
+        <div class="shift-detail" data-detail="shift-analytics-full" data-title="Развёрнутая аналитика" data-subtitle="Пока заглушка" hidden>
+          <button class="back-btn">
+            <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+            Назад
+          </button>
+          <div class="placeholder">
+            <svg viewBox="0 0 24 24"><path d="M4 21V9l8-6 8 6v12" stroke-width="1.8"/><path d="M9 21v-7h6v7" stroke-width="1.8"/></svg>
+            <h3>Развёрнутая аналитика</h3>
+            <p>Динамика за периоды, сравнение смен, разбивка по сотрудникам — экран соберём позже.</p>
+          </div>
+        </div>
+
         <!-- МН-13 -->
         <div class="shift-detail" data-detail="reserves" data-back="active" data-title="Резервы" data-subtitle="Резервы на сегодня" hidden>
           <button class="back-btn">
@@ -6784,12 +6990,12 @@
             <div class="chat-thread-name" id="threadName"></div>
           </div>
           <div class="chat-messages" id="chatMessages"></div>
-          <div class="chat-input-bar">
-            <input type="text" placeholder="Сообщение…" disabled>
-            <button class="chat-send-btn" disabled>
-              <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
-            </button>
-          </div>
+        </div>
+        <div class="chat-input-bar" id="chatInputBar" hidden>
+          <input type="text" id="chatInput" placeholder="Сообщение…">
+          <button class="chat-send-btn" id="chatSendBtn" disabled>
+            <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+          </button>
         </div>
       </section>
 
@@ -6864,7 +7070,7 @@
           <div class="nav-rows">
             <button class="nav-row" id="profileSettingsRestaurantBtn">
               <svg class="nav-row-icon" viewBox="0 0 24 24"><path d="M4 21V9l8-6 8 6v12"/><path d="M9 21v-7h6v7"/></svg>
-              <span class="nav-row-text"><span class="nav-row-name">Настройки ресторана</span><span class="nav-row-note">Доступно руководителю</span></span>
+              <span class="nav-row-text"><span class="nav-row-name" id="profileSettingsRestaurantLabel">Настройки ресторана</span><span class="nav-row-note">Доступно руководителю</span></span>
               <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
             </button>
             <button class="nav-row" id="profileSettingsAppBtn">
@@ -6921,8 +7127,8 @@
             </div>
             <div class="settings-divider"></div>
             <div class="profile-field-row profile-field-static">
-              <span class="profile-field-label">Заведение</span>
-              <span class="profile-field-value">Ресторан «Москва»</span>
+              <span class="profile-field-label" id="profileVenueLabel">Заведение</span>
+              <span class="profile-field-value" id="profileVenueValue">Ресторан «Москва»</span>
             </div>
             <div class="settings-divider"></div>
             <div class="profile-field-row profile-field-static">
@@ -6942,10 +7148,16 @@
         <!-- МН-10.3: настройки ресторана — доступно только руководителю -->
         <div class="shift-detail" data-detail="profile-settings-restaurant" hidden>
           <button class="back-btn">Назад</button>
+          <div class="settings-subtitle">Тип заведения</div>
+          <div class="segmented" role="tablist" id="venueTypeSwitch">
+            <button class="segmented-btn" data-venue-type="restaurant">Ресторан</button>
+            <button class="segmented-btn" data-venue-type="bar">Бар</button>
+            <button class="segmented-btn" data-venue-type="cafe">Кафе</button>
+          </div>
           <div class="placeholder">
             <svg viewBox="0 0 24 24"><path d="M4 21V9l8-6 8 6v12" stroke-width="1.8"/><path d="M9 21v-7h6v7" stroke-width="1.8"/></svg>
-            <h3>Настройки ресторана</h3>
-            <p>Заведение, залы и структура — экран соберём позже.</p>
+            <h3 id="profileSettingsRestaurantTitle">Настройки ресторана</h3>
+            <p>Залы и структура — экран соберём позже.</p>
           </div>
         </div>
 
@@ -7705,7 +7917,7 @@
 
         <div class="auth-note-box">
           <svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg>
-          <span class="auth-note-box-text">Код приглашения от заведения уже проверен: «Ресторан «Москва»»</span>
+          <span class="auth-note-box-text">Код приглашения от ресторана уже проверен: «Ресторан «Москва»»</span>
         </div>
 
         <div class="auth-field-row">
@@ -7885,7 +8097,7 @@
             <svg viewBox="0 0 512 512" role="img" aria-label="РУКА"><defs><linearGradient id="rukaBgOwner" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b3050"/><stop offset="1" stop-color="#0e1c2e"/></linearGradient><clipPath id="rukaCardOwner"><rect x="16" y="16" width="480" height="480" rx="112"/></clipPath></defs><rect x="16" y="16" width="480" height="480" rx="112" fill="url(#rukaBgOwner)"/><g clip-path="url(#rukaCardOwner)"><rect x="92" y="206" width="46" height="194" rx="12" fill="#5b7ba6"/><rect x="156" y="158" width="46" height="242" rx="12" fill="#7c9bc2"/><rect x="220" y="116" width="46" height="284" rx="12" fill="#e6dabf"/><rect x="284" y="62" width="46" height="338" rx="12" fill="#efe6d2"/><path d="M 84,300 A 186,186 0 1 0 438,222 Z" fill="#c9a227"/><polyline points="105,378 222,252 278,306 392,200" fill="none" stroke="#12233a" stroke-width="56" stroke-linecap="round" stroke-linejoin="round"/><polyline points="105,378 222,252 278,306 392,200" fill="none" stroke="#f7efe1" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/></g><rect x="42" y="42" width="428" height="428" rx="92" fill="none" stroke="#c9a227" stroke-width="3" opacity="0.85"/></svg>
           </div>
           <div class="auth-title">Регистрация ресторана</div>
-          <div class="auth-sub">Вы станете первым администратором заведения</div>
+          <div class="auth-sub">Вы станете первым администратором ресторана</div>
         </div>
 
         <div class="auth-field">
@@ -7957,11 +8169,11 @@
   const titleEl = document.getElementById('screenTitle');
   const subEl = document.getElementById('screenSub');
   const titles = {
-    home:['Главная', 'Пятница, 21 августа'],
-    shift:['Смена', 'Управление сменами'],
-    messenger:['Мессенджер', 'Чаты команды и ассистент'],
-    planner:['Планировщик', 'Задачи и списки'],
-    profile:['Профиль', 'Аккаунт и настройки']
+    home:['Главная', ''],
+    shift:['Смена', ''],
+    messenger:['Мессенджер', ''],
+    planner:['Планировщик', ''],
+    profile:['Профиль', '']
   };
 
   buttons.forEach(btn => {
@@ -7994,6 +8206,8 @@
       chatThread.hidden = true;
       folderTabsEl.hidden = false;
       chatListEl.hidden = false;
+      chatInputBarEl.hidden = true;
+      screenThreadFolderEl.hidden = true;
       currentChatId = null;
     });
   });
@@ -8026,7 +8240,6 @@
     lastName: 'Волкова',
     position: 'Управляющая',
     positionKey: 'Управляющий',   // должность из справочника ролей (docs/roles.md) без согласования по роду — по ней проверяется STATS_ACCESS_ROLES
-    restaurant: 'Ресторан «Москва»',
     hiredAt: '12 марта 2022',
     phone: '+7 999 123-45-67',
     email: 'd.volkova@depo-rest.ru',
@@ -8068,8 +8281,55 @@
     parking: 'Бесплатная парковка во дворе, 20 мест',
     menu: 'Европейская кухня с паназиатскими акцентами',
     openedYear: 2019,
-    founder: 'Алексей Дорохов'
+    founder: 'Алексей Дорохов',
+    /* юрлицо — видно только менеджеру и выше (см. isManagerRole), в блоке
+       «Реквизиты ресторана/бара/кафе» на карточке (МН-45) */
+    legal: {
+      entity: 'ООО «Депо-Рест»',
+      inn: '7714 356789',
+      kpp: '771401001',
+      ogrn: '1157746112233',
+      legalAddress: '127015, г. Москва, ул. Складская, д. 14, офис 3',
+      bank: 'АО «Модульбанк»',
+      bik: '044525092',
+      account: '4070 2810 5000 0012 3456',
+      corrAccount: '3010 1810 6000 0000 0092'
+    }
   };
+
+  /* «Ресторан «Москва»» и т.п. — единственный источник такой строки,
+     остальной код (карточка сотрудника, печатные бирки) берёт её отсюда,
+     а не хранит своей копией */
+  function venueDisplayName() {
+    return VENUE_TYPES[venueProfile.type].name + ' «' + venueProfile.name + '»';
+  }
+
+  /* единая точка пересчёта всех мест, где слово «заведение» заменено на
+     подстановку по venueProfile.type — вызывается один раз при старте и
+     заново при переключении типа в «Настройках ресторана» (МН-10.3) */
+  function applyVenueWording() {
+    const type = VENUE_TYPES[venueProfile.type];
+    document.getElementById('profileVenueLabel').textContent = type.name;
+    document.getElementById('profileVenueValue').textContent = venueDisplayName();
+    const restaurantSettingsTitle = 'Настройки ' + type.genitiveBare;
+    document.getElementById('profileSettingsRestaurantLabel').textContent = restaurantSettingsTitle;
+    document.getElementById('profileSettingsRestaurantTitle').textContent = restaurantSettingsTitle;
+    PROFILE_DETAIL_META['profile-settings-restaurant'][0] = restaurantSettingsTitle;
+    /* если сейчас открыт именно этот экран — шапка уже нарисована со старым
+       заголовком, её тоже нужно перерисовать (titleEl определён ниже по
+       файлу, но к моменту вызова applyVenueWording() уже существует) */
+    const restaurantDetailEl = document.querySelector('.shift-detail[data-detail="profile-settings-restaurant"]');
+    if (restaurantDetailEl && !restaurantDetailEl.hidden) titleEl.textContent = restaurantSettingsTitle;
+    const venueDetailEl = document.querySelector('.shift-detail[data-detail="home-venue"]');
+    if (venueDetailEl) venueDetailEl.dataset.title = 'Карточка ' + type.genitiveBare;
+    document.getElementById('homeNewsTitle').textContent = 'Новости ' + type.genitive;
+    SCREEN_INFO['мн-01'] = 'Главная. Общая картина смены и ' + type.genitiveBare + ': важная информация, события дня, загрузка зала, мотивация команды, благодарности и новости.';
+    document.querySelectorAll('#venueTypeSwitch .segmented-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.venueType === venueProfile.type);
+    });
+    renderProfileCard();
+    renderHomeHeader();
+  }
 
   /* ролей в прототипе нет — временный переключатель официант/кассир только
      для демонстрации доступа к «Чек-коррекции» на экране кассира (МН-24) */
@@ -8092,7 +8352,7 @@
     document.getElementById('profileCardAvatar').textContent = staffInitials(currentStaff);
     document.getElementById('profileCardName').textContent = staffFullName(currentStaff);
     document.getElementById('profileCardRole').textContent =
-      currentStaff.position + ' · ' + currentStaff.restaurant;
+      currentStaff.position + ' · ' + venueDisplayName();
     document.getElementById('profileCardPhone').textContent = currentStaff.phone;
     document.getElementById('profileCardEmail').textContent = currentStaff.email;
     document.getElementById('profileFormAvatar').textContent = staffInitials(currentStaff);
@@ -13880,15 +14140,17 @@
     document.getElementById('homeShiftDate').textContent =
       now.toLocaleDateString('ru-RU', { weekday: 'long' }) + ', ' + now.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
 
-    let line = 'Смена № ' + HOME_DATA.shiftNumber;
+    let line = '';
     const state = getVenueHoursState(now);
     if (state.mode === 'open') {
-      line += ' · до закрытия ' + type.genitiveBare + ' ' + formatDuration(state.minutesToClose);
+      line = 'До закрытия ' + type.genitiveBare + ' ' + formatDuration(state.minutesToClose);
     } else if (state.mode === 'closed' && state.minutesToOpen <= 60) {
-      line += ' · ' + type.name.toLowerCase() + ' откроется через ' + state.minutesToOpen + ' мин';
+      line = type.name + ' откроется через ' + state.minutesToOpen + ' мин';
     }
-    /* режим '24-7' и «закрыто, но до открытия больше часа» — только номер смены */
-    document.getElementById('homeShiftLineHeader').textContent = line;
+    /* режим '24-7' и «закрыто, но до открытия больше часа» — строку не показываем */
+    const shiftLineEl = document.getElementById('homeShiftLineHeader');
+    shiftLineEl.textContent = line;
+    shiftLineEl.hidden = !line;
   }
 
   function renderHomeVenueCard() {
@@ -13908,6 +14170,27 @@
     document.getElementById('homeVenueRows').innerHTML = rows
       .map(r => '<div class="finance-row"><span>' + r[0] + '</span><strong>' + r[1] + '</strong></div>')
       .join('');
+
+    /* «Реквизиты ресторана» — только менеджеру и выше, официант блок не видит вовсе */
+    document.getElementById('homeVenueRequisitesBlock').hidden = !isManagerRole;
+    if (isManagerRole) {
+      document.getElementById('homeVenueRequisitesTitle').textContent = 'Реквизиты ' + type.genitiveBare;
+      const legal = venueProfile.legal;
+      const legalRows = [
+        ['Юрлицо', legal.entity],
+        ['ИНН', legal.inn],
+        ['КПП', legal.kpp],
+        ['ОГРН', legal.ogrn],
+        ['Юр. адрес', legal.legalAddress],
+        ['Банк', legal.bank],
+        ['БИК', legal.bik],
+        ['Р/с', legal.account],
+        ['К/с', legal.corrAccount]
+      ];
+      document.getElementById('homeVenueRequisitesRows').innerHTML = legalRows
+        .map(r => '<div class="finance-row"><span>' + r[0] + '</span><strong>' + r[1] + '</strong></div>')
+        .join('');
+    }
   }
   document.getElementById('homeVenueOpenBtn').addEventListener('click', () => {
     renderHomeVenueCard();
@@ -14388,7 +14671,7 @@
     hallload: { title: 'Загрузка зала', text: 'Сколько гостей и столов сейчас занято — ориентир, насколько загружен зал прямо сейчас.' },
     contest: { title: 'Мотивация команды', text: 'Ваше место в конкурсе продаж этой смены и сколько не хватает до первого места.' },
     thanks: { title: 'Благодарю!', text: 'Поблагодарите коллегу за помощь в смене — счётчик показывает, сколько раз уже поблагодарили за сегодня.' },
-    news: { title: 'Новости', text: 'Новости заведения: обновления меню, события, изменения в команде.' },
+    news: { title: 'Новости', text: () => 'Новости ' + VENUE_TYPES[venueProfile.type].genitive + ': обновления меню, события, изменения в команде.' },
     streaks: { title: 'Держим планку', text: 'Сколько дней подряд без возвратов и без опозданий — общая дисциплина смены.' }
   };
   document.querySelectorAll('.home-info-btn').forEach(btn => {
@@ -14397,7 +14680,7 @@
       const info = HOME_BLOCK_INFO[btn.dataset.info];
       if (!info) return;
       document.getElementById('homeBlockInfoTitle').textContent = info.title;
-      document.getElementById('homeBlockInfoText').textContent = info.text;
+      document.getElementById('homeBlockInfoText').textContent = typeof info.text === 'function' ? info.text() : info.text;
       document.getElementById('homeBlockInfoOverlay').hidden = false;
     });
   });
@@ -14527,6 +14810,11 @@
   const threadAvatar = document.getElementById('threadAvatar');
   const threadName = document.getElementById('threadName');
   const chatMessagesEl = document.getElementById('chatMessages');
+  const screenThreadFolderEl = document.getElementById('screenThreadFolder');
+  const chatInputBarEl = document.getElementById('chatInputBar');
+  const chatInputEl = document.getElementById('chatInput');
+  const chatSendBtnEl = document.getElementById('chatSendBtn');
+  const FOLDER_LABELS = { all:'Все', kitchen:'Кухня', bar:'Бар', hall:'Зал', suppliers:'Поставщики', assistant:'Ассистент' };
 
   /* перетаскивание папок мышью/пальцем влево-вправо */
   let folderDragActive = false, folderDragMoved = false, folderDragStartX = 0, folderDragScrollLeft = 0;
@@ -14582,8 +14870,14 @@
     threadAvatar.textContent = chat.avatarText;
     threadName.textContent = chat.name;
     chatMessagesEl.innerHTML = chat.messages.map(renderChatMessage).join('');
-    titleEl.textContent = chat.name;
-    subEl.textContent = 'Переписка';
+    scrollChatToBottom();
+    /* заголовок шапки — всегда «Мессенджер», ниже мелко название папки
+       (просто индикатор местоположения, некликабельно) */
+    titleEl.textContent = 'Мессенджер';
+    const folderLabel = FOLDER_LABELS[chat.folder[0]] || '';
+    screenThreadFolderEl.textContent = folderLabel;
+    screenThreadFolderEl.hidden = !folderLabel;
+    resetChatInput();
   }
 
   /* заявка на должность (МН-27) рисуется отдельной карточкой, а не обычным
@@ -14639,6 +14933,7 @@
   });
 
   newChatFab.addEventListener('click', () => {
+    currentChatId = null;
     folderTabsEl.hidden = true;
     chatListEl.hidden = true;
     chatThread.hidden = false;
@@ -14647,9 +14942,64 @@
     threadAvatar.textContent = '+';
     threadName.textContent = 'Новый чат';
     chatMessagesEl.innerHTML = '<div class="msg-empty-hint">Напишите первое сообщение</div>';
-    titleEl.textContent = 'Новый чат';
-    subEl.textContent = 'Переписка';
+    titleEl.textContent = 'Мессенджер';
+    screenThreadFolderEl.hidden = true;   // у нового чата ещё нет папки
+    resetChatInput();
   });
+
+  function scrollChatToBottom() {
+    const contentEl = document.querySelector('.content');
+    contentEl.scrollTop = contentEl.scrollHeight;
+  }
+
+  function resetChatInput() {
+    chatInputBarEl.hidden = false;
+    chatInputEl.value = '';
+    chatSendBtnEl.disabled = true;
+  }
+
+  chatInputEl.addEventListener('input', () => {
+    chatSendBtnEl.disabled = !chatInputEl.value.trim();
+  });
+  chatInputEl.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); sendChatMessage(); }
+  });
+  chatSendBtnEl.addEventListener('click', sendChatMessage);
+
+  /* автоответ-имитация ниже — демо для прототипа.
+     MOCK: удалить при подключении бэкенда — на реальном сервере сообщение
+     уходит зарегистрированному сотруднику, автоответа быть не должно */
+  const MOCK_REPLIES = ['Принято, разбираюсь', 'Хорошо, сделаю', 'Ок, дайте 5 минут', 'Уже иду смотреть', 'Понял, спасибо'];
+  let mockReplyTimer = null;
+
+  function appendChatMessage(chat, msg) {
+    chat.messages.push(msg);
+    chatMessagesEl.insertAdjacentHTML('beforeend', renderChatMessage(msg));
+    scrollChatToBottom();
+  }
+
+  function sendChatMessage() {
+    const text = chatInputEl.value.trim();
+    if (!text) return;
+    let chat = chatData.find(c => c.id === currentChatId);
+    if (!chat) {
+      chat = { id: 'new-' + Date.now(), name: threadName.textContent, preview: '', time: '', unread: 0, folder: [], avatarText: '+', avatarClass: 'avatar-khaki', messages: [] };
+      chatData.push(chat);
+      currentChatId = chat.id;
+      chatMessagesEl.innerHTML = '';   // убираем подсказку «Напишите первое сообщение»
+    }
+    appendChatMessage(chat, { from: 'me', text });
+    chatInputEl.value = '';
+    chatSendBtnEl.disabled = true;
+
+    /* MOCK: удалить при подключении бэкенда */
+    clearTimeout(mockReplyTimer);
+    const chatIdAtSend = chat.id;
+    mockReplyTimer = setTimeout(() => {
+      if (currentChatId !== chatIdAtSend || chatThread.hidden) return;
+      appendChatMessage(chat, { from: 'them', text: MOCK_REPLIES[Math.floor(Math.random() * MOCK_REPLIES.length)] });
+    }, 1000 + Math.random() * 1000);
+  }
 
   document.querySelectorAll('.folder-tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -14752,6 +15102,8 @@
     chatThread.hidden = true;
     folderTabsEl.hidden = false;
     chatListEl.hidden = false;
+    chatInputBarEl.hidden = true;
+    screenThreadFolderEl.hidden = true;
     /* кнопка-лого всегда видна — только маршрут меняется */
     newChatFab.hidden = true;
     titleEl.textContent = 'Карта экранов';
@@ -14771,6 +15123,8 @@
     chatThread.hidden = true;
     folderTabsEl.hidden = false;
     chatListEl.hidden = false;
+    chatInputBarEl.hidden = true;
+    screenThreadFolderEl.hidden = true;
     newChatFab.hidden = false;
     titleEl.textContent = titles.messenger[0];
     subEl.textContent = titles.messenger[1];
@@ -15154,7 +15508,7 @@
       '<div class="bar-label-row">Изготовлено: ' + barTimeOf(prep.madeAt) + ' · ' + barShortDate(prep.madeAt) + '</div>' +
       '<div class="bar-label-row">Годен до: ' + barTimeOf(expiresAt) + ' · ' + barShortDate(expiresAt) + '</div>' +
       '<div class="bar-label-row">Сотрудник: ' + prep.author + '</div>' +
-      '<div class="bar-label-row">Заведение: ' + currentStaff.restaurant + '</div>' +
+      '<div class="bar-label-row">' + VENUE_TYPES[venueProfile.type].name + ': ' + venueDisplayName() + '</div>' +
       '<div class="bar-label-qr"></div>';
     document.getElementById('barLabelOverlay').hidden = false;
   }
@@ -16007,7 +16361,9 @@
     'мн-41': () => { gotoTab('shift'); openBarSub('orders'); },
     'мн-42': () => { gotoTab('shift'); openBarSub('analytics'); },
     'мн-43': () => { gotoTab('shift'); openBarSub('staff'); },
-    'мн-44': () => { gotoTab('shift'); openBarSub('motivation'); }
+    'мн-44': () => { gotoTab('shift'); openBarSub('motivation'); },
+    'мн-45': () => { gotoTab('home'); document.getElementById('homeVenueOpenBtn').click(); },
+    'мн-46': () => { gotoTab('shift'); openShiftAnalytics(); }
   };
 
   /* ---------- МН-26/27/28/29/32: приветствие, регистрация, вход, устаревший
@@ -16775,6 +17131,62 @@
     resetMessenger();
     setRoute('мн-05');
   });
+
+  /* МН-46: «Аналитика смены» — вход кликом по заголовку «Смена» в шапке
+     МН-02, видно только менеджеру и выше (hasStatsAccess). Только сводные
+     цифры, без списков — за деталями ведут ссылки в конце экрана */
+  function renderShiftAnalytics() {
+    document.getElementById('shiftAnalyticsNumber').textContent = '№ ' + HOME_DATA.shiftNumber;
+    const revEl = document.getElementById('financeRevenue');
+    if (revEl) document.getElementById('shiftAnalyticsRevenue').textContent = revEl.textContent;
+    document.getElementById('shiftAnalyticsPlan').textContent = money(FINANCE_PLAN);
+    const pctEl = financeBlockEl ? financeBlockEl.querySelector('.stat-block-percent') : null;
+    if (pctEl) document.getElementById('shiftAnalyticsPercent').textContent = pctEl.textContent.replace(' от плана', '');
+    const hallGuestsEl = document.getElementById('homeHallLoadGuests');
+    if (hallGuestsEl) document.getElementById('shiftAnalyticsGuests').textContent = hallGuestsEl.textContent;
+    const hallPercentEl = document.getElementById('homeHallLoadPercent');
+    if (hallPercentEl) document.getElementById('shiftAnalyticsHallLoad').textContent = hallPercentEl.textContent;
+    document.getElementById('shiftAnalyticsStopCount').textContent = menuItems.filter(i => i.status === 'stop').length;
+  }
+
+  function openShiftAnalytics() {
+    if (!hasStatsAccess) return;
+    renderShiftAnalytics();
+    showDetail('shift-analytics', 'Аналитика смены', 'Сводка за смену');
+  }
+
+  titleEl.addEventListener('click', () => {
+    const shiftPanel = document.querySelector('.panel[data-panel="shift"]');
+    if (shiftPanel && !shiftPanel.hidden && !shiftList.hidden) openShiftAnalytics();
+  });
+
+  document.querySelectorAll('[data-analytics-link]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const name = btn.dataset.analyticsLink;
+      const detail = document.querySelector('.shift-detail[data-detail="' + name + '"]');
+      if (!detail) return;
+      showDetail(name, detailTitle(detail), detail.dataset.subtitle || 'Детали');
+    });
+  });
+
+  /* боковая панель «Ещё аналитика» — пока один пункт-заглушка */
+  const shiftAnalyticsSideOverlay = document.getElementById('shiftAnalyticsSideOverlay');
+  document.getElementById('shiftAnalyticsSideBtn').addEventListener('click', () => { shiftAnalyticsSideOverlay.hidden = false; });
+  document.getElementById('shiftAnalyticsSideBackdrop').addEventListener('click', () => { shiftAnalyticsSideOverlay.hidden = true; });
+  document.getElementById('shiftAnalyticsFullBtn').addEventListener('click', () => {
+    shiftAnalyticsSideOverlay.hidden = true;
+    showDetail('shift-analytics-full', 'Развёрнутая аналитика', 'Пока заглушка');
+  });
+
+  /* переключатель типа заведения (МН-10.3 «Настройки ресторана») — меняет
+     venueProfile.type и пересчитывает все зависящие от него подписи разом */
+  document.querySelectorAll('#venueTypeSwitch .segmented-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      venueProfile.type = btn.dataset.venueType;
+      applyVenueWording();
+    });
+  });
+  applyVenueWording();
 
   /* старт: первый экран файла — МН-00 */
   if (!location.hash) location.hash = 'мн-00';
