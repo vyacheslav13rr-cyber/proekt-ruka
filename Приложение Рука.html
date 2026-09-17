@@ -1298,6 +1298,9 @@
   }
   .finance-row:last-child{border-bottom:none;}
   .finance-row strong{font-family:'IBM Plex Mono', monospace; font-weight:500; color:var(--accent);}
+  /* длинный текст (например, комментарий) — значение переносится под подпись, а не жмётся в одну строку */
+  .finance-row.is-wrap{flex-direction:column; align-items:flex-start; gap:4px;}
+  .finance-row.is-wrap strong{font-family:'Manrope', sans-serif; font-weight:600; color:var(--text-primary); white-space:normal; text-align:left; line-height:1.4;}
 
   /* ---------- Смена: блок Старт/Стоп лист ---------- */
   .list-block{
@@ -1835,6 +1838,7 @@
   }
   .primary-btn:active{transform:scale(.98);}
   .primary-btn[disabled]{opacity:.4; cursor:default;}
+  .primary-btn[hidden]{display:none;}
   .primary-btn svg{width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round;}
 
   /* ---------- Предчек / кассир: две (или три) кнопки способа оплаты в ряд ---------- */
@@ -5284,6 +5288,235 @@
   .planner-card-desc:focus{outline:none; border-color:var(--gold);}
   .planner-card-desc::placeholder{color:var(--text-muted);}
 
+  /* ---------- МН-13/30/31/47: Резервы ---------- */
+  .reserve-zone-tabs{
+    display:flex; gap:6px;
+    overflow-x:auto;
+    padding:10px 0 2px;
+    -webkit-overflow-scrolling:touch;
+    touch-action:pan-x;
+  }
+  .reserve-zone-tabs::-webkit-scrollbar{display:none;}
+
+  .reserve-view{margin-top:4px;}
+  .reserve-view[hidden]{display:none;}
+
+  .reserve-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-bottom:6px;
+  }
+  .reserve-empty{
+    grid-column:1 / -1;
+    font-size:12px;
+    color:var(--text-muted);
+    padding:4px 2px 10px;
+  }
+  .reserve-card{
+    position:relative;
+    display:flex; flex-direction:column;
+    text-align:left;
+    background:var(--surface);
+    border:1.5px solid var(--card-border);
+    border-radius:14px;
+    padding:10px 30px 10px 11px;
+    cursor:pointer;
+    font-family:'Manrope', sans-serif;
+    transition:transform .15s ease;
+  }
+  .reserve-card:active{transform:scale(.97);}
+  .reserve-card-occasion{
+    position:absolute; top:9px; left:9px;
+    width:16px; height:16px;
+    color:var(--gold);
+    order:-1;
+  }
+  .reserve-card-occasion svg{width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+  .reserve-card-chevron{
+    position:absolute; top:10px; right:9px;
+    width:15px; height:15px;
+    color:var(--text-muted);
+  }
+  .reserve-card-chevron svg{width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+  .reserve-card-time{
+    margin-top:16px;
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:19px;
+    color:var(--text-primary);
+    line-height:1.1;
+  }
+  .reserve-card-persons{
+    display:flex; align-items:center; gap:4px;
+    margin-top:4px;
+    font-size:11px; font-weight:700;
+    color:var(--accent);
+  }
+  .reserve-card-persons svg{width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+  .reserve-card-name{
+    margin-top:6px;
+    font-size:12.5px; font-weight:700;
+    color:var(--text-primary);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .reserve-card-phone{
+    margin-top:1px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--text-muted);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  @keyframes reservePulseGold{
+    0%,100%{ box-shadow:0 0 0 0 rgba(198,153,47,.5); border-color:var(--gold); }
+    50%{ box-shadow:0 0 0 5px rgba(198,153,47,0); border-color:var(--gold-light); }
+  }
+  .reserve-card.is-soon{ animation:reservePulseGold 1.7s ease-in-out infinite; }
+  .reserve-card.is-late{ border-color:var(--dot-red); box-shadow:0 0 0 1px rgba(178,72,58,.22); }
+  .reserve-card.is-late .reserve-card-time{color:var(--dot-red);}
+
+  /* ---------- Схема зала ---------- */
+  .reserve-scheme-zone{
+    position:relative;
+    height:200px;
+    background:var(--surface);
+    border:1px solid var(--card-border);
+    border-radius:16px;
+    margin-bottom:12px;
+    overflow:hidden;
+  }
+  .reserve-scheme-zone-label{
+    position:absolute; top:8px; left:11px;
+    font-size:10px; font-weight:800;
+    letter-spacing:.04em; text-transform:uppercase;
+    color:var(--text-muted);
+  }
+  .reserve-table{
+    position:absolute;
+    display:flex; align-items:center; justify-content:center;
+    border:2px solid var(--dot-green);
+    background:transparent;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px; font-weight:700;
+    color:var(--text-primary);
+    cursor:pointer;
+    padding:0;
+    text-align:center;
+    line-height:1.2;
+  }
+  .reserve-table.shape-rect{border-radius:9px;}
+  .reserve-table.shape-circle{border-radius:50%;}
+  .reserve-table.state-booked{
+    border-color:transparent;
+    background:linear-gradient(160deg, var(--gold-light), var(--gold));
+    color:var(--navy-deep);
+  }
+  .reserve-table.state-inhall{
+    border-color:transparent;
+    background:linear-gradient(160deg, #8A5D38, #5B3B22);
+    color:var(--cream);
+  }
+  .reserve-table.state-late{
+    border-color:transparent;
+    background:var(--dot-red);
+    color:var(--cream);
+  }
+  .reserve-legend{
+    display:flex; flex-wrap:wrap; gap:9px 16px;
+    padding:11px 13px;
+    background:var(--surface);
+    border:1px solid var(--card-border);
+    border-radius:14px;
+  }
+  .reserve-legend-item{
+    display:flex; align-items:center; gap:6px;
+    font-size:11px; font-weight:700;
+    color:var(--text-muted);
+  }
+  .reserve-legend-swatch{
+    width:13px; height:13px;
+    border-radius:4px;
+    flex-shrink:0;
+    border:2px solid var(--dot-green);
+    background:transparent;
+  }
+  .reserve-legend-swatch.state-booked{border-color:transparent; background:linear-gradient(160deg, var(--gold-light), var(--gold));}
+  .reserve-legend-swatch.state-inhall{border-color:transparent; background:linear-gradient(160deg, #8A5D38, #5B3B22);}
+  .reserve-legend-swatch.state-late{border-color:transparent; background:var(--dot-red);}
+
+  /* ---------- МН-30: карточка резерва ---------- */
+  .reserve-btn-outline{
+    display:flex; align-items:center; justify-content:center; gap:7px;
+    width:100%;
+    background:var(--surface);
+    border:1px solid var(--card-border);
+    border-radius:14px;
+    padding:13px;
+    margin-top:10px;
+    font-family:'Manrope', sans-serif;
+    font-size:13.5px; font-weight:700;
+    color:var(--text-primary);
+    cursor:pointer;
+    transition:transform .15s ease;
+  }
+  .reserve-btn-outline:active{transform:scale(.98);}
+  .reserve-btn-outline[hidden]{display:none;}
+  .reserve-note-composer{margin-top:10px;}
+  .reserve-note-composer[hidden]{display:none;}
+
+  /* ---------- МН-31: новый резерв ---------- */
+  .reserve-form-row{margin-bottom:14px;}
+  .reserve-form-label{
+    display:block;
+    font-size:11.5px; font-weight:700;
+    color:var(--text-muted);
+    margin-bottom:6px;
+  }
+  .reserve-persons-stepper{display:flex; align-items:center; gap:12px;}
+  .reserve-persons-stepper .step-count{font-size:16px; min-width:22px;}
+  .reserve-table-pick{display:flex; flex-direction:column; gap:7px;}
+  .reserve-table-pick-row{
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    background:var(--surface);
+    border:1.5px solid var(--card-border);
+    border-radius:12px;
+    padding:10px 12px;
+    font-family:'Manrope', sans-serif;
+    font-size:12.5px; font-weight:600;
+    color:var(--text-primary);
+    cursor:pointer;
+    text-align:left;
+  }
+  .reserve-table-pick-row.active{
+    border-color:var(--gold);
+    background:linear-gradient(160deg, rgba(233,203,126,0.22), rgba(198,153,47,0.14));
+  }
+  .reserve-buffer-warn{
+    display:flex; align-items:flex-start; gap:8px;
+    background:rgba(178,72,58,0.12);
+    border:1px solid rgba(178,72,58,0.35);
+    border-radius:12px;
+    padding:10px 12px;
+    margin-top:8px;
+    font-size:11.5px; line-height:1.4;
+    color:var(--text-primary);
+  }
+  .reserve-buffer-warn[hidden]{display:none;}
+  .reserve-buffer-warn svg{width:15px; height:15px; stroke:var(--dot-red); fill:none; stroke-width:2.2; flex-shrink:0; margin-top:1px;}
+  .reserve-buffer-warn-text{flex:1;}
+  .reserve-buffer-warn-ack{
+    display:inline-block;
+    margin-top:6px;
+    background:none;
+    border:none;
+    padding:0;
+    font-size:11.5px; font-weight:800;
+    color:var(--dot-red);
+    text-decoration:underline;
+    cursor:pointer;
+  }
+  .reserve-occasion-chips{display:flex; flex-wrap:wrap; gap:7px;}
+
 </style>
 </head>
 <body>
@@ -5449,6 +5682,21 @@
         <button class="map-row" data-goto="мн-13">
           <span class="map-id">МН-13</span>
           <span class="map-name">Резервы<span class="map-note">Подраздел МН-11</span></span>
+          <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <button class="map-row" data-goto="мн-30">
+          <span class="map-id">МН-30</span>
+          <span class="map-name">Резерв<span class="map-note">Подраздел МН-13</span></span>
+          <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <button class="map-row" data-goto="мн-31">
+          <span class="map-id">МН-31</span>
+          <span class="map-name">Новый резерв<span class="map-note">Подраздел МН-13</span></span>
+          <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <button class="map-row" data-goto="мн-47">
+          <span class="map-id">МН-47</span>
+          <span class="map-name">История резервов за смену<span class="map-note">Подраздел МН-13</span></span>
           <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
         </button>
         <button class="map-row" data-goto="мн-14">
@@ -6582,26 +6830,140 @@
             <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
             Назад
           </button>
-          <div class="finance-rows">
-            <div class="finance-row"><span class="value-highlight">Ожидаем</span><strong class="value-highlight">5 из 8</strong></div>
-            <div class="finance-row"><span>Уже пришли</span><strong>3</strong></div>
-            <div class="finance-row"><span>Гостей по резервам</span><strong>27</strong></div>
-            <div class="finance-row"><span>Ближайший</span><strong>19:30</strong></div>
-            <div class="finance-row"><span>Депозиты внесены</span><strong>3</strong></div>
-            <div class="finance-row"><span>Не подтверждены</span><strong>1</strong></div>
+
+          <div class="segmented" role="tablist" id="reserveViewSwitch">
+            <button class="segmented-btn active" data-reserve-view="tile">Плитка</button>
+            <button class="segmented-btn" data-reserve-view="scheme">Схема</button>
           </div>
 
-          <div class="detail-section-title">Расписание</div>
-          <div class="finance-rows">
-            <div class="finance-row"><span>19:30 · Стол 8 · Петров</span><strong>4 гостя</strong></div>
-            <div class="finance-row"><span>19:45 · Стол 2 · Ким</span><strong>2 гостя</strong></div>
-            <div class="finance-row"><span>20:00 · Стол 11 · Соколова</span><strong>6 гостей</strong></div>
-            <div class="finance-row"><span>20:15 · Стол 4 · Гаджиев</span><strong>3 гостя</strong></div>
-            <div class="finance-row"><span>20:30 · Веранда · Литвинов</span><strong>5 гостей</strong></div>
-            <div class="finance-row"><span>21:00 · Стол 6 · Орлова</span><strong>2 гостя</strong></div>
-            <div class="finance-row"><span>21:30 · Стол 15 · Не подтверждён</span><strong>3 гостя</strong></div>
-            <div class="finance-row"><span>22:00 · Стол 1 · Дьяченко</span><strong>2 гостя</strong></div>
+          <div class="reserve-zone-tabs" id="reserveZoneTabs">
+            <button class="folder-tab active" data-reserve-zone="all">Все залы</button>
+            <button class="folder-tab" data-reserve-zone="main">Основной</button>
+            <button class="folder-tab" data-reserve-zone="second">Второй</button>
+            <button class="folder-tab" data-reserve-zone="veranda">Веранда</button>
           </div>
+
+          <button class="auth-link" id="reserveHistoryLinkBtn" style="display:block; margin:0 0 10px;">История резервов за смену →</button>
+
+          <div class="reserve-view" id="reserveTileView">
+            <div class="detail-section-title">Ожидаем</div>
+            <div class="reserve-grid" id="reserveGridWaiting"></div>
+
+            <div class="detail-section-title">В зале</div>
+            <div class="reserve-grid" id="reserveGridInhall"></div>
+          </div>
+
+          <div class="reserve-view" id="reserveSchemeView" hidden>
+            <div id="reserveSchemeZones"></div>
+            <div class="reserve-legend">
+              <span class="reserve-legend-item"><span class="reserve-legend-swatch"></span>Свободен</span>
+              <span class="reserve-legend-item"><span class="reserve-legend-swatch state-booked"></span>Забронирован</span>
+              <span class="reserve-legend-item"><span class="reserve-legend-swatch state-inhall"></span>Гость в зале</span>
+              <span class="reserve-legend-item"><span class="reserve-legend-swatch state-late"></span>Опаздывает</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- МН-30 -->
+        <div class="shift-detail" data-detail="reserveCard" data-back="reserves" data-title="Резерв" data-subtitle="Карточка резерва" hidden>
+          <button class="back-btn">
+            <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+            Назад
+          </button>
+
+          <div class="finance-rows" id="reserveCardFields"></div>
+
+          <div class="detail-section-title">Лента событий</div>
+          <div class="history-log" id="reserveCardLog"></div>
+
+          <div class="reserve-note-composer" id="reserveNoteComposer" hidden>
+            <textarea class="void-comment" id="reserveNoteInput" rows="2" placeholder="Текст заметки"></textarea>
+            <button class="primary-btn" id="reserveNoteSubmit">Добавить</button>
+          </div>
+
+          <button class="primary-btn" id="reserveArrivedBtn">Гость пришёл</button>
+          <button class="reserve-btn-outline" id="reserveFreedBtn">Стол освободился</button>
+          <button class="reserve-btn-outline" id="reserveNoteBtn">Добавить заметку</button>
+        </div>
+
+        <!-- МН-31 -->
+        <div class="shift-detail" data-detail="newReserve" data-back="reserves" data-title="Новый резерв" data-subtitle="Создание резерва" hidden>
+          <button class="back-btn">
+            <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+            Назад
+          </button>
+
+          <div class="reserve-form-row">
+            <span class="reserve-form-label">Дата</span>
+            <input class="auth-field-input" type="date" id="newReserveDate">
+          </div>
+
+          <div class="reserve-form-row">
+            <span class="reserve-form-label">Время</span>
+            <input class="auth-field-input" type="time" id="newReserveTime">
+          </div>
+
+          <div class="reserve-form-row">
+            <span class="reserve-form-label">Персоны</span>
+            <div class="reserve-persons-stepper">
+              <button class="step-btn" id="newReservePersonsMinus" type="button">−</button>
+              <span class="step-count" id="newReservePersonsCount">2</span>
+              <button class="step-btn" id="newReservePersonsPlus" type="button">+</button>
+            </div>
+          </div>
+
+          <div class="reserve-form-row">
+            <span class="reserve-form-label">Свободные столы на это время</span>
+            <div class="reserve-table-pick" id="newReserveTablePick"></div>
+            <div class="reserve-buffer-warn" id="newReserveBufferWarn" hidden>
+              <svg viewBox="0 0 24 24"><path d="M12 9v4"/><path d="M12 16.5h.01"/><path d="M10.3 3.9L2.6 18a1.8 1.8 0 0 0 1.6 2.6h15.6a1.8 1.8 0 0 0 1.6-2.6L13.7 3.9a1.8 1.8 0 0 0-3.4 0z"/></svg>
+              <span class="reserve-buffer-warn-text">
+                Столик освободится впритык — рядом другой резерв менее чем за 30 минут.<br>
+                <button class="reserve-buffer-warn-ack" id="newReserveBufferAck" type="button">Понятно</button>
+              </span>
+            </div>
+          </div>
+
+          <div class="reserve-form-row">
+            <span class="reserve-form-label">Имя</span>
+            <input class="auth-field-input" type="text" id="newReserveName" placeholder="Имя гостя">
+          </div>
+
+          <div class="reserve-form-row">
+            <span class="reserve-form-label">Телефон</span>
+            <input class="auth-field-input" type="text" id="newReservePhone" inputmode="tel" placeholder="+7 900 000-00-00">
+          </div>
+
+          <div class="reserve-form-row">
+            <span class="reserve-form-label">Ник в Телеграме (ТГ — мессенджер Telegram, необязательно)</span>
+            <input class="auth-field-input" type="text" id="newReserveTg" placeholder="@ник">
+          </div>
+
+          <div class="reserve-form-row">
+            <span class="reserve-form-label">Повод</span>
+            <div class="reserve-occasion-chips" id="newReserveOccasion">
+              <button class="filter-chip active" data-occasion="">Без повода</button>
+              <button class="filter-chip" data-occasion="bday">День рождения</button>
+              <button class="filter-chip" data-occasion="business">Деловая встреча</button>
+              <button class="filter-chip" data-occasion="date">Свидание</button>
+            </div>
+          </div>
+
+          <div class="reserve-form-row">
+            <span class="reserve-form-label">Комментарий</span>
+            <textarea class="void-comment" id="newReserveComment" rows="2" placeholder="Например: столик у окна"></textarea>
+          </div>
+
+          <button class="primary-btn" id="newReserveSubmit" disabled>Создать резерв</button>
+        </div>
+
+        <!-- МН-47 -->
+        <div class="shift-detail" data-detail="reserveHistory" data-back="reserves" data-title="История резервов" data-subtitle="За смену" hidden>
+          <button class="back-btn">
+            <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+            Назад
+          </button>
+          <div class="history-log" id="reserveHistoryLog"></div>
         </div>
 
         <!-- МН-14 -->
@@ -7308,6 +7670,10 @@
     </div>
 
     <button class="fab" id="newChatFab" hidden aria-label="Новый чат">
+      <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+    </button>
+
+    <button class="fab" id="newReserveFab" hidden aria-label="Новый резерв">
       <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
     </button>
 
@@ -8188,6 +8554,7 @@
       screenEl.classList.toggle('home-tab', tab === 'home');
 
       newChatFab.hidden = tab !== 'messenger';
+      newReserveFab.hidden = true;
 
       /* иконка вкладки всегда ведёт в её корень, даже если мы стоим глубоко внутри */
       document.querySelectorAll('.shift-detail').forEach(d => { d.hidden = true; });
@@ -8214,6 +8581,7 @@
 
   const assistantHeaderBtn = document.getElementById('assistantHeaderBtn');
   const newChatFab = document.getElementById('newChatFab');
+  const newReserveFab = document.getElementById('newReserveFab');
 
   const themeToggle = document.getElementById('themeToggle');
   const screenEl = document.getElementById('screen');
@@ -8945,8 +9313,10 @@
       document.querySelectorAll('.shift-detail').forEach(d => { d.hidden = true; });
       shiftList.hidden = true;
       detail.hidden = false;
+      newReserveFab.hidden = true;
       titleEl.textContent = detailTitle(detail);
       subEl.textContent = detail.dataset.subtitle || 'Детали';
+      if (el.dataset.subblock === 'reserves') renderReserves();
     });
   });
 
@@ -8977,6 +9347,7 @@
     if (rec.detail === 'precheck') rec.guest = precheckGuest;
     if (rec.detail === 'cashier') rec.tag = currentCashierTag;
     if (rec.detail === 'guests') rec.table = pendingTable ? pendingTable.num : null;
+    if (rec.detail === 'reserveCard') rec.reserveId = currentReserveId;
     rec.title = titleEl.textContent;
     rec.sub = subEl.textContent;
     return rec;
@@ -9004,6 +9375,8 @@
       if (rec.detail === 'hall') { showDetail('hall', 'Заказы', 'Столы и открытые счета'); return true; }
       if (rec.detail === 'cashier' && rec.tag && findBill(rec.tag)) { openCashier(rec.tag); return true; }
       if (rec.detail === 'closed') { renderClosedOrders(); showDetail('closed', 'Закрытые заказы', 'Рассчитанные счета за смену'); return true; }
+      if (rec.detail === 'reserves') { showDetail('reserves', rec.title || 'Резервы', rec.sub || 'Резервы на сегодня'); renderReserves(); return true; }
+      if (rec.detail === 'reserveCard' && rec.reserveId && findReserve(rec.reserveId)) { openReserveCard(rec.reserveId); return true; }
       const detail = rec.detail
         ? document.querySelector('.shift-detail[data-detail="' + rec.detail + '"]')
         : null;
@@ -9020,6 +9393,7 @@
   function navToShiftList() {
     document.querySelectorAll('.shift-detail').forEach(d => { d.hidden = true; });
     shiftList.hidden = false;
+    newReserveFab.hidden = true;
     titleEl.textContent = titles.shift[0];
     subEl.textContent = titles.shift[1];
   }
@@ -10636,6 +11010,7 @@
     const detail = document.querySelector('.shift-detail[data-detail="' + name + '"]');
     document.querySelectorAll('.shift-detail').forEach(d => { d.hidden = true; });
     shiftList.hidden = true;
+    newReserveFab.hidden = true;
     detail.hidden = false;
     titleEl.textContent = title;
     subEl.textContent = sub;
@@ -15082,6 +15457,7 @@
     document.querySelectorAll('.shift-detail').forEach(d => { d.hidden = true; });
     shiftList.hidden = true;
     detail.hidden = false;
+    newReserveFab.hidden = true;
     titleEl.textContent = detailTitle(detail);
     subEl.textContent = detail.dataset.subtitle || 'Детали';
   }
@@ -15106,6 +15482,7 @@
     screenThreadFolderEl.hidden = true;
     /* кнопка-лого всегда видна — только маршрут меняется */
     newChatFab.hidden = true;
+    newReserveFab.hidden = true;
     titleEl.textContent = 'Карта экранов';
     subEl.textContent = 'МН-00 · служебный экран';
     setAppHeaderMode(false);
@@ -15115,6 +15492,7 @@
   function resetShift() {
     document.querySelectorAll('.shift-detail').forEach(d => { d.hidden = true; });
     shiftList.hidden = false;
+    newReserveFab.hidden = true;
     titleEl.textContent = titles.shift[0];
     subEl.textContent = titles.shift[1];
   }
@@ -16307,6 +16685,450 @@
   applyBarRoleUI();
   renderBarRoot();
 
+  /* ==================================================================
+     МН-13/30/31/47: Резервы — плитка/схема, карточка резерва,
+     новый резерв, история резервов за смену
+     ================================================================== */
+  const RESERVE_ZONE_NAME = { main:'Основной зал', second:'Второй зал', veranda:'Веранда' };
+  const RESERVE_OCCASION_NAME = { bday:'День рождения', business:'Деловая встреча', date:'Свидание' };
+  const RESERVE_OCCASION_ICON = {
+    bday:'<path d="M4 21v-6.5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2V21"/><path d="M4 17h16"/><path d="M9 12.5V9"/><path d="M15 12.5V9"/><path d="M9 6.2c0-1 .8-1.7.8-2.7 0-.7-.4-1.2-.8-1.5"/><path d="M15 6.2c0-1 .8-1.7.8-2.7 0-.7-.4-1.2-.8-1.5"/>',
+    business:'<rect x="3" y="8" width="18" height="11" rx="2"/><path d="M8 8V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+    date:'<path d="M12 20.5s-7.5-4.6-9.7-9C.7 7.8 2.4 4.5 5.6 4c2-.3 3.8.7 4.9 2.3.4.6.8 1.2 1.5 1.2s1.1-.6 1.5-1.2C14.6 4.7 16.4 3.7 18.4 4c3.2.5 4.9 3.8 3.3 7.5-2.2 4.4-9.7 9-9.7 9z"/>'
+  };
+
+  const RESERVE_DURATION_MIN = 120;  // условная длительность резерва — для расчёта пересечений и буфера
+  const RESERVE_BUFFER_MIN = 30;     // порог «впритык»
+
+  const reserveTables = [
+    { id:'rt1',  zone:'main',    shape:'rect',   x:7,  y:14, w:24, h:16, seats:2 },
+    { id:'rt2',  zone:'main',    shape:'circle', x:40, y:16, w:18, h:18, seats:4 },
+    { id:'rt3',  zone:'main',    shape:'rect',   x:66, y:12, w:27, h:18, seats:6 },
+    { id:'rt4',  zone:'main',    shape:'circle', x:16, y:58, w:16, h:16, seats:2 },
+    { id:'rt5',  zone:'second',  shape:'rect',   x:10, y:16, w:26, h:16, seats:4 },
+    { id:'rt6',  zone:'second',  shape:'circle', x:48, y:18, w:20, h:20, seats:4 },
+    { id:'rt7',  zone:'second',  shape:'rect',   x:64, y:52, w:28, h:18, seats:8 },
+    { id:'rt8',  zone:'veranda', shape:'circle', x:12, y:20, w:18, h:18, seats:4 },
+    { id:'rt9',  zone:'veranda', shape:'rect',   x:44, y:16, w:28, h:16, seats:6 },
+    { id:'rt10', zone:'veranda', shape:'circle', x:70, y:54, w:16, h:16, seats:2 }
+  ];
+  function reserveTable(id) { return reserveTables.find(t => t.id === id); }
+  function reserveTableLabel(id) {
+    const t = reserveTable(id);
+    return t ? ('Стол ' + t.id.replace('rt', '№') + ' · ' + RESERVE_ZONE_NAME[t.zone] + ' · ' + t.seats + ' мест') : '—';
+  }
+
+  function reserveEvent(title, who, at, note) { return { title:title, who:who, at:at, note:note || '' }; }
+
+  const reserveNow0 = Date.now();
+  const reservations = [
+    { id:'r1', tableId:'rt3', time:reserveNow0 + 8 * 60000,   persons:4, name:'Петров И.',  phone:'+7 916 000-01-01', tg:'',          occasion:'bday',     comment:'Просили торт со свечками', confirmed:true,  deposit:true,  arrived:false, tableFreed:false,
+      log:[ reserveEvent('Создан', 'Хостес Аня', reserveNow0 - 3 * 3600000) ] },
+    { id:'r2', tableId:'rt2', time:reserveNow0 + 40 * 60000,  persons:2, name:'Ким Е.',     phone:'+7 916 000-01-02', tg:'',          occasion:'date',     comment:'', confirmed:true,  deposit:false, arrived:false, tableFreed:false,
+      log:[ reserveEvent('Создан', 'Хостес Аня', reserveNow0 - 5 * 3600000) ] },
+    { id:'r3', tableId:'rt7', time:reserveNow0 - 8 * 60000,   persons:6, name:'Соколова М.', phone:'+7 916 000-01-03', tg:'@sokolova', occasion:'business', comment:'Отдельный вход, если можно', confirmed:true,  deposit:true,  arrived:false, tableFreed:false,
+      log:[ reserveEvent('Создан', 'Менеджер Игорь', reserveNow0 - 26 * 3600000), reserveEvent('Изменён', 'Менеджер Игорь', reserveNow0 - 2 * 3600000, 'Время 19:45 → 20:00') ] },
+    { id:'r4', tableId:'rt6', time:reserveNow0 + 150 * 60000, persons:4, name:'Гаджиев Р.', phone:'+7 916 000-01-04', tg:'',          occasion:'',         comment:'', confirmed:false, deposit:false, arrived:false, tableFreed:false,
+      log:[ reserveEvent('Создан', 'Хостес Аня', reserveNow0 - 60 * 60000) ] },
+    { id:'r5', tableId:'rt10', time:reserveNow0 + 12 * 60000, persons:2, name:'Литвинов С.', phone:'+7 916 000-01-05', tg:'@litvinov', occasion:'date',     comment:'', confirmed:true,  deposit:false, arrived:false, tableFreed:false,
+      log:[ reserveEvent('Создан', 'Менеджер Игорь', reserveNow0 - 40 * 60000) ] },
+    { id:'r6', tableId:'rt1', time:reserveNow0 - 50 * 60000,  persons:2, name:'Орлова Т.',  phone:'+7 916 000-01-06', tg:'',          occasion:'date',     comment:'', confirmed:true,  deposit:true,  arrived:true,  tableFreed:false,
+      log:[ reserveEvent('Создан', 'Хостес Аня', reserveNow0 - 5 * 3600000), reserveEvent('Гость пришёл', 'Хостес Аня', reserveNow0 - 46 * 60000) ] },
+    { id:'r7', tableId:'rt9', time:reserveNow0 - 90 * 60000,  persons:4, name:'Дьяченко В.', phone:'+7 916 000-01-07', tg:'',          occasion:'business', comment:'', confirmed:true,  deposit:false, arrived:true,  tableFreed:false,
+      log:[ reserveEvent('Создан', 'Менеджер Игорь', reserveNow0 - 8 * 3600000), reserveEvent('Гость пришёл', 'Хостес Аня', reserveNow0 - 85 * 60000) ] },
+    { id:'r8', tableId:'rt5', time:reserveNow0 - 140 * 60000, persons:4, name:'Белова Н.',  phone:'+7 916 000-01-08', tg:'@belova',   occasion:'',         comment:'Счёт на компанию', confirmed:true,  deposit:false, arrived:true,  tableFreed:true,
+      log:[ reserveEvent('Создан', 'Хостес Аня', reserveNow0 - 9 * 3600000), reserveEvent('Гость пришёл', 'Хостес Аня', reserveNow0 - 135 * 60000), reserveEvent('Стол освободился', 'Официант Марина', reserveNow0 - 15 * 60000) ] },
+    { id:'r9', tableId:'rt3', time:reserveNow0 + 170 * 60000, persons:3, name:'Крылов Д.',  phone:'+7 916 000-01-09', tg:'',          occasion:'business', comment:'', confirmed:true,  deposit:false, arrived:false, tableFreed:false,
+      log:[ reserveEvent('Создан', 'Менеджер Игорь', reserveNow0 - 20 * 60000) ] }
+  ];
+  let reserveSeq = 9;
+  function findReserve(id) { return reservations.find(r => r.id === id); }
+
+  function guestWord(n) {
+    const m = n % 10, m100 = n % 100;
+    if (m100 >= 11 && m100 <= 14) return 'ей';
+    if (m === 1) return 'ь';
+    if (m >= 2 && m <= 4) return 'я';
+    return 'ей';
+  }
+
+  function reserveIsLate(r) { return !r.arrived && Date.now() > r.time; }
+  function reserveIsSoon(r) {
+    if (r.arrived) return false;
+    const diff = r.time - Date.now();
+    return diff > 0 && diff <= 15 * 60000;
+  }
+  function reserveBorderClass(r) {
+    if (reserveIsLate(r)) return 'is-late';
+    if (reserveIsSoon(r)) return 'is-soon';
+    return '';
+  }
+  function reserveTableState(tableId) {
+    const rs = reservations.filter(r => r.tableId === tableId && !r.tableFreed);
+    if (!rs.length) return 'free';
+    if (rs.some(r => r.arrived)) return 'inhall';
+    if (rs.some(r => reserveIsLate(r))) return 'late';
+    return 'booked';
+  }
+
+  let reserveView = 'tile';
+  let reserveZoneFilter = 'all';
+  let currentReserveId = null;
+  function reserveZoneMatch(zone) { return reserveZoneFilter === 'all' || zone === reserveZoneFilter; }
+
+  function reserveCardHtml(r) {
+    const icon = r.occasion ? RESERVE_OCCASION_ICON[r.occasion] : '';
+    return '<button class="reserve-card ' + reserveBorderClass(r) + '" data-reserve-open="' + r.id + '">' +
+      (icon ? '<span class="reserve-card-occasion" title="' + RESERVE_OCCASION_NAME[r.occasion] + '"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + icon + '</svg></span>' : '') +
+      '<span class="reserve-card-chevron"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></span>' +
+      '<span class="reserve-card-time">' + stampText(r.time) + '</span>' +
+      '<span class="reserve-card-persons"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c1-4 4-6 7-6s6 2 7 6"/></svg>' + r.persons + ' гост' + guestWord(r.persons) + '</span>' +
+      '<span class="reserve-card-name">' + r.name + '</span>' +
+      '<span class="reserve-card-phone">' + r.phone + '</span>' +
+    '</button>';
+  }
+
+  function renderReserveTiles() {
+    const active = reservations.filter(r => {
+      if (r.tableFreed) return false;
+      const t = reserveTable(r.tableId);
+      return t && reserveZoneMatch(t.zone);
+    });
+    const waiting = active.filter(r => !r.arrived).sort((a, b) => a.time - b.time);
+    const inhall = active.filter(r => r.arrived).sort((a, b) => a.time - b.time);
+    document.getElementById('reserveGridWaiting').innerHTML = waiting.length ? waiting.map(reserveCardHtml).join('') : '<div class="reserve-empty">Нет резервов</div>';
+    document.getElementById('reserveGridInhall').innerHTML = inhall.length ? inhall.map(reserveCardHtml).join('') : '<div class="reserve-empty">Нет резервов</div>';
+  }
+
+  const RESERVE_SCHEME_ZONES = ['main', 'second', 'veranda'];
+  function reserveSchemeTableHtml(t) {
+    const state = reserveTableState(t.id);
+    return '<button class="reserve-table shape-' + t.shape + ' state-' + state + '" data-reserve-table="' + t.id + '" ' +
+      'style="left:' + t.x + '%; top:' + t.y + '%; width:' + t.w + '%; height:' + t.h + '%;">' +
+      t.id.replace('rt', '№') + '</button>';
+  }
+  function renderReserveScheme() {
+    const zones = reserveZoneFilter === 'all' ? RESERVE_SCHEME_ZONES : [reserveZoneFilter];
+    document.getElementById('reserveSchemeZones').innerHTML = zones.map(z =>
+      '<div class="reserve-scheme-zone">' +
+        '<span class="reserve-scheme-zone-label">' + RESERVE_ZONE_NAME[z] + '</span>' +
+        reserveTables.filter(t => t.zone === z).map(reserveSchemeTableHtml).join('') +
+      '</div>'
+    ).join('');
+  }
+
+  function renderReserves() {
+    const reservesDetail = document.querySelector('.shift-detail[data-detail="reserves"]');
+    document.getElementById('reserveTileView').hidden = reserveView !== 'tile';
+    document.getElementById('reserveSchemeView').hidden = reserveView !== 'scheme';
+    if (reserveView === 'tile') renderReserveTiles(); else renderReserveScheme();
+    newReserveFab.hidden = reserveView !== 'tile' || !reservesDetail || reservesDetail.hidden;
+  }
+
+  document.getElementById('reserveViewSwitch').addEventListener('click', e => {
+    const btn = e.target.closest('[data-reserve-view]');
+    if (!btn) return;
+    reserveView = btn.dataset.reserveView;
+    document.querySelectorAll('#reserveViewSwitch .segmented-btn').forEach(b => b.classList.toggle('active', b === btn));
+    renderReserves();
+  });
+
+  document.getElementById('reserveZoneTabs').addEventListener('click', e => {
+    const btn = e.target.closest('[data-reserve-zone]');
+    if (!btn) return;
+    reserveZoneFilter = btn.dataset.reserveZone;
+    document.querySelectorAll('#reserveZoneTabs .folder-tab').forEach(b => b.classList.toggle('active', b === btn));
+    renderReserves();
+  });
+
+  document.getElementById('reserveTileView').addEventListener('click', e => {
+    const btn = e.target.closest('[data-reserve-open]');
+    if (!btn) return;
+    openReserveCard(btn.dataset.reserveOpen);
+    setRoute('мн-30');
+  });
+
+  document.getElementById('reserveSchemeZones').addEventListener('click', e => {
+    const btn = e.target.closest('[data-reserve-table]');
+    if (!btn) return;
+    const tableId = btn.dataset.reserveTable;
+    if (reserveTableState(tableId) === 'free') { openNewReserve(tableId); setRoute('мн-31'); return; }
+    const r = reservations.find(x => x.tableId === tableId && !x.tableFreed);
+    if (r) { openReserveCard(r.id); setRoute('мн-30'); }
+  });
+
+  /* ---------- МН-30: карточка резерва ---------- */
+  function reserveFieldRow(label, value, wrap) {
+    return '<div class="finance-row' + (wrap ? ' is-wrap' : '') + '"><span>' + label + '</span><strong>' + value + '</strong></div>';
+  }
+  const RESERVE_KEY_EVENTS = new Set(['Создан', 'Гость пришёл', 'Стол освободился']);
+
+  function renderReserveCard() {
+    const r = findReserve(currentReserveId);
+    if (!r) return;
+    const t = reserveTable(r.tableId);
+    document.getElementById('reserveCardFields').innerHTML =
+      reserveFieldRow('Время', stampText(r.time)) +
+      reserveFieldRow('Персоны', r.persons + ' гост' + guestWord(r.persons)) +
+      reserveFieldRow('Стол', t ? t.id.replace('rt', '№') : '—') +
+      reserveFieldRow('Зал', t ? RESERVE_ZONE_NAME[t.zone] : '—') +
+      reserveFieldRow('Имя', r.name) +
+      reserveFieldRow('Телефон', r.phone) +
+      reserveFieldRow('Ник в ТГ', r.tg || '—') +
+      reserveFieldRow('Повод', r.occasion ? RESERVE_OCCASION_NAME[r.occasion] : '—') +
+      reserveFieldRow('Комментарий', r.comment || '—', true);
+
+    const log = r.log.slice().sort((a, b) => b.at - a.at);
+    document.getElementById('reserveCardLog').innerHTML = log.map(e =>
+      '<div class="history-row' + (RESERVE_KEY_EVENTS.has(e.title) ? ' is-key' : '') + '">' +
+        '<div class="history-head">' +
+          '<span class="history-title">' + e.title + ' · ' + e.who + '</span>' +
+          '<span class="history-time">' + stampText(e.at) + '</span>' +
+        '</div>' +
+        (e.note ? '<span class="history-note">' + e.note + '</span>' : '') +
+      '</div>'
+    ).join('');
+
+    document.getElementById('reserveArrivedBtn').hidden = r.arrived;
+    document.getElementById('reserveFreedBtn').hidden = !r.arrived || r.tableFreed;
+    document.getElementById('reserveNoteComposer').hidden = true;
+    document.getElementById('reserveNoteInput').value = '';
+  }
+
+  function openReserveCard(id) {
+    currentReserveId = id;
+    renderReserveCard();
+    const r = findReserve(id);
+    showDetail('reserveCard', 'Резерв', r ? (r.name + ' · ' + stampText(r.time)) : 'Карточка резерва');
+  }
+
+  function reserveStaffName() { return currentStaff.firstName + ' ' + currentStaff.lastName; }
+
+  document.getElementById('reserveArrivedBtn').addEventListener('click', () => {
+    const r = findReserve(currentReserveId);
+    if (!r || r.arrived) return;
+    r.arrived = true;
+    r.log.push(reserveEvent('Гость пришёл', reserveStaffName(), Date.now()));
+    renderReserveCard();
+  });
+
+  document.getElementById('reserveFreedBtn').addEventListener('click', () => {
+    const r = findReserve(currentReserveId);
+    if (!r || !r.arrived || r.tableFreed) return;
+    r.tableFreed = true;
+    r.log.push(reserveEvent('Стол освободился', reserveStaffName(), Date.now()));
+    renderReserveCard();
+  });
+
+  document.getElementById('reserveNoteBtn').addEventListener('click', () => {
+    const box = document.getElementById('reserveNoteComposer');
+    box.hidden = !box.hidden;
+    if (!box.hidden) document.getElementById('reserveNoteInput').focus();
+  });
+
+  document.getElementById('reserveNoteSubmit').addEventListener('click', () => {
+    const r = findReserve(currentReserveId);
+    const input = document.getElementById('reserveNoteInput');
+    const text = input.value.trim();
+    if (!r || !text) return;
+    r.log.push(reserveEvent('Заметка', reserveStaffName(), Date.now(), text));
+    input.value = '';
+    document.getElementById('reserveNoteComposer').hidden = true;
+    renderReserveCard();
+  });
+
+  /* ---------- МН-31: новый резерв ---------- */
+  let newReservePersons = 2;
+  let newReserveOccasion = '';
+  let newReserveSelectedTable = null;
+  let newReservePrefillTable = null;
+  let newReserveBufferAcked = false;
+
+  function newReserveDateMin() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+
+  function newReserveSlot() {
+    const dateStr = document.getElementById('newReserveDate').value;
+    const timeStr = document.getElementById('newReserveTime').value;
+    if (!dateStr || !timeStr) return null;
+    const start = new Date(dateStr + 'T' + timeStr + ':00').getTime();
+    if (isNaN(start)) return null;
+    return { start:start, end:start + RESERVE_DURATION_MIN * 60000 };
+  }
+
+  /* резервы этого стола на ту же календарную дату, что и выбранный слот */
+  function tableReservesOnDate(tableId, dateStr) {
+    return reservations.filter(r => {
+      if (r.tableId !== tableId || r.tableFreed) return false;
+      const d = new Date(r.time);
+      const rd = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      return rd === dateStr;
+    });
+  }
+
+  function updateNewReserveBuffer(dateStr, slot) {
+    const warn = document.getElementById('newReserveBufferWarn');
+    if (!newReserveSelectedTable) { warn.hidden = true; return; }
+    const others = tableReservesOnDate(newReserveSelectedTable, dateStr);
+    const tight = others.some(r => {
+      const gapBefore = slot.start - (r.time + RESERVE_DURATION_MIN * 60000);
+      const gapAfter = r.time - slot.end;
+      return (gapBefore >= 0 && gapBefore < RESERVE_BUFFER_MIN * 60000) || (gapAfter >= 0 && gapAfter < RESERVE_BUFFER_MIN * 60000);
+    });
+    warn.hidden = !tight || newReserveBufferAcked;
+  }
+
+  function updateNewReserveSubmit() {
+    const name = document.getElementById('newReserveName').value.trim();
+    const phone = document.getElementById('newReservePhone').value.trim();
+    const ok = !!(newReserveSlot() && newReserveSelectedTable && name && phone);
+    document.getElementById('newReserveSubmit').disabled = !ok;
+  }
+
+  function renderNewReserveTables() {
+    const dateStr = document.getElementById('newReserveDate').value;
+    const slot = newReserveSlot();
+    const pick = document.getElementById('newReserveTablePick');
+    if (!slot) {
+      pick.innerHTML = '<div class="reserve-empty">Выберите дату и время</div>';
+      newReserveSelectedTable = null;
+      document.getElementById('newReserveBufferWarn').hidden = true;
+      updateNewReserveSubmit();
+      return;
+    }
+    const free = reserveTables.filter(t => {
+      const others = tableReservesOnDate(t.id, dateStr);
+      return !others.some(r => slot.start < r.time + RESERVE_DURATION_MIN * 60000 && r.time < slot.end);
+    });
+    if (!free.length) {
+      pick.innerHTML = '<div class="reserve-empty">Нет свободных столов на выбранное время</div>';
+      newReserveSelectedTable = null;
+      document.getElementById('newReserveBufferWarn').hidden = true;
+      updateNewReserveSubmit();
+      return;
+    }
+    if (newReserveSelectedTable && !free.some(t => t.id === newReserveSelectedTable)) newReserveSelectedTable = null;
+    if (!newReserveSelectedTable && newReservePrefillTable && free.some(t => t.id === newReservePrefillTable)) {
+      newReserveSelectedTable = newReservePrefillTable;
+    }
+    pick.innerHTML = free.map(t =>
+      '<button class="reserve-table-pick-row' + (t.id === newReserveSelectedTable ? ' active' : '') + '" data-pick-table="' + t.id + '">' +
+        reserveTableLabel(t.id) +
+      '</button>'
+    ).join('');
+    newReservePrefillTable = null;
+    updateNewReserveBuffer(dateStr, slot);
+    updateNewReserveSubmit();
+  }
+
+  function openNewReserve(prefillTableId) {
+    newReservePersons = 2;
+    newReserveOccasion = '';
+    newReserveSelectedTable = null;
+    newReservePrefillTable = prefillTableId || null;
+    newReserveBufferAcked = false;
+    document.getElementById('newReserveDate').min = newReserveDateMin();
+    document.getElementById('newReserveDate').value = newReserveDateMin();
+    document.getElementById('newReserveTime').value = '';
+    document.getElementById('newReservePersonsCount').textContent = newReservePersons;
+    document.getElementById('newReserveName').value = '';
+    document.getElementById('newReservePhone').value = '';
+    document.getElementById('newReserveTg').value = '';
+    document.getElementById('newReserveComment').value = '';
+    document.querySelectorAll('#newReserveOccasion .filter-chip').forEach(b => b.classList.toggle('active', b.dataset.occasion === ''));
+    document.getElementById('newReserveBufferWarn').hidden = true;
+    renderNewReserveTables();
+    updateNewReserveSubmit();
+    showDetail('newReserve', 'Новый резерв', 'Создание резерва');
+  }
+
+  document.getElementById('newReserveDate').addEventListener('change', () => { newReserveBufferAcked = false; renderNewReserveTables(); });
+  document.getElementById('newReserveTime').addEventListener('change', () => { newReserveBufferAcked = false; renderNewReserveTables(); });
+
+  document.getElementById('newReservePersonsMinus').addEventListener('click', () => {
+    if (newReservePersons <= 1) return;
+    newReservePersons--;
+    document.getElementById('newReservePersonsCount').textContent = newReservePersons;
+  });
+  document.getElementById('newReservePersonsPlus').addEventListener('click', () => {
+    newReservePersons++;
+    document.getElementById('newReservePersonsCount').textContent = newReservePersons;
+  });
+
+  document.getElementById('newReserveTablePick').addEventListener('click', e => {
+    const btn = e.target.closest('[data-pick-table]');
+    if (!btn) return;
+    newReserveSelectedTable = btn.dataset.pickTable;
+    newReserveBufferAcked = false;
+    document.querySelectorAll('#newReserveTablePick .reserve-table-pick-row').forEach(b => b.classList.toggle('active', b === btn));
+    const slot = newReserveSlot();
+    if (slot) updateNewReserveBuffer(document.getElementById('newReserveDate').value, slot);
+    updateNewReserveSubmit();
+  });
+
+  document.getElementById('newReserveBufferAck').addEventListener('click', () => {
+    newReserveBufferAcked = true;
+    document.getElementById('newReserveBufferWarn').hidden = true;
+  });
+
+  document.getElementById('newReserveOccasion').addEventListener('click', e => {
+    const btn = e.target.closest('[data-occasion]');
+    if (!btn) return;
+    newReserveOccasion = btn.dataset.occasion;
+    document.querySelectorAll('#newReserveOccasion .filter-chip').forEach(b => b.classList.toggle('active', b === btn));
+  });
+
+  ['newReserveName', 'newReservePhone'].forEach(id => {
+    document.getElementById(id).addEventListener('input', updateNewReserveSubmit);
+  });
+
+  document.getElementById('newReserveSubmit').addEventListener('click', () => {
+    if (document.getElementById('newReserveSubmit').disabled) return;
+    const slot = newReserveSlot();
+    reserveSeq++;
+    reservations.push({
+      id:'r' + reserveSeq,
+      tableId:newReserveSelectedTable,
+      time:slot.start,
+      persons:newReservePersons,
+      name:document.getElementById('newReserveName').value.trim(),
+      phone:document.getElementById('newReservePhone').value.trim(),
+      tg:document.getElementById('newReserveTg').value.trim(),
+      occasion:newReserveOccasion,
+      comment:document.getElementById('newReserveComment').value.trim(),
+      confirmed:true, deposit:false, arrived:false, tableFreed:false,
+      log:[ reserveEvent('Создан', reserveStaffName(), Date.now()) ]
+    });
+    navBack();
+    renderReserves();
+  });
+
+  /* ---------- МН-47: история резервов за смену ---------- */
+  function openReserveHistory() {
+    const all = [];
+    reservations.forEach(r => r.log.forEach(e => all.push({ e:e, r:r })));
+    all.sort((a, b) => b.e.at - a.e.at);
+    document.getElementById('reserveHistoryLog').innerHTML = all.length
+      ? all.map(x =>
+          '<div class="history-row' + (RESERVE_KEY_EVENTS.has(x.e.title) ? ' is-key' : '') + '">' +
+            '<div class="history-head">' +
+              '<span class="history-title">' + x.r.name + ' · ' + x.e.title + ' · ' + x.e.who + '</span>' +
+              '<span class="history-time">' + stampText(x.e.at) + '</span>' +
+            '</div>' +
+            (x.e.note ? '<span class="history-note">' + x.e.note + '</span>' : '') +
+          '</div>'
+        ).join('')
+      : '<div class="history-empty">Событий пока нет</div>';
+    showDetail('reserveHistory', 'История резервов', 'За смену');
+  }
+
+  newReserveFab.addEventListener('click', () => { openNewReserve(null); setRoute('мн-31'); });
+  document.getElementById('reserveHistoryLinkBtn').addEventListener('click', () => { openReserveHistory(); setRoute('мн-47'); });
+
+  renderReserves();
+
   const ROUTES = {
     'мн-00': showMap,
     'мн-01': () => gotoTab('home'),
@@ -16363,7 +17185,10 @@
     'мн-43': () => { gotoTab('shift'); openBarSub('staff'); },
     'мн-44': () => { gotoTab('shift'); openBarSub('motivation'); },
     'мн-45': () => { gotoTab('home'); document.getElementById('homeVenueOpenBtn').click(); },
-    'мн-46': () => { gotoTab('shift'); openShiftAnalytics(); }
+    'мн-46': () => { gotoTab('shift'); openShiftAnalytics(); },
+    'мн-30': () => { gotoTab('shift'); openReserveCard(currentReserveId || reservations[0].id); },
+    'мн-31': () => { gotoTab('shift'); openNewReserve(null); },
+    'мн-47': () => { gotoTab('shift'); openReserveHistory(); }
   };
 
   /* ---------- МН-26/27/28/29/32: приветствие, регистрация, вход, устаревший
@@ -16615,7 +17440,8 @@
 
   const DETAIL_ROUTE = { finance:'мн-03', startstop:'мн-04', active:'мн-11', hall:'мн-12', reserves:'мн-13', bar:'мн-14', kitchen:'мн-15', order:'мн-16', guests:'мн-17', precheck:'мн-19', history:'мн-22', shiftlog:'мн-23', visitors:'мн-20', staff:'мн-21', cashier:'мн-24', closed:'мн-25',
     'bar-stock':'мн-33', 'bar-writeoffs':'мн-34', 'bar-preps':'мн-35', 'bar-receiving':'мн-36', 'bar-inventory':'мн-37', 'bar-menu':'мн-38', 'bar-handover':'мн-39',
-    'bar-suppliers':'мн-40', 'bar-orders':'мн-41', 'bar-analytics':'мн-42', 'bar-staff':'мн-43', 'bar-motivation':'мн-44' };
+    'bar-suppliers':'мн-40', 'bar-orders':'мн-41', 'bar-analytics':'мн-42', 'bar-staff':'мн-43', 'bar-motivation':'мн-44',
+    reserveCard:'мн-30', newReserve:'мн-31', reserveHistory:'мн-47' };
 
   /* хеш всегда соответствует тому экрану, который реально открыт */
   window.syncRouteFromScreen = function () {
