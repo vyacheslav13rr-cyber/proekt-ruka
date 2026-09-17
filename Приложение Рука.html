@@ -5309,33 +5309,36 @@
   .planner-card-desc::placeholder{color:var(--text-muted);}
 
   /* ---------- МН-13/30/31/47: Резервы ---------- */
+  .reserve-top-row{display:flex; align-items:flex-start; gap:8px; margin-top:12px;}
   .reserve-zone-tabs{
-    display:flex; gap:6px;
-    overflow-x:auto;
-    padding:10px 0 2px;
-    -webkit-overflow-scrolling:touch;
-    touch-action:pan-x;
+    flex:1;
+    display:flex; gap:6px; flex-wrap:wrap;
+    padding:2px 0;
+    min-width:0;
   }
-  .reserve-zone-tabs::-webkit-scrollbar{display:none;}
 
   .reserve-view{margin-top:4px;}
   .reserve-view[hidden]{display:none;}
 
-  .reserve-view-row{display:flex; align-items:center; gap:8px; margin:14px 0 12px;}
+  .reserve-view-corner{display:flex; flex-direction:column; align-items:center; gap:5px; flex-shrink:0;}
   .reserve-view-select{
-    flex:1;
-    height:38px;
-    padding:0 12px;
-    border-radius:12px;
+    width:76px;
+    height:26px;
+    padding:0 6px;
+    border-radius:9px;
     border:1px solid var(--gold);
     background:var(--khaki-block-bg);
     color:var(--accent);
     font-family:'Manrope', sans-serif;
-    font-size:13.5px;
+    font-size:10.5px;
     font-weight:700;
     cursor:pointer;
   }
   .reserve-view-select:focus{outline:none;}
+
+  .reserve-status-tabs{display:flex; gap:6px; margin:12px 0 12px;}
+  .reserve-status-tabs[hidden]{display:none;}
+  .reserve-status-tabs .reserve-zone-tab{flex:1; text-align:center;}
 
   .reserve-grid{
     display:grid;
@@ -5343,6 +5346,7 @@
     gap:7px;
     margin-bottom:6px;
   }
+  .reserve-grid[hidden]{display:none;}
   .reserve-empty{
     grid-column:1 / -1;
     font-size:12px;
@@ -6860,31 +6864,33 @@
             Назад
           </button>
 
-          <div class="reserve-view-row">
-            <select class="reserve-view-select" id="reserveViewSelect">
-              <option value="tile">Плитка</option>
-              <option value="scheme">Схема</option>
-            </select>
-            <button class="hall-tool" id="reserveHistoryLinkBtn" aria-label="История резервов за смену">
-              <svg viewBox="0 0 24 24"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3.2 4.6v3.6h3.6"/><path d="M12 7.6V12l3 1.8"/></svg>
-            </button>
+          <div class="reserve-top-row">
+            <div class="reserve-zone-tabs" id="reserveZoneTabs">
+              <button class="reserve-zone-tab" data-reserve-zone="main">Основной</button>
+              <button class="reserve-zone-tab" data-reserve-zone="second">Второй</button>
+              <button class="reserve-zone-tab" data-reserve-zone="veranda">Веранда</button>
+            </div>
+            <div class="reserve-view-corner">
+              <button class="hall-tool" id="reserveHistoryLinkBtn" aria-label="История резервов за смену">
+                <svg viewBox="0 0 24 24"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3.2 4.6v3.6h3.6"/><path d="M12 7.6V12l3 1.8"/></svg>
+              </button>
+              <select class="reserve-view-select" id="reserveViewSelect">
+                <option value="tile">Плитка</option>
+                <option value="scheme">Схема</option>
+              </select>
+            </div>
           </div>
 
-          <div class="reserve-zone-tabs" id="reserveZoneTabs">
-            <button class="reserve-zone-tab" data-reserve-zone="main">Основной</button>
-            <button class="reserve-zone-tab" data-reserve-zone="second">Второй</button>
-            <button class="reserve-zone-tab" data-reserve-zone="veranda">Веранда</button>
+          <div class="reserve-status-tabs" id="reserveStatusTabs">
+            <button class="reserve-zone-tab active" data-reserve-status="waiting">Ожидаем</button>
+            <button class="reserve-zone-tab" data-reserve-status="inhall">В зале</button>
+            <button class="reserve-zone-tab" data-reserve-status="late">Задерживаются</button>
           </div>
 
           <div class="reserve-view" id="reserveTileView">
-            <div class="detail-section-title">Ожидаем</div>
             <div class="reserve-grid" id="reserveGridWaiting"></div>
-
-            <div class="detail-section-title">В зале</div>
-            <div class="reserve-grid" id="reserveGridInhall"></div>
-
-            <div class="detail-section-title">Задерживаются</div>
-            <div class="reserve-grid" id="reserveGridLate"></div>
+            <div class="reserve-grid" id="reserveGridInhall" hidden></div>
+            <div class="reserve-grid" id="reserveGridLate" hidden></div>
           </div>
 
           <div class="reserve-view" id="reserveSchemeView" hidden>
@@ -16807,8 +16813,10 @@
 
   let reserveView = 'tile';
   let reserveZoneFilter = 'all';
+  let reserveStatus = 'waiting';
   let currentReserveId = null;
   function reserveZoneMatch(zone) { return reserveZoneFilter === 'all' || zone === reserveZoneFilter; }
+  const RESERVE_STATUS_GRID = { waiting:'reserveGridWaiting', inhall:'reserveGridInhall', late:'reserveGridLate' };
 
   function reserveCardHtml(r) {
     const icon = r.occasion ? RESERVE_OCCASION_ICON[r.occasion] : '';
@@ -16833,6 +16841,9 @@
     document.getElementById('reserveGridWaiting').innerHTML = waiting.length ? waiting.map(reserveCardHtml).join('') : '<div class="reserve-empty">Нет резервов</div>';
     document.getElementById('reserveGridInhall').innerHTML = inhall.length ? inhall.map(reserveCardHtml).join('') : '<div class="reserve-empty">Нет резервов</div>';
     document.getElementById('reserveGridLate').innerHTML = late.length ? late.map(reserveCardHtml).join('') : '<div class="reserve-empty">Нет резервов</div>';
+    Object.keys(RESERVE_STATUS_GRID).forEach(key => {
+      document.getElementById(RESERVE_STATUS_GRID[key]).hidden = key !== reserveStatus;
+    });
   }
 
   const RESERVE_SCHEME_ZONES = ['main', 'second', 'veranda'];
@@ -16857,12 +16868,21 @@
     document.getElementById('reserveViewSelect').value = reserveView;
     document.getElementById('reserveTileView').hidden = reserveView !== 'tile';
     document.getElementById('reserveSchemeView').hidden = reserveView !== 'scheme';
+    document.getElementById('reserveStatusTabs').hidden = reserveView !== 'tile';
     if (reserveView === 'tile') renderReserveTiles(); else renderReserveScheme();
     newReserveFab.hidden = reserveView !== 'tile' || !reservesDetail || reservesDetail.hidden;
   }
 
   document.getElementById('reserveViewSelect').addEventListener('change', e => {
     reserveView = e.target.value;
+    renderReserves();
+  });
+
+  document.getElementById('reserveStatusTabs').addEventListener('click', e => {
+    const btn = e.target.closest('[data-reserve-status]');
+    if (!btn) return;
+    reserveStatus = btn.dataset.reserveStatus;
+    document.querySelectorAll('#reserveStatusTabs .reserve-zone-tab').forEach(b => b.classList.toggle('active', b.dataset.reserveStatus === reserveStatus));
     renderReserves();
   });
 
