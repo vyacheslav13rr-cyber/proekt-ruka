@@ -5320,12 +5320,13 @@
 
   /* ---------- МН-13/30/31/47: Резервы ---------- */
   /* «История» + переключатель вида — сворачиваемая группа (тот же приём,
-     что у .hall-stats на МН-12), кнопка раскрытия — тонкая, без фона и
-     рамки, стоит в самой строке шапки, а не отдельной нитью-разделителем */
-  .reserve-history-row{display:flex; align-items:center; gap:4px; margin-top:12px;}
+     что у .hall-stats на МН-12): кнопка раскрытия стоит НЕ в одной строке
+     с группой, а отдельной строкой под ней — иначе высота строки не может
+     уйти ниже высоты самой кнопки, и сворачивание почти не сдвигает
+     содержимое (было так, пока кнопку не вынесли) */
   .reserve-history-group{
-    flex:1;
     display:flex; align-items:center; gap:8px;
+    margin-top:12px;
     min-width:0;
     max-height:40px;
     overflow:hidden;
@@ -5348,28 +5349,44 @@
     transition:transform .15s ease;
   }
   .reserve-history-tile:active{transform:scale(.96);}
+  /* табы залов и кнопка сворачивания — всегда в одну строку: табы не
+     переносятся, а скроллятся горизонтально (тот же приём, что у папок
+     чатов/досок планировщика — .folder-tabs внутри .planner-topbar),
+     кнопка с нитью — закреплённый сосед, не участвует в скролле */
+  .reserve-zone-row{display:flex; align-items:center; gap:4px; margin-top:10px;}
+  .reserve-zone-tabs{
+    flex:1;
+    min-width:0;
+    display:flex; gap:6px;
+    overflow-x:auto;
+    padding:2px 2px 2px 0;
+    -webkit-overflow-scrolling:touch;
+    touch-action:pan-x;
+    scrollbar-width:none;
+  }
+  .reserve-zone-tabs::-webkit-scrollbar{display:none;}
+  .reserve-collapse-thread{
+    flex:0 0 20px;
+    height:1px;
+    background:linear-gradient(90deg, transparent, rgba(198,153,47,0.6));
+  }
+  /* нить справа от кнопки — зеркально симметрична левой */
+  .reserve-collapse-thread.is-right{
+    background:linear-gradient(90deg, rgba(198,153,47,0.6), transparent);
+  }
   .reserve-collapse-btn{
-    flex-shrink:0;
+    flex:0 0 auto;
     display:flex; align-items:center; justify-content:center;
-    width:26px; height:26px;
-    margin-left:auto;
-    background:none;
-    border:none;
-    padding:0;
-    color:var(--text-muted);
+    width:42px; height:20px;
+    border-radius:999px;
+    border:1px solid var(--card-border);
+    background:var(--surface);
     cursor:pointer;
   }
-  .reserve-collapse-btn svg{width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; transition:transform .28s ease;}
+  .reserve-collapse-btn svg{width:14px; height:14px; stroke:var(--text-muted); fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; transition:transform .28s ease;}
   .reserve-collapse-btn.is-collapsed svg{transform:rotate(180deg);}
 
-  .reserve-zone-tabs{
-    display:flex; gap:6px; flex-wrap:wrap;
-    padding:2px 0;
-    margin-top:10px;
-    min-width:0;
-  }
-
-  .reserve-view{margin-top:4px;}
+  .reserve-view{margin-top:4px; touch-action:pan-y;}
   .reserve-view[hidden]{display:none;}
 
   .reserve-view-select{
@@ -5419,7 +5436,17 @@
     transition:transform .15s ease;
   }
   .reserve-card:active{transform:scale(.97);}
+  /* стопка вспомогательных иконок (формат встречи и т.п.) — правый верх
+     карточки, первая иконка в одной строке с именем, остальные (если
+     когда-нибудь появится больше одной) — ниже, сверху вниз */
+  .reserve-card-badges{
+    position:absolute; top:8px; right:8px;
+    display:flex; flex-direction:column; align-items:center; gap:4px;
+  }
+  .reserve-card-badge{color:var(--gold); flex-shrink:0;}
+  .reserve-card-badge svg{width:13px; height:13px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
   .reserve-card-name{
+    padding-right:20px;
     font-family:'Fraunces', serif;
     font-weight:600;
     font-size:14px;
@@ -5427,30 +5454,13 @@
     line-height:1.15;
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   }
-  /* строка 2: номер стола + метка формата встречи (если задана) */
-  .reserve-card-row2{
-    display:flex; align-items:center; gap:6px;
-    margin-top:5px;
-    min-width:0;
-    overflow:hidden;
-  }
+  /* строка 2: номер стола (без слова «Стол» — само число хуже читалось
+     вплотную к «№», поэтому пробел) */
+  .reserve-card-row2{margin-top:5px;}
   .reserve-card-table{
-    flex-shrink:0;
     font-family:'IBM Plex Mono', monospace;
     font-size:10.5px; font-weight:700;
     color:var(--text-primary);
-  }
-  .reserve-card-tag{
-    display:flex; align-items:center; gap:3px;
-    flex:1 1 auto;
-    min-width:0;
-    color:var(--gold);
-  }
-  .reserve-card-tag svg{width:10px; height:10px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0;}
-  .reserve-card-tag-label{
-    min-width:0;
-    font-size:9.5px; font-weight:700;
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   }
   .reserve-card-persons{
     display:flex; align-items:center; gap:3px;
@@ -5464,13 +5474,17 @@
     font-size:11px; font-weight:700;
     color:var(--text-primary);
   }
+  /* в светлой теме --text-muted (хаки) на светлом фоне карточки читался
+     плохо — низкий контраст; в тёмной теме тот же цвет на тёмной карточке
+     нормально контрастен, поэтому меняем только светлую тему */
   .reserve-card-phone{
     margin-top:1px;
     font-family:'IBM Plex Mono', monospace;
     font-size:9.5px;
-    color:var(--text-muted);
+    color:var(--text-soft);
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   }
+  .screen.dark .reserve-card-phone{color:var(--text-muted);}
   @keyframes reservePulseGold{
     0%,100%{ box-shadow:0 0 0 0 rgba(198,153,47,.5); border-color:var(--gold); }
     50%{ box-shadow:0 0 0 5px rgba(198,153,47,0); border-color:var(--gold-light); }
@@ -6935,20 +6949,22 @@
             Назад
           </button>
 
-          <div class="reserve-history-row">
-            <div class="reserve-history-group" id="reserveHistoryGroup">
-              <button class="reserve-history-tile" id="reserveHistoryLinkBtn" aria-label="История резервов за смену">История</button>
-              <select class="reserve-view-select" id="reserveViewSelect">
-                <option value="tile">Плитка</option>
-                <option value="scheme">Схема</option>
-              </select>
-            </div>
+          <div class="reserve-history-group" id="reserveHistoryGroup">
+            <button class="reserve-history-tile" id="reserveHistoryLinkBtn" aria-label="История резервов за смену">История</button>
+            <select class="reserve-view-select" id="reserveViewSelect">
+              <option value="tile">Плитка</option>
+              <option value="scheme">Схема</option>
+            </select>
+          </div>
+
+          <div class="reserve-zone-row">
+            <div class="reserve-zone-tabs" id="reserveZoneTabs"></div>
+            <span class="reserve-collapse-thread"></span>
             <button class="reserve-collapse-btn" id="reserveCollapseBtn" aria-label="Свернуть">
               <svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg>
             </button>
+            <span class="reserve-collapse-thread is-right"></span>
           </div>
-
-          <div class="reserve-zone-tabs" id="reserveZoneTabs"></div>
 
           <div class="reserve-status-tabs" id="reserveStatusTabs">
             <button class="reserve-zone-tab active" data-reserve-status="waiting">Ожидаем</button>
@@ -16874,23 +16890,23 @@
 
   const reserveNow0 = Date.now();
   const reservations = [
-    { id:'r1', tableId:'rt3', time:reserveNow0 + 8 * 60000,   persons:4, name:'Петров И.',  phone:'+7 916 000-01-01', tg:'',          occasion:'bday',     comment:'Просили торт со свечками', confirmed:true,  deposit:true,  arrived:false, tableFreed:false,
+    { id:'r1', tableId:'rt3', time:reserveNow0 + 8 * 60000,   persons:4, name:'Игорь Петров',    phone:'+7 916 000-01-01', tg:'',          occasion:'bday',     comment:'Просили торт со свечками', confirmed:true,  deposit:true,  arrived:false, tableFreed:false,
       log:[ reserveEvent('Создан', 'Хостес Аня', reserveNow0 - 3 * 3600000) ] },
-    { id:'r2', tableId:'rt2', time:reserveNow0 + 40 * 60000,  persons:2, name:'Ким Е.',     phone:'+7 916 000-01-02', tg:'',          occasion:'date',     comment:'', confirmed:true,  deposit:false, arrived:false, tableFreed:false,
+    { id:'r2', tableId:'rt2', time:reserveNow0 + 40 * 60000,  persons:2, name:'Елена Ким',       phone:'+7 916 000-01-02', tg:'',          occasion:'date',     comment:'', confirmed:true,  deposit:false, arrived:false, tableFreed:false,
       log:[ reserveEvent('Создан', 'Хостес Аня', reserveNow0 - 5 * 3600000) ] },
-    { id:'r3', tableId:'rt7', time:reserveNow0 - 8 * 60000,   persons:6, name:'Соколова М.', phone:'+7 916 000-01-03', tg:'@sokolova', occasion:'business', comment:'Отдельный вход, если можно', confirmed:true,  deposit:true,  arrived:false, tableFreed:false,
+    { id:'r3', tableId:'rt7', time:reserveNow0 - 8 * 60000,   persons:6, name:'Мария Соколова',  phone:'+7 916 000-01-03', tg:'@sokolova', occasion:'business', comment:'Отдельный вход, если можно', confirmed:true,  deposit:true,  arrived:false, tableFreed:false,
       log:[ reserveEvent('Создан', 'Менеджер Игорь', reserveNow0 - 26 * 3600000), reserveEvent('Изменён', 'Менеджер Игорь', reserveNow0 - 2 * 3600000, 'Время 19:45 → 20:00') ] },
-    { id:'r4', tableId:'rt6', time:reserveNow0 + 150 * 60000, persons:4, name:'Гаджиев Р.', phone:'+7 916 000-01-04', tg:'',          occasion:'',         comment:'', confirmed:false, deposit:false, arrived:false, tableFreed:false,
+    { id:'r4', tableId:'rt6', time:reserveNow0 + 150 * 60000, persons:4, name:'Руслан Гаджиев',  phone:'+7 916 000-01-04', tg:'',          occasion:'',         comment:'', confirmed:false, deposit:false, arrived:false, tableFreed:false,
       log:[ reserveEvent('Создан', 'Хостес Аня', reserveNow0 - 60 * 60000) ] },
-    { id:'r5', tableId:'rt10', time:reserveNow0 + 12 * 60000, persons:2, name:'Литвинов С.', phone:'+7 916 000-01-05', tg:'@litvinov', occasion:'date',     comment:'', confirmed:true,  deposit:false, arrived:false, tableFreed:false,
+    { id:'r5', tableId:'rt10', time:reserveNow0 + 12 * 60000, persons:2, name:'Сергей Литвинов', phone:'+7 916 000-01-05', tg:'@litvinov', occasion:'date',     comment:'', confirmed:true,  deposit:false, arrived:false, tableFreed:false,
       log:[ reserveEvent('Создан', 'Менеджер Игорь', reserveNow0 - 40 * 60000) ] },
-    { id:'r6', tableId:'rt1', time:reserveNow0 - 50 * 60000,  persons:2, name:'Орлова Т.',  phone:'+7 916 000-01-06', tg:'',          occasion:'date',     comment:'', confirmed:true,  deposit:true,  arrived:true,  tableFreed:false,
+    { id:'r6', tableId:'rt1', time:reserveNow0 - 50 * 60000,  persons:2, name:'Татьяна Орлова',  phone:'+7 916 000-01-06', tg:'',          occasion:'date',     comment:'', confirmed:true,  deposit:true,  arrived:true,  tableFreed:false,
       log:[ reserveEvent('Создан', 'Хостес Аня', reserveNow0 - 5 * 3600000), reserveEvent('Гость пришёл', 'Хостес Аня', reserveNow0 - 46 * 60000) ] },
-    { id:'r7', tableId:'rt9', time:reserveNow0 - 90 * 60000,  persons:4, name:'Дьяченко В.', phone:'+7 916 000-01-07', tg:'',          occasion:'business', comment:'', confirmed:true,  deposit:false, arrived:true,  tableFreed:false,
+    { id:'r7', tableId:'rt9', time:reserveNow0 - 90 * 60000,  persons:4, name:'Виктор Дьяченко', phone:'+7 916 000-01-07', tg:'',          occasion:'business', comment:'', confirmed:true,  deposit:false, arrived:true,  tableFreed:false,
       log:[ reserveEvent('Создан', 'Менеджер Игорь', reserveNow0 - 8 * 3600000), reserveEvent('Гость пришёл', 'Хостес Аня', reserveNow0 - 85 * 60000) ] },
-    { id:'r8', tableId:'rt5', time:reserveNow0 - 140 * 60000, persons:4, name:'Белова Н.',  phone:'+7 916 000-01-08', tg:'@belova',   occasion:'',         comment:'Счёт на компанию', confirmed:true,  deposit:false, arrived:true,  tableFreed:true,
+    { id:'r8', tableId:'rt5', time:reserveNow0 - 140 * 60000, persons:4, name:'Наталья Белова',  phone:'+7 916 000-01-08', tg:'@belova',   occasion:'',         comment:'Счёт на компанию', confirmed:true,  deposit:false, arrived:true,  tableFreed:true,
       log:[ reserveEvent('Создан', 'Хостес Аня', reserveNow0 - 9 * 3600000), reserveEvent('Гость пришёл', 'Хостес Аня', reserveNow0 - 135 * 60000), reserveEvent('Стол освободился', 'Официант Марина', reserveNow0 - 15 * 60000) ] },
-    { id:'r9', tableId:'rt3', time:reserveNow0 + 170 * 60000, persons:3, name:'Крылов Д.',  phone:'+7 916 000-01-09', tg:'',          occasion:'business', comment:'', confirmed:true,  deposit:false, arrived:false, tableFreed:false,
+    { id:'r9', tableId:'rt3', time:reserveNow0 + 170 * 60000, persons:3, name:'Дмитрий Крылов',  phone:'+7 916 000-01-09', tg:'',          occasion:'business', comment:'', confirmed:true,  deposit:false, arrived:false, tableFreed:false,
       log:[ reserveEvent('Создан', 'Менеджер Игорь', reserveNow0 - 20 * 60000) ] }
   ];
   let reserveSeq = 9;
@@ -16938,15 +16954,29 @@
     ).join('');
   }
 
+  /* на карточке — имя и инициал фамилии («Вячеслав С.»), полное «Фамилия Имя»
+     остаётся в карточке резерва и остальных местах, где используется r.name */
+  function reserveShortName(fullName) {
+    const parts = (fullName || '').trim().split(/\s+/);
+    if (parts.length < 2) return fullName;
+    return parts[0] + ' ' + parts[1].charAt(0).toUpperCase() + '.';
+  }
+  /* стопка иконок-меток (формат встречи и т.п.) без подписи — правый
+     верх карточки, сверху вниз, если их когда-нибудь станет больше одной */
+  function reserveCardBadges(r) {
+    const icons = [];
+    if (r.occasion) icons.push({ icon: RESERVE_OCCASION_ICON[r.occasion], title: RESERVE_OCCASION_NAME[r.occasion] });
+    if (!icons.length) return '';
+    return '<span class="reserve-card-badges">' + icons.map(b =>
+      '<span class="reserve-card-badge" title="' + b.title + '"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + b.icon + '</svg></span>'
+    ).join('') + '</span>';
+  }
   function reserveCardHtml(r) {
     const t = reserveTable(r.tableId);
-    const icon = r.occasion ? RESERVE_OCCASION_ICON[r.occasion] : '';
-    const tagHtml = icon
-      ? '<span class="reserve-card-tag"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + icon + '</svg><span class="reserve-card-tag-label">' + RESERVE_OCCASION_NAME[r.occasion] + '</span></span>'
-      : '';
     return '<button class="reserve-card ' + reserveBorderClass(r) + '" data-reserve-open="' + r.id + '">' +
-      '<span class="reserve-card-name">' + r.name + '</span>' +
-      '<span class="reserve-card-row2"><span class="reserve-card-table">Стол №' + (t ? tableNum(t) : '—') + '</span>' + tagHtml + '</span>' +
+      reserveCardBadges(r) +
+      '<span class="reserve-card-name">' + reserveShortName(r.name) + '</span>' +
+      '<span class="reserve-card-row2"><span class="reserve-card-table">№ ' + (t ? tableNum(t) : '—') + '</span></span>' +
       '<span class="reserve-card-persons"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c1-4 4-6 7-6s6 2 7 6"/></svg>' + r.persons + '</span>' +
       '<span class="reserve-card-time">' + stampText(r.time) + '</span>' +
       '<span class="reserve-card-phone">' + r.phone + '</span>' +
@@ -17015,8 +17045,9 @@
     renderReserves();
   });
 
-  /* сворачиваемая группа «История» + переключатель вида — по образцу
-     .hall-stats на МН-12, только кнопка раскрытия стоит в самой строке шапки */
+  /* сворачиваемая группа «История» + переключатель вида — кнопка со своей
+     золотой нитью стоит рядом с табами залов на одной строке (см.
+     .reserve-zone-row), сама не пересобирается при перерисовке табов */
   document.getElementById('reserveCollapseBtn').addEventListener('click', () => {
     const collapsed = document.getElementById('reserveHistoryGroup').classList.toggle('collapsed');
     document.getElementById('reserveCollapseBtn').classList.toggle('is-collapsed', collapsed);
@@ -17031,36 +17062,47 @@
     document.querySelectorAll('#reserveStatusTabs .reserve-zone-tab').forEach(b => b.classList.toggle('active', b.dataset.reserveStatus === reserveStatus));
     renderReserves();
   }
-  let reserveSwipeX = 0, reserveSwipeY = 0, reserveSwipeTracking = false, reserveSwipeMoved = false;
+  let reserveSwipeX = 0, reserveSwipeY = 0, reserveSwipeTracking = false, reserveSwipeMoved = false, reserveSwipeTimer = null;
+  /* на некоторых мобильных браузерах при touch-action:pan-y жест иногда
+     «теряется»: pointerup/pointercancel не долетают до window (браузер
+     решил, что это вертикальный скролл, и забрал жест себе). Тогда
+     reserveSwipeTracking навсегда остаётся true, слушатели ниже не снимаются,
+     и все следующие свайпы перестают засчитываться — свежий pointerdown
+     жёстко сбрасывает состояние перед стартом, а таймер отпускает жест
+     сам, если pointerup/cancel не пришёл вовсе */
+  function reserveSwipeReset() {
+    window.removeEventListener('pointermove', reserveSwipeMove);
+    window.removeEventListener('pointerup', reserveSwipeEnd);
+    window.removeEventListener('pointercancel', reserveSwipeCancel);
+    clearTimeout(reserveSwipeTimer);
+    reserveSwipeTracking = false;
+  }
   function reserveSwipeMove(e) {
     if (!reserveSwipeTracking) return;
     if (Math.abs(e.clientX - reserveSwipeX) > 10 || Math.abs(e.clientY - reserveSwipeY) > 10) reserveSwipeMoved = true;
   }
   function reserveSwipeEnd(e) {
-    window.removeEventListener('pointermove', reserveSwipeMove);
-    window.removeEventListener('pointerup', reserveSwipeEnd);
-    window.removeEventListener('pointercancel', reserveSwipeCancel);
     if (!reserveSwipeTracking) return;
-    reserveSwipeTracking = false;
-    if (reserveSwipeMoved) suppressNextClickGlobally();
+    const moved = reserveSwipeMoved;
     const dx = e.clientX - reserveSwipeX;
     const dy = Math.abs(e.clientY - reserveSwipeY);
+    reserveSwipeReset();
+    if (moved) suppressNextClickGlobally();
     if (Math.abs(dx) < 50 || Math.abs(dx) < dy * 1.2) return;
     reserveCycleStatus(dx < 0 ? 1 : -1);
   }
   function reserveSwipeCancel() {
-    window.removeEventListener('pointermove', reserveSwipeMove);
-    window.removeEventListener('pointerup', reserveSwipeEnd);
-    window.removeEventListener('pointercancel', reserveSwipeCancel);
-    reserveSwipeTracking = false;
+    reserveSwipeReset();
   }
   const reserveTileViewEl = document.getElementById('reserveTileView');
   reserveTileViewEl.addEventListener('pointerdown', e => {
+    reserveSwipeReset();
     reserveSwipeX = e.clientX; reserveSwipeY = e.clientY;
     reserveSwipeTracking = true; reserveSwipeMoved = false;
     window.addEventListener('pointermove', reserveSwipeMove);
     window.addEventListener('pointerup', reserveSwipeEnd);
     window.addEventListener('pointercancel', reserveSwipeCancel);
+    reserveSwipeTimer = setTimeout(reserveSwipeReset, 800);
   });
   reserveTileViewEl.addEventListener('click', e => {
     if (reserveSwipeMoved) { e.stopPropagation(); e.preventDefault(); }
