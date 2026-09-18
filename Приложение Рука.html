@@ -5360,6 +5360,10 @@
     height:1px;
     background:linear-gradient(90deg, transparent, rgba(198,153,47,0.6));
   }
+  /* нить справа от кнопки — зеркально симметрична левой */
+  .reserve-collapse-thread.is-right{
+    background:linear-gradient(90deg, rgba(198,153,47,0.6), transparent);
+  }
   .reserve-collapse-btn{
     flex:0 0 auto;
     display:flex; align-items:center; justify-content:center;
@@ -5460,13 +5464,17 @@
     font-size:11px; font-weight:700;
     color:var(--text-primary);
   }
+  /* в светлой теме --text-muted (хаки) на светлом фоне карточки читался
+     плохо — низкий контраст; в тёмной теме тот же цвет на тёмной карточке
+     нормально контрастен, поэтому меняем только светлую тему */
   .reserve-card-phone{
     margin-top:1px;
     font-family:'IBM Plex Mono', monospace;
     font-size:9.5px;
-    color:var(--text-muted);
+    color:var(--text-soft);
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   }
+  .screen.dark .reserve-card-phone{color:var(--text-muted);}
   @keyframes reservePulseGold{
     0%,100%{ box-shadow:0 0 0 0 rgba(198,153,47,.5); border-color:var(--gold); }
     50%{ box-shadow:0 0 0 5px rgba(198,153,47,0); border-color:var(--gold-light); }
@@ -6945,6 +6953,7 @@
             <button class="reserve-collapse-btn" id="reserveCollapseBtn" aria-label="Свернуть">
               <svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg>
             </button>
+            <span class="reserve-collapse-thread is-right"></span>
           </div>
 
           <div class="reserve-status-tabs" id="reserveStatusTabs">
@@ -17043,36 +17052,47 @@
     document.querySelectorAll('#reserveStatusTabs .reserve-zone-tab').forEach(b => b.classList.toggle('active', b.dataset.reserveStatus === reserveStatus));
     renderReserves();
   }
-  let reserveSwipeX = 0, reserveSwipeY = 0, reserveSwipeTracking = false, reserveSwipeMoved = false;
+  let reserveSwipeX = 0, reserveSwipeY = 0, reserveSwipeTracking = false, reserveSwipeMoved = false, reserveSwipeTimer = null;
+  /* на некоторых мобильных браузерах при touch-action:pan-y жест иногда
+     «теряется»: pointerup/pointercancel не долетают до window (браузер
+     решил, что это вертикальный скролл, и забрал жест себе). Тогда
+     reserveSwipeTracking навсегда остаётся true, слушатели ниже не снимаются,
+     и все следующие свайпы перестают засчитываться — свежий pointerdown
+     жёстко сбрасывает состояние перед стартом, а таймер отпускает жест
+     сам, если pointerup/cancel не пришёл вовсе */
+  function reserveSwipeReset() {
+    window.removeEventListener('pointermove', reserveSwipeMove);
+    window.removeEventListener('pointerup', reserveSwipeEnd);
+    window.removeEventListener('pointercancel', reserveSwipeCancel);
+    clearTimeout(reserveSwipeTimer);
+    reserveSwipeTracking = false;
+  }
   function reserveSwipeMove(e) {
     if (!reserveSwipeTracking) return;
     if (Math.abs(e.clientX - reserveSwipeX) > 10 || Math.abs(e.clientY - reserveSwipeY) > 10) reserveSwipeMoved = true;
   }
   function reserveSwipeEnd(e) {
-    window.removeEventListener('pointermove', reserveSwipeMove);
-    window.removeEventListener('pointerup', reserveSwipeEnd);
-    window.removeEventListener('pointercancel', reserveSwipeCancel);
     if (!reserveSwipeTracking) return;
-    reserveSwipeTracking = false;
-    if (reserveSwipeMoved) suppressNextClickGlobally();
+    const moved = reserveSwipeMoved;
     const dx = e.clientX - reserveSwipeX;
     const dy = Math.abs(e.clientY - reserveSwipeY);
+    reserveSwipeReset();
+    if (moved) suppressNextClickGlobally();
     if (Math.abs(dx) < 50 || Math.abs(dx) < dy * 1.2) return;
     reserveCycleStatus(dx < 0 ? 1 : -1);
   }
   function reserveSwipeCancel() {
-    window.removeEventListener('pointermove', reserveSwipeMove);
-    window.removeEventListener('pointerup', reserveSwipeEnd);
-    window.removeEventListener('pointercancel', reserveSwipeCancel);
-    reserveSwipeTracking = false;
+    reserveSwipeReset();
   }
   const reserveTileViewEl = document.getElementById('reserveTileView');
   reserveTileViewEl.addEventListener('pointerdown', e => {
+    reserveSwipeReset();
     reserveSwipeX = e.clientX; reserveSwipeY = e.clientY;
     reserveSwipeTracking = true; reserveSwipeMoved = false;
     window.addEventListener('pointermove', reserveSwipeMove);
     window.addEventListener('pointerup', reserveSwipeEnd);
     window.addEventListener('pointercancel', reserveSwipeCancel);
+    reserveSwipeTimer = setTimeout(reserveSwipeReset, 800);
   });
   reserveTileViewEl.addEventListener('click', e => {
     if (reserveSwipeMoved) { e.stopPropagation(); e.preventDefault(); }
