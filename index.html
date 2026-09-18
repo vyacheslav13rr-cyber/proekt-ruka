@@ -5330,6 +5330,7 @@
     min-width:0;
     max-height:40px;
     overflow:hidden;
+    touch-action:pan-y;
     transition:max-height .28s ease, opacity .2s ease, margin .28s ease;
   }
   .reserve-history-group.collapsed{max-height:0; opacity:0; margin:0;}
@@ -5405,7 +5406,7 @@
   }
   .reserve-view-select:focus{outline:none;}
 
-  .reserve-status-tabs{display:flex; gap:6px; margin:12px 0 12px;}
+  .reserve-status-tabs{display:flex; gap:6px; margin:12px 0 12px; touch-action:pan-y;}
   .reserve-status-tabs[hidden]{display:none;}
   .reserve-status-tabs .reserve-zone-tab{flex:1; text-align:center;}
 
@@ -5492,6 +5493,15 @@
   .reserve-card.is-soon{ animation:reservePulseGold 1.7s ease-in-out infinite; }
   .reserve-card.is-late{ border-color:var(--dot-red); box-shadow:0 0 0 1px rgba(178,72,58,.22); }
   .reserve-card.is-late .reserve-card-time{color:var(--dot-red);}
+  /* время уже прошло, но до переезда в «Задерживаются» ещё есть запас
+     (RESERVE_LATE_GRACE_MIN) — карточка остаётся в «Ожидаем» и мигает
+     красным, тот же приём тайминга, что у .order-time.is-late */
+  @keyframes reservePulseRed{
+    0%,100%{ box-shadow:0 0 0 0 rgba(178,72,58,.55); border-color:var(--dot-red); }
+    50%{ box-shadow:0 0 0 5px rgba(178,72,58,0); border-color:var(--dot-red-soft); }
+  }
+  .reserve-card.is-overdue{ animation:reservePulseRed .85s ease-in-out infinite; }
+  .reserve-card.is-overdue .reserve-card-time{color:var(--dot-red);}
 
   /* ---------- Схема зала ---------- */
   .reserve-scheme-zone{
@@ -16920,7 +16930,12 @@
     return 'ей';
   }
 
-  function reserveIsLate(r) { return !r.arrived && Date.now() > r.time; }
+  /* до RESERVE_LATE_GRACE_MIN минут после назначенного времени резерв
+     остаётся в «Ожидаем» (просто мигает красной рамкой), в «Задерживаются»
+     переезжает только после этого порога — см. reserveBorderClass/renderReserveTiles */
+  const RESERVE_LATE_GRACE_MIN = 30;
+  function reserveIsOverdue(r) { return !r.arrived && Date.now() > r.time; }
+  function reserveIsLate(r) { return !r.arrived && Date.now() > r.time + RESERVE_LATE_GRACE_MIN * 60000; }
   function reserveIsSoon(r) {
     if (r.arrived) return false;
     const diff = r.time - Date.now();
@@ -16928,6 +16943,7 @@
   }
   function reserveBorderClass(r) {
     if (reserveIsLate(r)) return 'is-late';
+    if (reserveIsOverdue(r)) return 'is-overdue';
     if (reserveIsSoon(r)) return 'is-soon';
     return '';
   }
