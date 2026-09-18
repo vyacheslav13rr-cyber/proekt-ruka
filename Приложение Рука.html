@@ -5320,6 +5320,7 @@
     min-width:0;
     max-height:40px;
     overflow:hidden;
+    touch-action:pan-y;
     transition:max-height .28s ease, opacity .2s ease, margin .28s ease;
   }
   .reserve-history-group.collapsed{max-height:0; opacity:0; margin:0;}
@@ -5395,7 +5396,7 @@
   }
   .reserve-view-select:focus{outline:none;}
 
-  .reserve-status-tabs{display:flex; gap:6px; margin:12px 0 12px;}
+  .reserve-status-tabs{display:flex; gap:6px; margin:12px 0 12px; touch-action:pan-y;}
   .reserve-status-tabs[hidden]{display:none;}
   .reserve-status-tabs .reserve-zone-tab{flex:1; text-align:center;}
 
