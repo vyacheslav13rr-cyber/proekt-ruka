@@ -16963,6 +16963,9 @@
   function reserveZoneMatch(zone) { return reserveZoneFilter === 'all' || zone === reserveZoneFilter; }
   const RESERVE_STATUS_GRID = { waiting:'reserveGridWaiting', inhall:'reserveGridInhall', late:'reserveGridLate' };
   const RESERVE_STATUS_ORDER = ['waiting', 'inhall', 'late'];
+  /* «Задерживаются» показываем только когда туда что-то реально попало —
+     см. конец renderReserveTiles() */
+  let reserveLateTabHidden = false;
 
   function renderReserveZoneTabs() {
     document.getElementById('reserveZoneTabs').innerHTML = reserveZones.map(z =>
@@ -17013,10 +17016,18 @@
     document.getElementById('reserveGridInhall').innerHTML = inhall.length ? inhall.map(reserveCardHtml).join('') : '<div class="reserve-empty">Нет резервов</div>';
     document.getElementById('reserveGridLate').innerHTML = late.length ? late.map(reserveCardHtml).join('') : '<div class="reserve-empty">Нет резервов</div>';
     document.getElementById('reserveGridAll').innerHTML = all.length ? all.map(reserveCardHtml).join('') : '<div class="reserve-empty">Нет резервов</div>';
+
+    /* пока ни один резерв не «Задерживается» — сама кнопка вкладки не
+       отображается; если она была выбрана и опустела, возвращаемся к «Ожидаем» */
+    reserveLateTabHidden = late.length === 0;
+    document.querySelector('#reserveStatusTabs [data-reserve-status="late"]').hidden = reserveLateTabHidden;
+    if (reserveLateTabHidden && reserveStatus === 'late') reserveStatus = 'waiting';
+
     Object.keys(RESERVE_STATUS_GRID).forEach(key => {
       document.getElementById(RESERVE_STATUS_GRID[key]).hidden = key !== reserveStatus;
     });
     document.getElementById('reserveGridAll').hidden = reserveStatus !== null;
+    document.querySelectorAll('#reserveStatusTabs .reserve-zone-tab').forEach(b => b.classList.toggle('active', b.dataset.reserveStatus === reserveStatus));
   }
 
   function reserveSchemeTableHtml(t) {
@@ -17053,11 +17064,10 @@
 
   document.getElementById('reserveStatusTabs').addEventListener('click', e => {
     const btn = e.target.closest('[data-reserve-status]');
-    if (!btn) return;
+    if (!btn || btn.hidden) return;
     /* повторный тап по уже выбранному фильтру снимает его — показаны все резервы */
     const val = btn.dataset.reserveStatus;
     reserveStatus = reserveStatus === val ? null : val;
-    document.querySelectorAll('#reserveStatusTabs .reserve-zone-tab').forEach(b => b.classList.toggle('active', b.dataset.reserveStatus === reserveStatus));
     renderReserves();
   });
 
@@ -17072,10 +17082,13 @@
   /* свайп влево/вправо по списку резервов переключает Ожидаем/В зале/Задерживаются
      по кругу — тот же приём, что у свайпа между списком столов и по официантам (см. hallSwipe*) */
   function reserveCycleStatus(dir) {
-    let idx = RESERVE_STATUS_ORDER.indexOf(reserveStatus);
-    idx = idx === -1 ? (dir > 0 ? 0 : RESERVE_STATUS_ORDER.length - 1) : (idx + dir + RESERVE_STATUS_ORDER.length) % RESERVE_STATUS_ORDER.length;
-    reserveStatus = RESERVE_STATUS_ORDER[idx];
-    document.querySelectorAll('#reserveStatusTabs .reserve-zone-tab').forEach(b => b.classList.toggle('active', b.dataset.reserveStatus === reserveStatus));
+    /* пока «Задерживаются» скрыта (нет ни одного просроченного больше
+       чем на RESERVE_LATE_GRACE_MIN), свайп её пропускает — переключаются
+       только «Ожидаем» и «В зале» */
+    const order = reserveLateTabHidden ? ['waiting', 'inhall'] : RESERVE_STATUS_ORDER;
+    let idx = order.indexOf(reserveStatus);
+    idx = idx === -1 ? (dir > 0 ? 0 : order.length - 1) : (idx + dir + order.length) % order.length;
+    reserveStatus = order[idx];
     renderReserves();
   }
   let reserveSwipeX = 0, reserveSwipeY = 0, reserveSwipeTracking = false, reserveSwipeMoved = false, reserveSwipeTimer = null;
@@ -17429,6 +17442,15 @@
   document.getElementById('reserveHistoryLinkBtn').addEventListener('click', () => { openReserveHistory(); setRoute('мн-47'); });
 
   renderReserves();
+
+  /* время само по себе двигает «Ожидаем» → мигает → «Задерживаются» — без
+     тика экран обновлялся бы только по действию пользователя (тап, свайп,
+     смена зала). Тик раз в минуту, только пока экран резервов открыт —
+     тот же приём, что у «Заготовок бара» выше */
+  setInterval(() => {
+    if (!document.querySelector('.shift-detail[data-detail="reserves"]:not([hidden])')) return;
+    renderReserves();
+  }, 60000);
 
   /* ---------- МН-10.3: Настройки ресторана — добавление зала ----------
      Название и нумерация столов задаются в форме, схема (расположение на
