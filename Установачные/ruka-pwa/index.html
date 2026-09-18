@@ -17088,14 +17088,23 @@
     const dy = Math.abs(e.clientY - reserveSwipeY);
     reserveSwipeReset();
     if (moved) suppressNextClickGlobally();
+    if (!reserveScreenIsActive()) return;
     if (Math.abs(dx) < 50 || Math.abs(dx) < dy * 1.2) return;
     reserveCycleStatus(dx < 0 ? 1 : -1);
   }
   function reserveSwipeCancel() {
     reserveSwipeReset();
   }
-  const reserveTileViewEl = document.getElementById('reserveTileView');
-  reserveTileViewEl.addEventListener('pointerdown', e => {
+  /* ловим жест по всему контенту экрана (от шапки до нижнего меню), не
+     только над карточками — но включаемся только когда открыты именно
+     «Резервы» в плитке, чтобы не мешать свайпам на других вкладках */
+  function reserveScreenIsActive() {
+    const detail = document.querySelector('.shift-detail[data-detail="reserves"]');
+    return !!detail && !detail.hidden && reserveView === 'tile';
+  }
+  const reserveSwipeAreaEl = document.querySelector('.content');
+  reserveSwipeAreaEl.addEventListener('pointerdown', e => {
+    if (!reserveScreenIsActive()) return;
     reserveSwipeReset();
     reserveSwipeX = e.clientX; reserveSwipeY = e.clientY;
     reserveSwipeTracking = true; reserveSwipeMoved = false;
@@ -17104,7 +17113,7 @@
     window.addEventListener('pointercancel', reserveSwipeCancel);
     reserveSwipeTimer = setTimeout(reserveSwipeReset, 800);
   });
-  reserveTileViewEl.addEventListener('click', e => {
+  reserveSwipeAreaEl.addEventListener('click', e => {
     if (reserveSwipeMoved) { e.stopPropagation(); e.preventDefault(); }
   }, true);
 
