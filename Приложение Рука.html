@@ -5309,6 +5309,30 @@
   .planner-card-desc::placeholder{color:var(--text-muted);}
 
   /* ---------- МН-13/30/31/47: Резервы ---------- */
+  /* touch-action:pan-y на весь экран целиком, а не только на отдельные
+     строки с контентом — иначе пустое место (например, под карточками,
+     если резервов мало и они не заполняют весь экран) остаётся без
+     touch-action, и браузер на реальном тач-устройстве свободен сам
+     решать, что делать с горизонтальным движением там — свайп не
+     засчитывался. Табы залов (.reserve-zone-tabs) ниже держат свой
+     pan-x для собственного горизонтального скролла — если на конкретно
+     этой узкой строке из-за пересечения pan-y/pan-x браузер не даст
+     нативный скролл тач-жестом, жест просто достанется этому же свайпу
+     (тапы по табам это не задевает).
+     min-height:100% — сам экран по умолчанию высотой только по контенту
+     (мало резервов — узкая область), а место ниже до нижнего меню
+     принадлежит уже общему .content, где это правило не действует;
+     растягиваем экран на всю доступную высоту, чтобы touch-action
+     реально покрывал всё видимое пространство */
+  .shift-detail[data-detail="reserves"]{touch-action:pan-y; min-height:100%;}
+  /* min-height:100% выше резолвится в проценты от .panel[data-panel="shift"],
+     а его собственная высота (если задать через min-height) для браузера
+     не «явная» — проценты через неё дальше не проходят (нужна именно
+     height, не min-height, иначе цепочка процентов рвётся на этом шаге).
+     Экрана с контентом больше 100% это не портит — .panel без overflow,
+     более длинный под-экран просто продолжается ниже своей рамки, а
+     прокручивает всё равно .content */
+  .panel[data-panel="shift"]{height:100%;}
   /* «История» + переключатель вида — сворачиваемая группа (тот же приём,
      что у .hall-stats на МН-12): кнопка раскрытия стоит НЕ в одной строке
      с группой, а отдельной строкой под ней — иначе высота строки не может
@@ -5320,7 +5344,6 @@
     min-width:0;
     max-height:40px;
     overflow:hidden;
-    touch-action:pan-y;
     transition:max-height .28s ease, opacity .2s ease, margin .28s ease;
   }
   .reserve-history-group.collapsed{max-height:0; opacity:0; margin:0;}
@@ -5377,7 +5400,7 @@
   .reserve-collapse-btn svg{width:14px; height:14px; stroke:var(--text-muted); fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; transition:transform .28s ease;}
   .reserve-collapse-btn.is-collapsed svg{transform:rotate(180deg);}
 
-  .reserve-view{margin-top:4px; touch-action:pan-y;}
+  .reserve-view{margin-top:4px;}
   .reserve-view[hidden]{display:none;}
 
   .reserve-view-select{
@@ -5396,7 +5419,7 @@
   }
   .reserve-view-select:focus{outline:none;}
 
-  .reserve-status-tabs{display:flex; gap:6px; margin:12px 0 12px; touch-action:pan-y;}
+  .reserve-status-tabs{display:flex; gap:6px; margin:12px 0 12px;}
   .reserve-status-tabs[hidden]{display:none;}
   .reserve-status-tabs .reserve-zone-tab{flex:1; text-align:center;}
 
