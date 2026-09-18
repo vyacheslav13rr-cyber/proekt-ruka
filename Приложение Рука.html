@@ -5310,12 +5310,13 @@
 
   /* ---------- МН-13/30/31/47: Резервы ---------- */
   /* «История» + переключатель вида — сворачиваемая группа (тот же приём,
-     что у .hall-stats на МН-12), кнопка раскрытия — тонкая, без фона и
-     рамки, стоит в самой строке шапки, а не отдельной нитью-разделителем */
-  .reserve-history-row{display:flex; align-items:center; gap:4px; margin-top:12px;}
+     что у .hall-stats на МН-12): кнопка раскрытия стоит НЕ в одной строке
+     с группой, а отдельной строкой под ней — иначе высота строки не может
+     уйти ниже высоты самой кнопки, и сворачивание почти не сдвигает
+     содержимое (было так, пока кнопку не вынесли) */
   .reserve-history-group{
-    flex:1;
     display:flex; align-items:center; gap:8px;
+    margin-top:12px;
     min-width:0;
     max-height:40px;
     overflow:hidden;
@@ -5338,11 +5339,13 @@
     transition:transform .15s ease;
   }
   .reserve-history-tile:active{transform:scale(.96);}
+  /* отдельная тонкая строка под группой — сама не сворачивается,
+     кнопка в ней всегда доступна, чтобы группу можно было вернуть */
+  .reserve-collapse-row{display:flex; justify-content:flex-end; margin-top:2px;}
   .reserve-collapse-btn{
     flex-shrink:0;
     display:flex; align-items:center; justify-content:center;
     width:26px; height:26px;
-    margin-left:auto;
     background:none;
     border:none;
     padding:0;
@@ -6925,14 +6928,15 @@
             Назад
           </button>
 
-          <div class="reserve-history-row">
-            <div class="reserve-history-group" id="reserveHistoryGroup">
-              <button class="reserve-history-tile" id="reserveHistoryLinkBtn" aria-label="История резервов за смену">История</button>
-              <select class="reserve-view-select" id="reserveViewSelect">
-                <option value="tile">Плитка</option>
-                <option value="scheme">Схема</option>
-              </select>
-            </div>
+          <div class="reserve-history-group" id="reserveHistoryGroup">
+            <button class="reserve-history-tile" id="reserveHistoryLinkBtn" aria-label="История резервов за смену">История</button>
+            <select class="reserve-view-select" id="reserveViewSelect">
+              <option value="tile">Плитка</option>
+              <option value="scheme">Схема</option>
+            </select>
+          </div>
+
+          <div class="reserve-collapse-row">
             <button class="reserve-collapse-btn" id="reserveCollapseBtn" aria-label="Свернуть">
               <svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg>
             </button>
