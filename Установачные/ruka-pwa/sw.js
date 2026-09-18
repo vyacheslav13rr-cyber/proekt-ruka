@@ -1,6 +1,6 @@
 /* РУКА — сервис-воркер прототипа. Кэширует само приложение,
    чтобы после первого открытия оно работало и без сети. */
-const CACHE = 'ruka-manager-v5';
+const CACHE = 'ruka-manager-v6';
 const ASSETS = [
   './',
   './index.html',
