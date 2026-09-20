@@ -16875,8 +16875,7 @@
      (см. createReserveZone), поэтому список, а не константный объект */
   const reserveZones = [
     { id:'main',    name:'Основной', tab:'Основной' },
-    { id:'veranda', name:'Веранда',  tab:'Веранда' },
-    { id:'bar',     name:'Бар',      tab:'Бар' }
+    { id:'veranda', name:'Веранда',  tab:'Веранда' }
   ];
   function reserveZoneName(id) {
     const z = reserveZones.find(z => z.id === id);
@@ -16897,9 +16896,6 @@
     { id:'rt2',  zone:'main',    shape:'circle', x:40, y:16, w:18, h:18, seats:4 },
     { id:'rt3',  zone:'main',    shape:'rect',   x:66, y:12, w:27, h:18, seats:6 },
     { id:'rt4',  zone:'main',    shape:'circle', x:16, y:58, w:16, h:16, seats:2 },
-    { id:'rt5',  zone:'bar',     shape:'rect',   x:10, y:16, w:26, h:16, seats:4 },
-    { id:'rt6',  zone:'bar',     shape:'circle', x:48, y:18, w:20, h:20, seats:4 },
-    { id:'rt7',  zone:'bar',     shape:'rect',   x:64, y:52, w:28, h:18, seats:8 },
     { id:'rt8',  zone:'veranda', shape:'circle', x:12, y:20, w:18, h:18, seats:4 },
     { id:'rt9',  zone:'veranda', shape:'rect',   x:44, y:16, w:28, h:16, seats:6 },
     { id:'rt10', zone:'veranda', shape:'circle', x:70, y:54, w:16, h:16, seats:2 }
@@ -16922,18 +16918,12 @@
       log:[ reserveEvent('Создан', 'Хостес Аня', reserveNow0 - 3 * 3600000) ] },
     { id:'r2', tableId:'rt2', time:reserveNow0 + 40 * 60000,  persons:2, name:'Елена Ким',       phone:'+7 916 000-01-02', tg:'',          occasion:'date',     comment:'', confirmed:true,  deposit:false, arrived:false, tableFreed:false,
       log:[ reserveEvent('Создан', 'Хостес Аня', reserveNow0 - 5 * 3600000) ] },
-    { id:'r3', tableId:'rt7', time:reserveNow0 - 8 * 60000,   persons:6, name:'Мария Соколова',  phone:'+7 916 000-01-03', tg:'@sokolova', occasion:'business', comment:'Отдельный вход, если можно', confirmed:true,  deposit:true,  arrived:false, tableFreed:false,
-      log:[ reserveEvent('Создан', 'Менеджер Игорь', reserveNow0 - 26 * 3600000), reserveEvent('Изменён', 'Менеджер Игорь', reserveNow0 - 2 * 3600000, 'Время 19:45 → 20:00') ] },
-    { id:'r4', tableId:'rt6', time:reserveNow0 + 150 * 60000, persons:4, name:'Руслан Гаджиев',  phone:'+7 916 000-01-04', tg:'',          occasion:'',         comment:'', confirmed:false, deposit:false, arrived:false, tableFreed:false,
-      log:[ reserveEvent('Создан', 'Хостес Аня', reserveNow0 - 60 * 60000) ] },
     { id:'r5', tableId:'rt10', time:reserveNow0 + 12 * 60000, persons:2, name:'Сергей Литвинов', phone:'+7 916 000-01-05', tg:'@litvinov', occasion:'date',     comment:'', confirmed:true,  deposit:false, arrived:false, tableFreed:false,
       log:[ reserveEvent('Создан', 'Менеджер Игорь', reserveNow0 - 40 * 60000) ] },
     { id:'r6', tableId:'rt1', time:reserveNow0 - 50 * 60000,  persons:2, name:'Татьяна Орлова',  phone:'+7 916 000-01-06', tg:'',          occasion:'date',     comment:'', confirmed:true,  deposit:true,  arrived:true,  tableFreed:false,
       log:[ reserveEvent('Создан', 'Хостес Аня', reserveNow0 - 5 * 3600000), reserveEvent('Гость пришёл', 'Хостес Аня', reserveNow0 - 46 * 60000) ] },
     { id:'r7', tableId:'rt9', time:reserveNow0 - 90 * 60000,  persons:4, name:'Виктор Дьяченко', phone:'+7 916 000-01-07', tg:'',          occasion:'business', comment:'', confirmed:true,  deposit:false, arrived:true,  tableFreed:false,
       log:[ reserveEvent('Создан', 'Менеджер Игорь', reserveNow0 - 8 * 3600000), reserveEvent('Гость пришёл', 'Хостес Аня', reserveNow0 - 85 * 60000) ] },
-    { id:'r8', tableId:'rt5', time:reserveNow0 - 140 * 60000, persons:4, name:'Наталья Белова',  phone:'+7 916 000-01-08', tg:'@belova',   occasion:'',         comment:'Счёт на компанию', confirmed:true,  deposit:false, arrived:true,  tableFreed:true,
-      log:[ reserveEvent('Создан', 'Хостес Аня', reserveNow0 - 9 * 3600000), reserveEvent('Гость пришёл', 'Хостес Аня', reserveNow0 - 135 * 60000), reserveEvent('Стол освободился', 'Официант Марина', reserveNow0 - 15 * 60000) ] },
     { id:'r9', tableId:'rt3', time:reserveNow0 + 170 * 60000, persons:3, name:'Дмитрий Крылов',  phone:'+7 916 000-01-09', tg:'',          occasion:'business', comment:'', confirmed:true,  deposit:false, arrived:false, tableFreed:false,
       log:[ reserveEvent('Создан', 'Менеджер Игорь', reserveNow0 - 20 * 60000) ] }
   ];
