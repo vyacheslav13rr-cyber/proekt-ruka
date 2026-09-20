@@ -2139,6 +2139,13 @@
   .hall-divider.guest-divider{margin:4px 0 10px;}
   /* в зале полоса залов подтянута к кнопке сворачивания */
   #hallSticky .hall-divider{margin-bottom:4px;}
+  /* залы и кнопка сворачивания в одну строку — пропорции те же, что у
+     .reserve-zone-row/.reserve-collapse-thread на «Резервах»: нить по 20px
+     с обеих сторон кнопки, табы занимают всё оставшееся место */
+  .hall-divider.zone-divider{gap:4px;}
+  .hall-divider.zone-divider .zone-tabs{flex:1 1 auto; min-width:0; margin:0;}
+  .hall-divider.zone-divider .divider-line{flex:0 0 20px;}
+  .hall-divider.zone-divider .zone-tab{padding:4.5px 11px; font-size:11.5px;}
 
 
   /* МН-16 поднят выше: меньше воздуха под «Назад» и над шапкой заказа */
@@ -6538,19 +6545,19 @@
             </div>
           </div>
 
-          <!-- разделитель со сворачиванием — над прокруткой залов -->
-          <div class="hall-divider">
+          <!-- залы и кнопка сворачивания — в одну строку, нить с обеих сторон
+               кнопки, как на «Резервах» (см. .reserve-zone-row) -->
+          <div class="hall-divider zone-divider">
+            <div class="zone-tabs" id="zoneTabs">
+              <button class="zone-tab" data-zone="hall">Основной</button>
+              <button class="zone-tab" data-zone="veranda">Веранда</button>
+              <button class="zone-tab" data-zone="bar">Бар</button>
+            </div>
             <span class="divider-line is-left"></span>
             <button class="hall-collapse" id="hallCollapse" aria-label="Свернуть">
               <svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg>
             </button>
             <span class="divider-line is-right"></span>
-          </div>
-
-          <div class="zone-tabs" id="zoneTabs">
-            <button class="zone-tab" data-zone="hall">Основной</button>
-            <button class="zone-tab" data-zone="veranda">Веранда</button>
-            <button class="zone-tab" data-zone="bar">Бар</button>
           </div>
           </div>
 
