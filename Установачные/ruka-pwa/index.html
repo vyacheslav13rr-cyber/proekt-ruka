@@ -5141,7 +5141,21 @@
   .catalog-card-price{font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--accent);}
 
   /* ---------- МН-09 · Планировщик: доски, колонки, карточки задач ---------- */
-  .planner-topbar{display:flex; align-items:flex-start; gap:4px;}
+  /* #plannerBoardView растянут на всю высоту (тот же приём с height:100%,
+     что и у .shift-detail[data-detail="reserves"] — см. комментарий там же
+     про цепочку процентов), а под колонками — свой невидимый «заполнитель»
+     с touch-action:pan-y на всё оставшееся место вниз до нижнего меню.
+     Не вешаем pan-y на общего предка .planner-columns — тогда бы браузер
+     из-за пересечения pan-y/pan-x перестал сам скроллить колонки нативно
+     (как это уже принято для узкой строки .reserve-zone-tabs, но там это
+     мелочь, а тут — основной жест). Заполнитель отдельным сиблингом решает
+     это без компромиссов: свайп ниже колонок (см. plannerSwipe* в скрипте)
+     реально долетает до pointerup на реальном тач-устройстве, а не
+     перехватывается браузером как обычный вертикальный скролл. */
+  .panel[data-panel="planner"]{height:100%;}
+  #plannerBoardView{height:100%; display:flex; flex-direction:column;}
+  .planner-swipe-fill{flex:1 1 auto; min-height:24px; touch-action:pan-y;}
+  .planner-topbar{display:flex; align-items:flex-start; gap:4px; flex:0 0 auto;}
   .planner-topbar .folder-tabs{flex:1; min-width:0;}
   .planner-add-btn{
     flex-shrink:0;
@@ -5158,6 +5172,7 @@
   .planner-add-btn:active{transform:scale(.92);}
 
   .planner-columns{
+    flex:0 0 auto;
     display:flex;
     gap:12px;
     overflow-x:auto;
@@ -7535,6 +7550,9 @@
             </button>
           </div>
           <div class="planner-columns" id="plannerColumns"></div>
+          <!-- заполняет всё место под колонками до нижнего меню — нужен только
+               чтобы дать этой пустой зоне свой touch-action:pan-y, см. CSS выше -->
+          <div class="planner-swipe-fill" aria-hidden="true"></div>
         </div>
 
         <!-- МН-18: карточка задачи -->
