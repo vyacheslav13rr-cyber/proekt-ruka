@@ -18226,6 +18226,62 @@
     plannerCardDragMoved = false;
   });
 
+  /* свайп влево/вправо по доске листает колонки — не только над самими
+     колонками (там это и так работает нативной прокруткой .planner-columns),
+     но и в пустом месте под ними, если колонки короче экрана: тот же приём
+     ловли жеста по всему контенту, что и на «Резервах» (см. reserveSwipe*) */
+  function plannerBoardScreenIsActive() {
+    const panel = document.querySelector('.panel[data-panel="planner"]');
+    const boardView = document.getElementById('plannerBoardView');
+    return !!panel && !panel.hidden && !!boardView && !boardView.hidden;
+  }
+  function plannerColumnStep() {
+    const col = plannerColumnsEl.querySelector('.planner-column');
+    return col ? col.getBoundingClientRect().width + 12 : plannerColumnsEl.clientWidth * 0.8;
+  }
+  let plannerSwipeX = 0, plannerSwipeY = 0, plannerSwipeTracking = false, plannerSwipeMoved = false, plannerSwipeTimer = null;
+  function plannerSwipeReset() {
+    window.removeEventListener('pointermove', plannerSwipeMove);
+    window.removeEventListener('pointerup', plannerSwipeEnd);
+    window.removeEventListener('pointercancel', plannerSwipeCancel);
+    clearTimeout(plannerSwipeTimer);
+    plannerSwipeTracking = false;
+  }
+  function plannerSwipeMove(e) {
+    if (!plannerSwipeTracking) return;
+    if (Math.abs(e.clientX - plannerSwipeX) > 10 || Math.abs(e.clientY - plannerSwipeY) > 10) plannerSwipeMoved = true;
+  }
+  function plannerSwipeEnd(e) {
+    if (!plannerSwipeTracking) return;
+    const moved = plannerSwipeMoved;
+    const dx = e.clientX - plannerSwipeX;
+    const dy = Math.abs(e.clientY - plannerSwipeY);
+    plannerSwipeReset();
+    if (moved) suppressNextClickGlobally();
+    if (!plannerBoardScreenIsActive()) return;
+    if (Math.abs(dx) < 50 || Math.abs(dx) < dy * 1.2) return;
+    const step = plannerColumnStep();
+    plannerColumnsEl.scrollBy({ left: dx < 0 ? step : -step, behavior: 'smooth' });
+  }
+  function plannerSwipeCancel() { plannerSwipeReset(); }
+  const plannerSwipeAreaEl = document.querySelector('.content');
+  plannerSwipeAreaEl.addEventListener('pointerdown', e => {
+    if (!plannerBoardScreenIsActive()) return;
+    /* по самим колонкам (кроме «ручки» карточки) и по табам досок жест уже
+       обрабатывается своей нативной прокруткой/перетаскиванием — не мешаем им */
+    if (e.target.closest('.planner-columns') || e.target.closest('.planner-topbar')) return;
+    plannerSwipeReset();
+    plannerSwipeX = e.clientX; plannerSwipeY = e.clientY;
+    plannerSwipeTracking = true; plannerSwipeMoved = false;
+    window.addEventListener('pointermove', plannerSwipeMove);
+    window.addEventListener('pointerup', plannerSwipeEnd);
+    window.addEventListener('pointercancel', plannerSwipeCancel);
+    plannerSwipeTimer = setTimeout(plannerSwipeReset, 800);
+  });
+  plannerSwipeAreaEl.addEventListener('click', e => {
+    if (plannerSwipeMoved) { e.stopPropagation(); e.preventDefault(); }
+  }, true);
+
   /* отметка выполнения — карточка переезжает в колонку «Выполнено» той же доски */
   function plannerMarkDone(colId, cardId) {
     const fromCol = plannerFindColumn(colId);
