@@ -2136,13 +2136,12 @@
   .hall-divider.zone-divider .zone-tabs{flex:1 1 auto; min-width:0; margin:0;}
   .hall-divider.zone-divider .divider-line{flex:0 0 20px;}
   .hall-divider.zone-divider .zone-tab{padding:4.5px 11px; font-size:11.5px;}
-  /* строка залов стоит ровно между золотой нитью шапки сверху и этой же
-     нитью снизу (.zone-row-divider) — сверху отступ как на «Резервах»
-     (см. margin-top:0 ниже — у #hallSticky уже есть свой padding-top:6px,
-     которого нет у экрана «Резервы», иначе отступ сверху получался бы
-     на 6px больше). Снизу нить специально ближе к строке, чем сверху —
-     по просьбе Вячеслава, только на «Заказах» */
-  #hallSticky .hall-divider.zone-divider{margin:0 0 2px;}
+  /* строка залов стоит ровно между золотой нитью шапки сверху и единственной
+     золотой полоской снизу (это нижний край #hallSticky на стыке с
+     остальным контентом — не отдельный элемент, самого .zone-row-divider
+     здесь больше нет, чтобы не получалось двух нитей). Отступ до неё
+     регулируется только margin-bottom самой строки — только на «Заказах» */
+  #hallSticky .hall-divider.zone-divider{margin:0 0 8px;}
   .zone-row-divider{
     height:1px;
     margin:0 0 6px;
@@ -6561,8 +6560,6 @@
             </button>
             <span class="divider-line is-right"></span>
           </div>
-
-          <div class="zone-row-divider"></div>
           </div>
 
           <div class="table-grid" id="tableGrid"></div>
