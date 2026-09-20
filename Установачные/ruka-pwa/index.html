@@ -18448,10 +18448,19 @@
 
 
 <script>
-  /* регистрация сервис-воркера — включает офлайн-режим и «установку» на телефон */
+  /* регистрация сервис-воркера — включает офлайн-режим и «установку» на телефон.
+     Новая версия активируется сразу, не дожидаясь закрытия всех вкладок
+     (см. skipWaiting/clients.claim в sw.js) — как только это произошло,
+     перезагружаем страницу, чтобы обновление стало видно сразу, а не через раз */
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js').catch(() => {});
+      navigator.serviceWorker.register('sw.js').then(reg => reg.update()).catch(() => {});
+    });
+    let reloadedForUpdate = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (reloadedForUpdate) return;
+      reloadedForUpdate = true;
+      location.reload();
     });
   }
 </script>
