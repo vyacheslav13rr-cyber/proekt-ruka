@@ -2136,6 +2136,14 @@
   .hall-divider.zone-divider .zone-tabs{flex:1 1 auto; min-width:0; margin:0;}
   .hall-divider.zone-divider .divider-line{flex:0 0 20px;}
   .hall-divider.zone-divider .zone-tab{padding:4.5px 11px; font-size:11.5px;}
+  /* строка залов стоит ровно между золотой нитью шапки сверху и этой же
+     нитью снизу (.zone-row-divider) — те же отступы с обеих сторон строки */
+  #hallSticky .hall-divider.zone-divider{margin:14px 0;}
+  .zone-row-divider{
+    height:1px;
+    margin:0 0 12px;
+    background:linear-gradient(90deg, transparent, rgba(198,153,47,0.6), transparent);
+  }
 
 
   /* МН-16 поднят выше: меньше воздуха под «Назад» и над шапкой заказа */
@@ -5389,7 +5397,7 @@
      переносятся, а скроллятся горизонтально (тот же приём, что у папок
      чатов/досок планировщика — .folder-tabs внутри .planner-topbar),
      кнопка с нитью — закреплённый сосед, не участвует в скролле */
-  .reserve-zone-row{display:flex; align-items:center; gap:4px; margin-top:10px;}
+  .reserve-zone-row{display:flex; align-items:center; gap:4px; margin:14px 0;}
   .reserve-zone-tabs{
     flex:1;
     min-width:0;
@@ -6551,6 +6559,7 @@
           </div>
           </div>
 
+          <div class="zone-row-divider"></div>
 
           <div class="table-grid" id="tableGrid"></div>
 
@@ -7010,6 +7019,8 @@
             </button>
             <span class="reserve-collapse-thread is-right"></span>
           </div>
+
+          <div class="zone-row-divider"></div>
 
           <div class="reserve-status-tabs" id="reserveStatusTabs">
             <button class="reserve-zone-tab active" data-reserve-status="waiting">Ожидаем</button>
