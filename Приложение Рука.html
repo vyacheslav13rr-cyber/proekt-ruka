@@ -2199,8 +2199,10 @@
   }
   .hall-tool.has-filters svg{stroke:var(--navy-deep);}
 
-  /* МН-12: компактные показатели слева, инструменты справа */
-  .hall-stats-compact{align-items:stretch; gap:4px; padding:2px 6px 0 0;}
+  /* МН-12: компактные показатели слева, инструменты справа.
+     margin-bottom уменьшен с базовых 13px до 5px — расстояние от
+     показателей до строки залов чуть меньше, чем на «Резервах» (8px) */
+  .hall-stats-compact{align-items:stretch; gap:4px; padding:2px 6px 0 0; margin-bottom:5px;}
   .hall-stats-compact .hall-stat{min-width:0;}
   /* когда справа появился значок сброса — ужимаем показатели, а не режем их */
   .hall-stats-compact.with-reset .hall-stat{padding:7px 7px;}
