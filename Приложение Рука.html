@@ -2137,11 +2137,12 @@
   .hall-divider.zone-divider .divider-line{flex:0 0 20px;}
   .hall-divider.zone-divider .zone-tab{padding:4.5px 11px; font-size:11.5px;}
   /* строка залов стоит ровно между золотой нитью шапки сверху и этой же
-     нитью снизу (.zone-row-divider) — те же отступы с обеих сторон строки */
-  #hallSticky .hall-divider.zone-divider{margin:14px 0;}
+     нитью снизу (.zone-row-divider) — те же отступы с обеих сторон строки,
+     сама полоса между нитями — узкая, не растянутая */
+  #hallSticky .hall-divider.zone-divider{margin:6px 0;}
   .zone-row-divider{
     height:1px;
-    margin:0 0 12px;
+    margin:0 0 6px;
     background:linear-gradient(90deg, transparent, rgba(198,153,47,0.6), transparent);
   }
 
@@ -5397,7 +5398,7 @@
      переносятся, а скроллятся горизонтально (тот же приём, что у папок
      чатов/досок планировщика — .folder-tabs внутри .planner-topbar),
      кнопка с нитью — закреплённый сосед, не участвует в скролле */
-  .reserve-zone-row{display:flex; align-items:center; gap:4px; margin:14px 0;}
+  .reserve-zone-row{display:flex; align-items:center; gap:4px; margin:6px 0;}
   .reserve-zone-tabs{
     flex:1;
     min-width:0;
