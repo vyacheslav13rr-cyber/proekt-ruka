@@ -1,6 +1,6 @@
 /* РУКА — сервис-воркер прототипа. Кэширует само приложение,
    чтобы после первого открытия оно работало и без сети. */
-const CACHE = 'ruka-manager-v13';
+const CACHE = 'ruka-manager-v14';
 const ASSETS = [
   './',
   './index.html',
@@ -34,12 +34,15 @@ self.addEventListener('activate', event => {
    не трогает вовсе, их обрабатывает сам браузер как обычно. Замена ответа на
    index.html — только для навигации (открытие/переход страницы), а не для
    вложенных запросов (манифест/иконки/шрифты), иначе при сбое сети вместо
-   картинки или манифеста подставился бы HTML */
+   картинки или манифеста подставился бы HTML.
+   cache:'reload' — обходит обычный HTTP-кэш браузера при самом сетевом
+   запросе, иначе он мог бы молча подсунуть старый ответ вместо свежего с
+   сервера, и правки не доходили бы даже при рабочей сети */
 self.addEventListener('fetch', event => {
   const req = event.request;
   if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;
   event.respondWith(
-    fetch(req)
+    fetch(req, { cache: 'reload' })
       .then(res => {
         const copy = res.clone();
         caches.open(CACHE).then(cache => cache.put(req, copy));
