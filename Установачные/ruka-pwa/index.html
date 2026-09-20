@@ -2152,12 +2152,14 @@
      которого нет у экрана «Резервы», иначе отступ сверху получался бы
      на 6px больше). Снизу нить специально ближе к строке, чем сверху —
      по просьбе Вячеслава, только на «Заказах» */
-  #hallSticky .hall-divider.zone-divider{margin:0 0 3px;}
+  #hallSticky .hall-divider.zone-divider{margin:0 0 2px;}
   .zone-row-divider{
     height:1px;
     margin:0 0 6px;
     background:linear-gradient(90deg, transparent, rgba(198,153,47,0.6), transparent);
   }
+  /* только на «Заказах»: нижняя нить толще (2px) и почти вплотную к строке */
+  .zone-row-divider-thick{height:2px;}
 
 
   /* МН-16 поднят выше: меньше воздуха под «Назад» и над шапкой заказа */
@@ -6571,6 +6573,8 @@
             </button>
             <span class="divider-line is-right"></span>
           </div>
+
+          <div class="zone-row-divider zone-row-divider-thick"></div>
           </div>
 
           <div class="table-grid" id="tableGrid"></div>
