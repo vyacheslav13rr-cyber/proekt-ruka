@@ -2129,9 +2129,11 @@
   .hall-divider.guest-divider{margin:4px 0 10px;}
   /* в зале полоса залов подтянута к кнопке сворачивания */
   #hallSticky .hall-divider{margin-bottom:4px;}
-  /* кнопки залов — в одной строке с кнопкой сворачивания */
+  /* кнопки залов — в одной строке с кнопкой сворачивания, без лишних отступов,
+     чтобы все три пилюли помещались без прокрутки */
   .hall-divider.zone-divider .zone-tabs{flex:1 1 auto; min-width:0; margin:0;}
-  .hall-divider.zone-divider .divider-line.is-left{flex:0 0 14px; margin-left:7px;}
+  .hall-divider.zone-divider .divider-line.is-left{flex:0 0 8px; margin-left:4px;}
+  .hall-divider.zone-divider .hall-collapse{margin:0 0 0 4px;}
   /* размер кнопок и шрифт — как у табов залов на экране «Резервы» (.reserve-zone-tab) */
   .hall-divider.zone-divider .zone-tab{padding:4.5px 11px; font-size:11.5px;}
 
@@ -16872,9 +16874,9 @@
   /* залы — не фиксированный словарь: новые добавляются из «Настроек ресторана»
      (см. createReserveZone), поэтому список, а не константный объект */
   const reserveZones = [
-    { id:'main',    name:'Основной зал', tab:'Основной' },
-    { id:'second',  name:'Второй зал',   tab:'Второй' },
-    { id:'veranda', name:'Веранда',      tab:'Веранда' }
+    { id:'main',    name:'Основной', tab:'Основной' },
+    { id:'veranda', name:'Веранда',  tab:'Веранда' },
+    { id:'bar',     name:'Бар',      tab:'Бар' }
   ];
   function reserveZoneName(id) {
     const z = reserveZones.find(z => z.id === id);
@@ -16895,9 +16897,9 @@
     { id:'rt2',  zone:'main',    shape:'circle', x:40, y:16, w:18, h:18, seats:4 },
     { id:'rt3',  zone:'main',    shape:'rect',   x:66, y:12, w:27, h:18, seats:6 },
     { id:'rt4',  zone:'main',    shape:'circle', x:16, y:58, w:16, h:16, seats:2 },
-    { id:'rt5',  zone:'second',  shape:'rect',   x:10, y:16, w:26, h:16, seats:4 },
-    { id:'rt6',  zone:'second',  shape:'circle', x:48, y:18, w:20, h:20, seats:4 },
-    { id:'rt7',  zone:'second',  shape:'rect',   x:64, y:52, w:28, h:18, seats:8 },
+    { id:'rt5',  zone:'bar',     shape:'rect',   x:10, y:16, w:26, h:16, seats:4 },
+    { id:'rt6',  zone:'bar',     shape:'circle', x:48, y:18, w:20, h:20, seats:4 },
+    { id:'rt7',  zone:'bar',     shape:'rect',   x:64, y:52, w:28, h:18, seats:8 },
     { id:'rt8',  zone:'veranda', shape:'circle', x:12, y:20, w:18, h:18, seats:4 },
     { id:'rt9',  zone:'veranda', shape:'rect',   x:44, y:16, w:28, h:16, seats:6 },
     { id:'rt10', zone:'veranda', shape:'circle', x:70, y:54, w:16, h:16, seats:2 }
