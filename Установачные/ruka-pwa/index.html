@@ -5701,6 +5701,147 @@
   }
   .reserve-occasion-chips{display:flex; flex-wrap:wrap; gap:7px;}
 
+  /* ---------- МН-31: блоки «Дата» и «Время» ---------- */
+  .resdate-head{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:6px;}
+  .resdate-monthyear{font-size:11px; font-weight:800; color:var(--gold);}
+  .resdate-lane-wrap, .restime-lane-wrap{display:flex; align-items:center; gap:8px;}
+  #newReserveCalSlot, #newReserveClockSlot{display:contents;}
+  .resdate-lane, .restime-lane{
+    flex:1; min-width:0;
+    display:flex; gap:6px;
+    overflow-x:auto; padding:2px 0;
+    -webkit-overflow-scrolling:touch;
+    touch-action:pan-x;
+    scrollbar-width:none;
+  }
+  .resdate-lane::-webkit-scrollbar, .restime-lane::-webkit-scrollbar{display:none;}
+  .resdate-lane.dim .resdate-tile, .restime-lane.dim .restime-tile{opacity:.45;}
+  .resdate-tile{
+    flex:0 0 auto;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    width:44px; height:50px;
+    border-radius:12px;
+    border:1.5px solid var(--card-border);
+    background:var(--surface);
+    font-family:'Manrope', sans-serif;
+    cursor:pointer;
+  }
+  .resdate-tile-wd{font-size:10px; font-weight:700; color:var(--text-muted);}
+  .resdate-tile-num{font-size:15px; font-weight:700; color:var(--text-primary); margin-top:2px;}
+  .resdate-tile.active{background:var(--navy); border-color:var(--navy);}
+  .resdate-tile.active .resdate-tile-wd{color:var(--gold-light);}
+  .resdate-tile.active .resdate-tile-num{color:var(--cream);}
+
+  .restime-tile{
+    flex:0 0 auto;
+    min-width:58px; height:38px;
+    display:flex; align-items:center; justify-content:center;
+    border-radius:10px;
+    border:1.5px solid var(--card-border);
+    background:var(--surface);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px; font-weight:700;
+    color:var(--text-primary);
+    cursor:pointer;
+  }
+  .restime-tile.active{background:var(--navy); border-color:var(--navy); color:var(--cream);}
+
+  .resdate-icon-btn, .restime-icon-btn{
+    flex:0 0 auto;
+    display:flex; align-items:center; justify-content:center;
+    border-radius:12px;
+    border:1.5px solid var(--gold);
+    background:var(--surface);
+    cursor:pointer;
+  }
+  .resdate-icon-btn{width:44px; height:50px;}
+  .restime-icon-btn{width:44px; height:38px;}
+  .resdate-icon-btn svg, .restime-icon-btn svg{stroke:var(--gold); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+  .resdate-icon-btn svg{width:20px; height:20px;}
+  .restime-icon-btn svg{width:18px; height:18px;}
+
+  .resdate-chip, .restime-chip{
+    flex:0 0 auto;
+    display:flex; align-items:center; justify-content:center;
+    gap:5px;
+    padding:0 10px;
+    border-radius:12px;
+    border:1.5px solid transparent;
+    background:var(--navy);
+    cursor:pointer;
+    font-family:'Manrope', sans-serif;
+  }
+  /* фон чипа/активной плитки --navy — в тёмной теме это и есть фон всего
+     экрана (--content-bg), плитка/чип иначе сливались бы с ним; золотая
+     рамка нужна только здесь, в светлой теме и так всё контрастно */
+  .screen.dark .resdate-tile.active, .screen.dark .restime-tile.active,
+  .screen.dark .resdate-chip, .screen.dark .restime-chip{border-color:var(--gold);}
+  .resdate-chip{flex-direction:column; gap:2px; min-width:66px; height:50px;}
+  .restime-chip{min-width:58px; height:38px;}
+  .resdate-chip svg, .restime-chip svg{stroke:var(--gold-light); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0;}
+  .resdate-chip svg{width:14px; height:14px;}
+  .restime-chip svg{width:15px; height:15px;}
+  .resdate-chip-top{display:flex; align-items:center; gap:4px;}
+  .resdate-chip-main{font-size:12.5px; font-weight:800; color:var(--cream);}
+  .resdate-chip-sub{font-size:9.5px; font-weight:700; color:var(--cream); opacity:.85;}
+  .restime-chip-main{font-size:13px; font-weight:800; color:var(--cream); font-family:'IBM Plex Mono', monospace;}
+
+  .restime-grid-wrap{margin-top:8px;}
+  .restime-grid-wrap[hidden]{display:none;}
+  .restime-grid{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:6px;}
+  .restime-grid .restime-tile{width:100%; min-width:0;}
+
+  /* ---------- МН-13/МН-31: месячный календарь (общий) ---------- */
+  .cal-box{padding:18px 16px 14px;}
+  .cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;}
+  .cal-month-label{font-family:'Fraunces', serif; font-size:15px; font-weight:600; color:var(--text-primary);}
+  .cal-nav-btn{
+    width:30px; height:30px;
+    display:flex; align-items:center; justify-content:center;
+    border-radius:9px;
+    border:1px solid var(--card-border);
+    background:var(--surface);
+    cursor:pointer;
+  }
+  .cal-nav-btn svg{width:16px; height:16px; stroke:var(--text-primary); fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round;}
+  .cal-nav-btn:disabled{opacity:.3; cursor:default;}
+  .cal-weekdays{display:grid; grid-template-columns:repeat(7,1fr); gap:2px; margin-bottom:4px;}
+  .cal-weekdays span{display:block; text-align:center; font-size:10px; font-weight:700; color:var(--text-muted);}
+  .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:4px;}
+  .cal-cell{
+    aspect-ratio:1;
+    display:flex; align-items:center; justify-content:center;
+    border-radius:10px;
+    border:none;
+    background:none;
+    font-family:'Manrope', sans-serif; font-size:13px; font-weight:700;
+    color:var(--text-primary);
+    cursor:pointer;
+  }
+  .cal-cell-empty{cursor:default;}
+  .cal-cell.is-disabled{color:var(--text-muted); opacity:.35; cursor:default;}
+  .cal-cell.is-selected{background:var(--navy); color:var(--cream);}
+
+  /* ---------- МН-13: иконка календаря в строке «История»/переключателя ---------- */
+  .reserve-cal-btn{
+    flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    width:34px; height:34px;
+    border-radius:10px;
+    border:1px solid var(--gold);
+    background:var(--surface);
+    cursor:pointer;
+  }
+  .reserve-cal-btn svg{width:17px; height:17px; stroke:var(--gold); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+  .reserve-card-date{
+    display:block;
+    text-align:center;
+    margin-top:3px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px; font-weight:700;
+    color:var(--accent);
+  }
+
 </style>
 </head>
 <body>
@@ -7020,6 +7161,9 @@
               <option value="tile">Плитка</option>
               <option value="scheme">Схема</option>
             </select>
+            <button class="reserve-cal-btn" id="reserveCalBtn" type="button" aria-label="Выбрать дату">
+              <svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M8 3v4"/><path d="M16 3v4"/><path d="M3.5 10h17"/></svg>
+            </button>
           </div>
 
           <div class="reserve-zone-row">
@@ -7086,14 +7230,29 @@
             Назад
           </button>
 
-          <div class="reserve-form-row">
-            <span class="reserve-form-label">Дата</span>
-            <input class="auth-field-input" type="date" id="newReserveDate">
-          </div>
+          <input type="hidden" id="newReserveDate">
+          <input type="hidden" id="newReserveTime">
 
           <div class="reserve-form-row">
+            <div class="resdate-head">
+              <span class="reserve-form-label" style="margin-bottom:0;">Дата</span>
+              <span class="resdate-monthyear" id="newReserveDateMonth"></span>
+            </div>
+            <div class="resdate-lane-wrap">
+              <div class="resdate-lane" id="newReserveDateLane"></div>
+              <span id="newReserveCalSlot"></span>
+            </div>
+          </div>
+
+          <div class="reserve-form-row" data-res-block="time">
             <span class="reserve-form-label">Время</span>
-            <input class="auth-field-input" type="time" id="newReserveTime">
+            <div class="restime-lane-wrap">
+              <div class="restime-lane" id="newReserveTimeLane"></div>
+              <span id="newReserveClockSlot"></span>
+            </div>
+            <div class="restime-grid-wrap" id="newReserveTimeGridWrap" hidden>
+              <div class="restime-grid" id="newReserveTimeGrid"></div>
+            </div>
           </div>
 
           <div class="reserve-form-row">
@@ -7992,6 +8151,28 @@
         </div>
         <div class="modal-actions-single">
           <button class="modal-btn modal-btn-ghost" id="unsentBack">Вернуться в заказ</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- МН-13/МН-31: общий месячный календарь -->
+    <div class="modal-overlay" id="calOverlay" hidden>
+      <div class="modal-box cal-box">
+        <div class="cal-head">
+          <button class="cal-nav-btn" id="calPrevBtn" type="button" aria-label="Предыдущий месяц">
+            <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+          </button>
+          <span class="cal-month-label" id="calMonthLabel"></span>
+          <button class="cal-nav-btn" id="calNextBtn" type="button" aria-label="Следующий месяц">
+            <svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+        <div class="cal-weekdays">
+          <span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+        <div class="modal-actions-single">
+          <button class="modal-btn modal-btn-ghost" id="calCancelBtn" type="button">Закрыть</button>
         </div>
       </div>
     </div>
@@ -9540,7 +9721,7 @@
       newReserveFab.hidden = true;
       titleEl.textContent = detailTitle(detail);
       subEl.textContent = detail.dataset.subtitle || 'Детали';
-      if (el.dataset.subblock === 'reserves') renderReserves();
+      if (el.dataset.subblock === 'reserves') { reserveSelectedDate = null; renderReserves(); }
     });
   });
 
@@ -16954,6 +17135,66 @@
 
   function reserveEvent(title, who, at, note) { return { title:title, who:who, at:at, note:note || '' }; }
 
+  /* ---------- Даты: общие хелперы для МН-13 (фильтр по дню) и МН-31 (лента дней/времени) ---------- */
+  function pad2(n) { return String(n).padStart(2, '0'); }
+  function dateOnly(d) { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; }
+  function sameDay(a, b) { return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate(); }
+  function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
+  function ymd(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
+  const WD2 = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+  const MONTH_SHORT = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+  const MONTH_NOM = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+  function fmtMonYear(d) { return pad2(d.getMonth() + 1) + '.' + String(d.getFullYear()).slice(-2); }
+  function fmtDDMMYY(d) { return pad2(d.getDate()) + '.' + pad2(d.getMonth() + 1) + '.' + String(d.getFullYear()).slice(-2); }
+  function fmtChipDate(d) { return d.getDate() + ' ' + MONTH_SHORT[d.getMonth()]; }
+
+  /* ---------- Общий месячный календарь (МН-13, МН-31): только UI, дата возвращается через onPick ---------- */
+  let calCtx = null;
+  function renderCalGrid() {
+    const y = calCtx.viewYear, m = calCtx.viewMonth;
+    document.getElementById('calMonthLabel').textContent = MONTH_NOM[m] + ' ' + y;
+    const first = new Date(y, m, 1);
+    const startOffset = (first.getDay() + 6) % 7;
+    const daysInMonth = new Date(y, m + 1, 0).getDate();
+    const cells = [];
+    for (let i = 0; i < startOffset; i++) cells.push('<span class="cal-cell cal-cell-empty"></span>');
+    for (let d = 1; d <= daysInMonth; d++) {
+      const cellDate = new Date(y, m, d);
+      const disabled = calCtx.minDate && cellDate < calCtx.minDate;
+      const isSelected = sameDay(cellDate, calCtx.selected);
+      cells.push('<button class="cal-cell' + (disabled ? ' is-disabled' : '') + (isSelected ? ' is-selected' : '') + '"' +
+        (disabled ? ' disabled' : ' data-cal-day="' + d + '"') + '>' + d + '</button>');
+    }
+    document.getElementById('calGrid').innerHTML = cells.join('');
+    document.getElementById('calPrevBtn').disabled = !!(calCtx.minDate &&
+      (y < calCtx.minDate.getFullYear() || (y === calCtx.minDate.getFullYear() && m <= calCtx.minDate.getMonth())));
+  }
+  function openMonthCalendar(selected, minDate, onPick) {
+    const base = selected || minDate || new Date();
+    calCtx = { minDate: minDate ? dateOnly(minDate) : null, selected: dateOnly(base), onPick: onPick, viewYear: base.getFullYear(), viewMonth: base.getMonth() };
+    renderCalGrid();
+    document.getElementById('calOverlay').hidden = false;
+  }
+  function closeMonthCalendar() { document.getElementById('calOverlay').hidden = true; calCtx = null; }
+  document.getElementById('calPrevBtn').addEventListener('click', () => {
+    calCtx.viewMonth--; if (calCtx.viewMonth < 0) { calCtx.viewMonth = 11; calCtx.viewYear--; }
+    renderCalGrid();
+  });
+  document.getElementById('calNextBtn').addEventListener('click', () => {
+    calCtx.viewMonth++; if (calCtx.viewMonth > 11) { calCtx.viewMonth = 0; calCtx.viewYear++; }
+    renderCalGrid();
+  });
+  document.getElementById('calGrid').addEventListener('click', e => {
+    const btn = e.target.closest('[data-cal-day]');
+    if (!btn) return;
+    const d = new Date(calCtx.viewYear, calCtx.viewMonth, Number(btn.dataset.calDay));
+    const onPick = calCtx.onPick;
+    closeMonthCalendar();
+    onPick(d);
+  });
+  document.getElementById('calCancelBtn').addEventListener('click', closeMonthCalendar);
+  document.getElementById('calOverlay').addEventListener('click', e => { if (e.target.id === 'calOverlay') closeMonthCalendar(); });
+
   const reserveNow0 = Date.now();
   const reservations = [
     { id:'r1', tableId:'rt3', time:reserveNow0 + 8 * 60000,   persons:4, name:'Игорь Петров',    phone:'+7 916 000-01-01', tg:'',          occasion:'bday',     comment:'Просили торт со свечками', confirmed:true,  deposit:true,  arrived:false, tableFreed:false,
@@ -17009,6 +17250,9 @@
   let reserveZoneFilter = 'all';
   /* null — фильтр снят, показаны все резервы разом (см. reserveGridAll) */
   let reserveStatus = 'waiting';
+  /* null — просматриваем сегодня; сбрасывается на null при каждом новом входе
+     на экран «Резервы» (см. [data-subblock] click-обработчик) — выбор дня не запоминается */
+  let reserveSelectedDate = null;
   let currentReserveId = null;
   function reserveZoneMatch(zone) { return reserveZoneFilter === 'all' || zone === reserveZoneFilter; }
   const RESERVE_STATUS_GRID = { waiting:'reserveGridWaiting', inhall:'reserveGridInhall', late:'reserveGridLate' };
@@ -17040,11 +17284,12 @@
       '<span class="reserve-card-badge" title="' + b.title + '"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + b.icon + '</svg></span>'
     ).join('') + '</span>';
   }
-  function reserveCardHtml(r) {
+  function reserveCardHtml(r, showDate) {
     const t = reserveTable(r.tableId);
     return '<button class="reserve-card ' + reserveBorderClass(r) + '" data-reserve-open="' + r.id + '">' +
       reserveCardBadges(r) +
       '<span class="reserve-card-name">' + reserveShortName(r.name) + '</span>' +
+      (showDate ? '<span class="reserve-card-date">' + fmtDDMMYY(new Date(r.time)) + '</span>' : '') +
       '<span class="reserve-card-row2"><span class="reserve-card-table">№ ' + (t ? tableNum(t) : '—') + '</span></span>' +
       '<span class="reserve-card-persons"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c1-4 4-6 7-6s6 2 7 6"/></svg>' + r.persons + '</span>' +
       '<span class="reserve-card-time">' + stampText(r.time) + '</span>' +
@@ -17053,19 +17298,24 @@
   }
 
   function renderReserveTiles() {
+    const today = dateOnly(new Date());
+    const viewDate = reserveSelectedDate || today;
+    const showDate = !sameDay(viewDate, today);
     const active = reservations.filter(r => {
       if (r.tableFreed) return false;
       const t = reserveTable(r.tableId);
-      return t && reserveZoneMatch(t.zone);
+      if (!t || !reserveZoneMatch(t.zone)) return false;
+      return sameDay(new Date(r.time), viewDate);
     });
+    const cardHtml = r => reserveCardHtml(r, showDate);
     const inhall = active.filter(r => r.arrived).sort((a, b) => a.time - b.time);
     const late = active.filter(r => !r.arrived && reserveIsLate(r)).sort((a, b) => a.time - b.time);
     const waiting = active.filter(r => !r.arrived && !reserveIsLate(r)).sort((a, b) => a.time - b.time);
     const all = active.slice().sort((a, b) => a.time - b.time);
-    document.getElementById('reserveGridWaiting').innerHTML = waiting.length ? waiting.map(reserveCardHtml).join('') : '<div class="reserve-empty">Нет резервов</div>';
-    document.getElementById('reserveGridInhall').innerHTML = inhall.length ? inhall.map(reserveCardHtml).join('') : '<div class="reserve-empty">Нет резервов</div>';
-    document.getElementById('reserveGridLate').innerHTML = late.length ? late.map(reserveCardHtml).join('') : '<div class="reserve-empty">Нет резервов</div>';
-    document.getElementById('reserveGridAll').innerHTML = all.length ? all.map(reserveCardHtml).join('') : '<div class="reserve-empty">Нет резервов</div>';
+    document.getElementById('reserveGridWaiting').innerHTML = waiting.length ? waiting.map(cardHtml).join('') : '<div class="reserve-empty">Нет резервов</div>';
+    document.getElementById('reserveGridInhall').innerHTML = inhall.length ? inhall.map(cardHtml).join('') : '<div class="reserve-empty">Нет резервов</div>';
+    document.getElementById('reserveGridLate').innerHTML = late.length ? late.map(cardHtml).join('') : '<div class="reserve-empty">Нет резервов</div>';
+    document.getElementById('reserveGridAll').innerHTML = all.length ? all.map(cardHtml).join('') : '<div class="reserve-empty">Нет резервов</div>';
 
     /* пока ни один резерв не «Задерживается» — сама кнопка вкладки не
        отображается; если она была выбрана и опустела, возвращаемся к «Ожидаем» */
@@ -17110,6 +17360,14 @@
   document.getElementById('reserveViewSelect').addEventListener('change', e => {
     reserveView = e.target.value;
     renderReserves();
+  });
+
+  document.getElementById('reserveCalBtn').addEventListener('click', () => {
+    const today = dateOnly(new Date());
+    openMonthCalendar(reserveSelectedDate || today, null, d => {
+      reserveSelectedDate = sameDay(d, today) ? null : dateOnly(d);
+      renderReserves();
+    });
   });
 
   document.getElementById('reserveStatusTabs').addEventListener('click', e => {
@@ -17308,10 +17566,146 @@
   let newReservePrefillTable = null;
   let newReserveBufferAcked = false;
 
-  function newReserveDateMin() {
-    const d = new Date();
-    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  /* ---------- МН-31: блоки «Дата»/«Время» ----------
+     nrPickedDay — день, выбранный тапом по ленте/календарём (деловые сутки
+     заведения: время в лете «Время» может уйти за полночь и всё ещё
+     относиться к этому же дню). nrPickedTime — 'HH:MM' или null.
+     Фактическая календарная дата резерва — nrEffectiveDate(): nrPickedDay,
+     сдвинутый на +1, если выбранный слот приходится на ночную часть суток
+     (после полуночи, до открытия) — см. «Готовить пораньше»-подобную логику
+     в задании: «Выбран слот после полуночи → активным становится следующий день» */
+  let nrPickedDay = null;
+  let nrPickedTime = null;
+
+  const RESERVE_CROSSES_MIDNIGHT = venueProfile.hours.mode !== '24-7' && parseHM(venueProfile.hours.close) <= parseHM(venueProfile.hours.open);
+  function nrIsNightSlot(hm) { return RESERVE_CROSSES_MIDNIGHT && parseHM(hm) < parseHM(venueProfile.hours.open); }
+  /* все слоты одних деловых суток заведения, шагом 15 мин, от открытия до
+     закрытия (не включая) — «00:00, 00:15…» продолжают список без разрывов */
+  function venueSlotList() {
+    const list = [];
+    if (venueProfile.hours.mode === '24-7') {
+      for (let m = 0; m < 1440; m += 15) list.push(pad2(Math.floor(m / 60)) + ':' + pad2(m % 60));
+      return list;
+    }
+    const openMin = parseHM(venueProfile.hours.open);
+    let closeMin = parseHM(venueProfile.hours.close);
+    if (closeMin <= openMin) closeMin += 1440;
+    for (let m = openMin; m < closeMin; m += 15) list.push(pad2(Math.floor(m / 60) % 24) + ':' + pad2(m % 60));
+    return list;
   }
+  /* лента показывает 4 слота (ближайший час): для сегодня — от текущего
+     времени (округление вверх до 15 мин), для остальных дней — с открытия */
+  function nrLaneSlots(day, today) {
+    const all = venueSlotList();
+    if (!sameDay(day, today)) return all.slice(0, 4);
+    const openMin = parseHM(venueProfile.hours.open);
+    const now = new Date();
+    let nowMin = now.getHours() * 60 + now.getMinutes();
+    if (nowMin < openMin) nowMin = openMin;
+    const rounded = Math.ceil(nowMin / 15) * 15;
+    const idx = Math.min(Math.max(0, Math.round((rounded - openMin) / 15)), Math.max(0, all.length - 4));
+    return all.slice(idx, idx + 4);
+  }
+  function nrEffectiveDate() {
+    if (!nrPickedDay) return null;
+    const d = new Date(nrPickedDay);
+    if (nrPickedTime && nrIsNightSlot(nrPickedTime)) d.setDate(d.getDate() + 1);
+    return d;
+  }
+  const RES_CAL_ICON = '<svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M8 3v4"/><path d="M16 3v4"/><path d="M3.5 10h17"/></svg>';
+  const RES_CLOCK_ICON = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>';
+
+  function nrRenderDateBlock() {
+    const today = dateOnly(new Date());
+    const eff = nrEffectiveDate() || today;
+    const laneDays = []; for (let i = 0; i < 7; i++) laneDays.push(addDays(today, i));
+    const isFar = !laneDays.some(d => sameDay(d, eff));
+    document.getElementById('newReserveDateMonth').textContent = fmtMonYear(eff);
+    document.getElementById('newReserveDateLane').innerHTML = laneDays.map(d =>
+      '<button class="resdate-tile' + (!isFar && sameDay(d, eff) ? ' active' : '') + '" data-res-day="' + ymd(d) + '">' +
+        '<span class="resdate-tile-wd">' + WD2[d.getDay()] + '</span>' +
+        '<span class="resdate-tile-num">' + d.getDate() + '</span>' +
+      '</button>'
+    ).join('');
+    document.getElementById('newReserveDateLane').classList.toggle('dim', isFar);
+    document.getElementById('newReserveCalSlot').innerHTML = isFar
+      ? '<button class="resdate-chip" id="newReserveCalBtn" type="button" aria-label="Изменить дату">' +
+          '<span class="resdate-chip-top">' + RES_CAL_ICON + '<span class="resdate-chip-main">' + fmtChipDate(eff) + '</span></span>' +
+          '<span class="resdate-chip-sub">' + WD2[eff.getDay()].toLowerCase() + '</span>' +
+        '</button>'
+      : '<button class="resdate-icon-btn" id="newReserveCalBtn" type="button" aria-label="Календарь">' + RES_CAL_ICON + '</button>';
+  }
+
+  function nrRenderTimeBlock() {
+    const today = dateOnly(new Date());
+    const day = nrPickedDay || today;
+    const lane = nrLaneSlots(day, today);
+    const far = !!nrPickedTime && !lane.includes(nrPickedTime);
+    document.getElementById('newReserveTimeLane').innerHTML = lane.map(hm =>
+      '<button class="restime-tile' + (!far && hm === nrPickedTime ? ' active' : '') + '" data-res-time="' + hm + '">' + hm + '</button>'
+    ).join('');
+    document.getElementById('newReserveTimeLane').classList.toggle('dim', far);
+    document.getElementById('newReserveClockSlot').innerHTML = far
+      ? '<button class="restime-chip" id="newReserveClockBtn" type="button" aria-label="Изменить время">' + RES_CLOCK_ICON + '<span class="restime-chip-main">' + nrPickedTime + '</span></button>'
+      : '<button class="restime-icon-btn" id="newReserveClockBtn" type="button" aria-label="Все слоты">' + RES_CLOCK_ICON + '</button>';
+    document.getElementById('newReserveTimeGrid').innerHTML = venueSlotList().map(hm =>
+      '<button class="restime-tile' + (hm === nrPickedTime ? ' active' : '') + '" data-res-time="' + hm + '">' + hm + '</button>'
+    ).join('');
+  }
+
+  function nrUpdate() {
+    newReserveBufferAcked = false;
+    const eff = nrEffectiveDate();
+    document.getElementById('newReserveDate').value = eff ? ymd(eff) : '';
+    document.getElementById('newReserveTime').value = nrPickedTime || '';
+    nrRenderDateBlock();
+    nrRenderTimeBlock();
+    renderNewReserveTables();
+  }
+
+  function nrPickDay(day) {
+    const d = dateOnly(day);
+    /* «Выбор другого дня сбрасывает ночной слот» — если было выбрано
+       время после полуночи, оно относилось к суткам именно прежнего дня */
+    if (nrPickedTime && nrIsNightSlot(nrPickedTime)) nrPickedTime = null;
+    nrPickedDay = d;
+    nrUpdate();
+  }
+  function nrPickTime(hm) {
+    nrPickedTime = hm;
+    document.getElementById('newReserveTimeGridWrap').hidden = true;
+    nrUpdate();
+  }
+
+  document.getElementById('newReserveDateLane').addEventListener('click', e => {
+    const btn = e.target.closest('[data-res-day]');
+    if (!btn) return;
+    nrPickDay(new Date(btn.dataset.resDay + 'T00:00:00'));
+  });
+  document.getElementById('newReserveCalSlot').addEventListener('click', e => {
+    if (!e.target.closest('#newReserveCalBtn')) return;
+    const today = dateOnly(new Date());
+    openMonthCalendar(nrEffectiveDate() || today, today, d => {
+      nrPickDay(d);
+      const timeBlock = document.querySelector('.reserve-form-row[data-res-block="time"]');
+      if (timeBlock) timeBlock.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+  });
+  document.getElementById('newReserveTimeLane').addEventListener('click', e => {
+    const btn = e.target.closest('[data-res-time]');
+    if (!btn) return;
+    nrPickTime(btn.dataset.resTime);
+  });
+  document.getElementById('newReserveClockSlot').addEventListener('click', e => {
+    if (!e.target.closest('#newReserveClockBtn')) return;
+    const wrap = document.getElementById('newReserveTimeGridWrap');
+    wrap.hidden = !wrap.hidden;
+  });
+  document.getElementById('newReserveTimeGrid').addEventListener('click', e => {
+    const btn = e.target.closest('[data-res-time]');
+    if (!btn) return;
+    nrPickTime(btn.dataset.resTime);
+  });
 
   function newReserveSlot() {
     const dateStr = document.getElementById('newReserveDate').value;
@@ -17393,9 +17787,9 @@
     newReserveSelectedTable = null;
     newReservePrefillTable = prefillTableId || null;
     newReserveBufferAcked = false;
-    document.getElementById('newReserveDate').min = newReserveDateMin();
-    document.getElementById('newReserveDate').value = newReserveDateMin();
-    document.getElementById('newReserveTime').value = '';
+    nrPickedDay = dateOnly(new Date());
+    nrPickedTime = null;
+    document.getElementById('newReserveTimeGridWrap').hidden = true;
     document.getElementById('newReservePersonsCount').textContent = newReservePersons;
     document.getElementById('newReserveName').value = '';
     document.getElementById('newReservePhone').value = '';
@@ -17403,13 +17797,10 @@
     document.getElementById('newReserveComment').value = '';
     document.querySelectorAll('#newReserveOccasion .filter-chip').forEach(b => b.classList.toggle('active', b.dataset.occasion === ''));
     document.getElementById('newReserveBufferWarn').hidden = true;
-    renderNewReserveTables();
+    nrUpdate();
     updateNewReserveSubmit();
     showDetail('newReserve', 'Новый резерв', 'Создание резерва');
   }
-
-  document.getElementById('newReserveDate').addEventListener('change', () => { newReserveBufferAcked = false; renderNewReserveTables(); });
-  document.getElementById('newReserveTime').addEventListener('change', () => { newReserveBufferAcked = false; renderNewReserveTables(); });
 
   document.getElementById('newReservePersonsMinus').addEventListener('click', () => {
     if (newReservePersons <= 1) return;
