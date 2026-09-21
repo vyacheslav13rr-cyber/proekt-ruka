@@ -5649,6 +5649,15 @@
   .reserve-note-composer[hidden]{display:none;}
 
   /* ---------- МН-31: новый резерв ---------- */
+  /* Форма длиннее, чем .panel[data-panel="shift"]{height:100%} (см. цепочку
+     процентов и комментарий у .shift-detail[data-detail="reserves"]) — там,
+     где под-экран короче панели, лишний хвост просто продолжается ниже
+     рамки и не мешает, но здесь избыток (много строк формы) на глаз уже
+     заезжает под нижнее меню. Поэтому этому конкретному под-экрану — своя
+     высота 100% (та же цепочка) и overflow-y:auto: он прокручивается сам
+     в границах доступного места, кнопка «Создать резерв» и комментарий
+     остаются внутри и никогда не попадают под нижнее меню */
+  .shift-detail[data-detail="newReserve"]{height:100%; overflow-y:auto; padding-bottom:20px;}
   .reserve-form-row{margin-bottom:14px;}
   .reserve-form-label{
     display:block;
@@ -5725,6 +5734,9 @@
   }
   .resdate-lane::-webkit-scrollbar, .restime-lane::-webkit-scrollbar{display:none;}
   .resdate-lane.dim .resdate-tile, .restime-lane.dim .restime-tile{opacity:.45;}
+  /* граница недели (перед понедельником) в ленте дат и граница суток
+     (перед 00:00) в ленте/сетке времени — одна и та же тонкая золотая нить */
+  .reslane-divider{flex:0 0 auto; align-self:stretch; width:1px; margin:0 2px; background:linear-gradient(180deg, transparent, rgba(198,153,47,0.55), transparent);}
   .resdate-tile{
     flex:0 0 auto;
     display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -7883,6 +7895,14 @@
             <button class="segmented-btn" data-venue-type="bar">Бар</button>
             <button class="segmented-btn" data-venue-type="cafe">Кафе</button>
           </div>
+          <div class="settings-subtitle">Часы работы</div>
+          <button class="settings-row settings-row-link" id="restaurantHoursOpenBtn">
+            <div class="settings-row-text">
+              <span class="settings-row-title">Режим работы</span>
+              <span class="settings-row-note" id="restaurantHoursNote"></span>
+            </div>
+            <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+          </button>
           <div class="settings-subtitle">Резервы</div>
           <div class="reserve-form-row">
             <span class="reserve-form-label">Не принимать позже, чем за столько минут до закрытия</span>
@@ -7896,6 +7916,20 @@
           <div class="settings-subtitle">Залы</div>
           <div class="nav-rows" id="restaurantZoneList"></div>
           <button class="reserve-btn-outline" id="restaurantAddZoneBtn">+ Добавить зал</button>
+        </div>
+
+        <!-- МН-10.3.2: режим работы — часы открытия/закрытия, от них зависит
+             приём резервов (venueSlotList) -->
+        <div class="shift-detail" data-detail="profile-settings-restaurant-hours" hidden>
+          <button class="back-btn">Назад</button>
+          <div class="reserve-form-row">
+            <span class="reserve-form-label">Открывается</span>
+            <input class="auth-field-input" type="time" id="restaurantHoursOpen">
+          </div>
+          <div class="reserve-form-row">
+            <span class="reserve-form-label">Закрывается</span>
+            <input class="auth-field-input" type="time" id="restaurantHoursClose">
+          </div>
         </div>
 
         <!-- МН-10.3.1: новый зал — название, нумерация столов, схема настраивается автоматически -->
@@ -9162,6 +9196,7 @@
     'profile-settings': ['Настройки', 'Профиль и приложение'],
     'profile-settings-account': ['Настройки профиля', 'Фото, контакты, пароль'],
     'profile-settings-restaurant': ['Настройки ресторана', 'Залы и тип заведения'],
+    'profile-settings-restaurant-hours': ['Режим работы', 'Часы открытия и закрытия'],
     'profile-settings-app': ['Настройки приложения', 'Уведомления и поведение'],
     'profile-settings-interface': ['Настройки интерфейса', 'Меню и шрифт'],
     'profile-new-zone': ['Новый зал', 'Название и нумерация столов']
@@ -9212,6 +9247,7 @@
   bindProfileBack('profile-settings', showProfileHome);
   bindProfileBack('profile-settings-account', showProfileHome);
   bindProfileBack('profile-settings-restaurant', () => showProfileDetail('profile-settings'));
+  bindProfileBack('profile-settings-restaurant-hours', () => showProfileDetail('profile-settings-restaurant'));
   bindProfileBack('profile-settings-app', () => showProfileDetail('profile-settings'));
   bindProfileBack('profile-settings-interface', () => showProfileDetail('profile-settings-app'));
   bindProfileBack('profile-new-zone', () => showProfileDetail('profile-settings-restaurant'));
@@ -17665,7 +17701,11 @@
     const laneDays = []; for (let i = 0; i < 7; i++) laneDays.push(addDays(today, i));
     const isFar = !laneDays.some(d => sameDay(d, eff));
     document.getElementById('newReserveDateMonth').textContent = fmtMonYear(eff);
-    document.getElementById('newReserveDateLane').innerHTML = laneDays.map(d =>
+    /* тонкая золотая нить перед понедельником — граница недели (неделя
+       считается с понедельника); перед первым днём ленты не нужна —
+       разделять там нечего */
+    document.getElementById('newReserveDateLane').innerHTML = laneDays.map((d, i) =>
+      (i > 0 && d.getDay() === 1 ? '<span class="reslane-divider"></span>' : '') +
       '<button class="resdate-tile' + (!isFar && sameDay(d, eff) ? ' active' : '') + '" data-res-day="' + ymd(d) + '">' +
         '<span class="resdate-tile-wd">' + WD2[d.getDay()] + '</span>' +
         '<span class="resdate-tile-num">' + d.getDate() + '</span>' +
@@ -17690,7 +17730,10 @@
        разрешённого (закрытие минус отступ настройки ресторана) */
     const rest = all.slice(all.indexOf(lane[lane.length - 1]) + 1);
     const far = !!nrPickedTime && !lane.includes(nrPickedTime);
-    document.getElementById('newReserveTimeLane').innerHTML = lane.map(hm =>
+    /* та же нить перед 00:00 — граница суток (актуально, если ресторан
+       работает за полночь и лента пересекает границу дня) */
+    document.getElementById('newReserveTimeLane').innerHTML = lane.map((hm, i) =>
+      (i > 0 && hm === '00:00' ? '<span class="reslane-divider"></span>' : '') +
       '<button class="restime-tile' + (!far && hm === nrPickedTime ? ' active' : '') + '" data-res-time="' + hm + '">' + hm + '</button>'
     ).join('');
     document.getElementById('newReserveTimeLane').classList.toggle('dim', far);
@@ -18010,6 +18053,28 @@
   document.getElementById('restaurantAddZoneBtn').addEventListener('click', () => {
     openNewZoneForm();
     showProfileDetail('profile-new-zone');
+  });
+  function renderRestaurantHoursNote() {
+    document.getElementById('restaurantHoursNote').textContent =
+      venueProfile.hours.open + '–' + venueProfile.hours.close;
+  }
+  renderRestaurantHoursNote();
+  document.getElementById('restaurantHoursOpenBtn').addEventListener('click', () => {
+    document.getElementById('restaurantHoursOpen').value = venueProfile.hours.open;
+    document.getElementById('restaurantHoursClose').value = venueProfile.hours.close;
+    showProfileDetail('profile-settings-restaurant-hours');
+  });
+  document.getElementById('restaurantHoursOpen').addEventListener('change', e => {
+    if (!e.target.value) return;
+    venueProfile.hours.open = e.target.value;
+    renderRestaurantHoursNote();
+    nrUpdate();
+  });
+  document.getElementById('restaurantHoursClose').addEventListener('change', e => {
+    if (!e.target.value) return;
+    venueProfile.hours.close = e.target.value;
+    renderRestaurantHoursNote();
+    nrUpdate();
   });
   document.getElementById('reserveCutoffValue').textContent = venueProfile.reserveCutoffMin;
   document.getElementById('reserveCutoffMinus').addEventListener('click', () => {
@@ -18990,7 +19055,6 @@
   if (!location.hash) location.hash = 'мн-00';
   applyRoute();
 </script>
-
 
 <script>
   /* регистрация сервис-воркера — включает офлайн-режим и «установку» на телефон.
