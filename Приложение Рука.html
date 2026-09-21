@@ -5648,23 +5648,32 @@
   }
   .reserve-persons-stepper{display:flex; align-items:center; gap:12px;}
   .reserve-persons-stepper .step-count{font-size:16px; min-width:22px;}
-  .reserve-table-pick{display:flex; flex-direction:column; gap:7px;}
-  .reserve-table-pick-row{
-    display:flex; align-items:center; justify-content:space-between; gap:8px;
+  /* плитки 4 в ряд: номер стола, вместимость (иконка) и зал — вместо
+     списка по одному столу в строке */
+  .reserve-table-pick{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:7px;}
+  .reserve-table-pick-tile{
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
     background:var(--surface);
     border:1.5px solid var(--card-border);
     border-radius:12px;
-    padding:10px 12px;
+    padding:9px 4px;
     font-family:'Manrope', sans-serif;
-    font-size:12.5px; font-weight:600;
     color:var(--text-primary);
     cursor:pointer;
-    text-align:left;
+    text-align:center;
   }
-  .reserve-table-pick-row.active{
+  .reserve-table-pick-tile.active{
     border-color:var(--gold);
     background:linear-gradient(160deg, rgba(233,203,126,0.22), rgba(198,153,47,0.14));
   }
+  .reserve-table-pick-num{font-size:13px; font-weight:800;}
+  .reserve-table-pick-seats{
+    display:flex; align-items:center; gap:3px;
+    font-size:11px; font-weight:700;
+    color:var(--text-muted);
+  }
+  .reserve-table-pick-seats svg{width:11px; height:11px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+  .reserve-table-pick-zone{font-size:9.5px; font-weight:800; color:var(--gold); text-transform:uppercase; letter-spacing:.02em;}
   .reserve-buffer-warn{
     display:flex; align-items:flex-start; gap:8px;
     background:rgba(178,72,58,0.12);
@@ -5823,6 +5832,9 @@
     cursor:pointer;
   }
   .reserve-cal-btn svg{width:17px; height:17px; stroke:var(--gold); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+  /* когда выбран не сегодняшний день — кнопка расширяется и показывает дату */
+  .reserve-cal-btn.has-date{width:auto; padding:0 10px; gap:5px;}
+  .reserve-cal-btn-date{font-family:'IBM Plex Mono', monospace; font-size:12px; font-weight:800; color:var(--gold);}
   .reserve-card-date{
     display:block;
     text-align:center;
@@ -7861,6 +7873,16 @@
             <button class="segmented-btn" data-venue-type="bar">Бар</button>
             <button class="segmented-btn" data-venue-type="cafe">Кафе</button>
           </div>
+          <div class="settings-subtitle">Резервы</div>
+          <div class="reserve-form-row">
+            <span class="reserve-form-label">Не принимать позже, чем за столько минут до закрытия</span>
+            <div class="reserve-persons-stepper">
+              <button class="step-btn" id="reserveCutoffMinus" type="button">−</button>
+              <span class="step-count" id="reserveCutoffValue">30</span>
+              <button class="step-btn" id="reserveCutoffPlus" type="button">+</button>
+            </div>
+          </div>
+
           <div class="settings-subtitle">Залы</div>
           <div class="nav-rows" id="restaurantZoneList"></div>
           <button class="reserve-btn-outline" id="restaurantAddZoneBtn">+ Добавить зал</button>
@@ -9035,6 +9057,10 @@
        Единственный источник времени закрытия/открытия для шапки и строки
        смены — счётчик считается от него, а не от графика сотрудника */
     hours: { mode: 'scheduled', open: '10:00', close: '01:00' },
+    /* за сколько минут до закрытия резервы уже не принимаются — настраивается
+       в «Настройках ресторана» (МН-10.3), т.к. у заведений разный график.
+       Например, закрытие в 2:00 и отступ 30 мин → последний слот 1:30 */
+    reserveCutoffMin: 30,
     address: 'ул. Складская, 14',
     phone: '+7 495 123-45-67',
     parking: 'Бесплатная парковка во дворе, 20 мест',
@@ -17118,10 +17144,6 @@
      у столов новых залов (см. createReserveZone) номер задаётся отдельно —
      то, что ввели в «Первый номер стола», не обязано совпадать с id */
   function tableNum(t) { return t.num != null ? t.num : parseInt(t.id.replace('rt', ''), 10); }
-  function reserveTableLabel(id) {
-    const t = reserveTable(id);
-    return t ? ('Стол №' + tableNum(t) + ' · ' + reserveZoneName(t.zone) + ' · ' + t.seats + ' мест') : '—';
-  }
 
   function reserveEvent(title, who, at, note) { return { title:title, who:who, at:at, note:note || '' }; }
 
@@ -17136,6 +17158,7 @@
   const MONTH_NOM = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
   function fmtMonYear(d) { return pad2(d.getMonth() + 1) + '.' + String(d.getFullYear()).slice(-2); }
   function fmtDDMMYY(d) { return pad2(d.getDate()) + '.' + pad2(d.getMonth() + 1) + '.' + String(d.getFullYear()).slice(-2); }
+  function fmtDDMM(d) { return pad2(d.getDate()) + '.' + pad2(d.getMonth() + 1); }
   function fmtChipDate(d) { return d.getDate() + ' ' + MONTH_SHORT[d.getMonth()]; }
 
   /* ---------- Общий месячный календарь (МН-13, МН-31): только UI, дата возвращается через onPick ---------- */
@@ -17336,9 +17359,22 @@
     ).join('');
   }
 
+  /* выбран день, отличный от сегодня — кнопка календаря показывает его
+     рядом с иконкой (день.месяц цифрами), а не просто открывает календарь
+     «вслепую» */
+  function renderReserveCalBtn() {
+    const btn = document.getElementById('reserveCalBtn');
+    const icon = '<svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M8 3v4"/><path d="M16 3v4"/><path d="M3.5 10h17"/></svg>';
+    btn.classList.toggle('has-date', !!reserveSelectedDate);
+    btn.innerHTML = reserveSelectedDate
+      ? icon + '<span class="reserve-cal-btn-date">' + fmtDDMM(reserveSelectedDate) + '</span>'
+      : icon;
+  }
+
   function renderReserves() {
     const reservesDetail = document.querySelector('.shift-detail[data-detail="reserves"]');
     renderReserveZoneTabs();
+    renderReserveCalBtn();
     document.getElementById('reserveViewSelect').value = reserveView;
     document.getElementById('reserveTileView').hidden = reserveView !== 'tile';
     document.getElementById('reserveSchemeView').hidden = reserveView !== 'scheme';
@@ -17570,7 +17606,10 @@
   const RESERVE_CROSSES_MIDNIGHT = venueProfile.hours.mode !== '24-7' && parseHM(venueProfile.hours.close) <= parseHM(venueProfile.hours.open);
   function nrIsNightSlot(hm) { return RESERVE_CROSSES_MIDNIGHT && parseHM(hm) < parseHM(venueProfile.hours.open); }
   /* все слоты одних деловых суток заведения, шагом 15 мин, от открытия до
-     закрытия (не включая) — «00:00, 00:15…» продолжают список без разрывов */
+     закрытия — «00:00, 00:15…» продолжают список без разрывов. Верхняя
+     граница — не само закрытие, а закрытие минус reserveCutoffMin (настройка
+     ресторана): например, закрытие в 2:00 и отступ 30 мин → последний слот
+     1:30 включительно */
   function venueSlotList() {
     const list = [];
     if (venueProfile.hours.mode === '24-7') {
@@ -17580,21 +17619,26 @@
     const openMin = parseHM(venueProfile.hours.open);
     let closeMin = parseHM(venueProfile.hours.close);
     if (closeMin <= openMin) closeMin += 1440;
-    for (let m = openMin; m < closeMin; m += 15) list.push(pad2(Math.floor(m / 60) % 24) + ':' + pad2(m % 60));
+    const cutoffClose = closeMin - (venueProfile.reserveCutoffMin || 0);
+    for (let m = openMin; m <= cutoffClose; m += 15) list.push(pad2(Math.floor(m / 60) % 24) + ':' + pad2(m % 60));
     return list;
   }
-  /* лента показывает 4 слота (ближайший час): для сегодня — от текущего
-     времени (округление вверх до 15 мин), для остальных дней — с открытия */
+  /* лента показывает ближайшие 3 часа (13 слотов, шагом 15 мин, оба конца
+     включительно): для сегодня — от текущего времени (округление вверх до
+     15 мин), для остальных дней — с открытия. Слоты дальше — уже в
+     «полном списке» под иконкой часов (см. nrRenderTimeBlock) */
+  const NR_LANE_SPAN_MIN = 180;
+  const NR_LANE_COUNT = NR_LANE_SPAN_MIN / 15 + 1;
   function nrLaneSlots(day, today) {
     const all = venueSlotList();
-    if (!sameDay(day, today)) return all.slice(0, 4);
+    if (!sameDay(day, today)) return all.slice(0, NR_LANE_COUNT);
     const openMin = parseHM(venueProfile.hours.open);
     const now = new Date();
     let nowMin = now.getHours() * 60 + now.getMinutes();
     if (nowMin < openMin) nowMin = openMin;
     const rounded = Math.ceil(nowMin / 15) * 15;
-    const idx = Math.min(Math.max(0, Math.round((rounded - openMin) / 15)), Math.max(0, all.length - 4));
-    return all.slice(idx, idx + 4);
+    const idx = Math.min(Math.max(0, Math.round((rounded - openMin) / 15)), Math.max(0, all.length - NR_LANE_COUNT));
+    return all.slice(idx, idx + NR_LANE_COUNT);
   }
   function nrEffectiveDate() {
     if (!nrPickedDay) return null;
@@ -17629,7 +17673,12 @@
   function nrRenderTimeBlock() {
     const today = dateOnly(new Date());
     const day = nrPickedDay || today;
+    const all = venueSlotList();
     const lane = nrLaneSlots(day, today);
+    /* «часы» — продолжение ленты, а не весь список суток заново: слоты,
+       которые идут сразу после последнего слота ленты, и до последнего
+       разрешённого (закрытие минус отступ настройки ресторана) */
+    const rest = all.slice(all.indexOf(lane[lane.length - 1]) + 1);
     const far = !!nrPickedTime && !lane.includes(nrPickedTime);
     document.getElementById('newReserveTimeLane').innerHTML = lane.map(hm =>
       '<button class="restime-tile' + (!far && hm === nrPickedTime ? ' active' : '') + '" data-res-time="' + hm + '">' + hm + '</button>'
@@ -17637,10 +17686,12 @@
     document.getElementById('newReserveTimeLane').classList.toggle('dim', far);
     document.getElementById('newReserveClockSlot').innerHTML = far
       ? '<button class="restime-chip" id="newReserveClockBtn" type="button" aria-label="Изменить время">' + RES_CLOCK_ICON + '<span class="restime-chip-main">' + nrPickedTime + '</span></button>'
-      : '<button class="restime-icon-btn" id="newReserveClockBtn" type="button" aria-label="Все слоты">' + RES_CLOCK_ICON + '</button>';
-    document.getElementById('newReserveTimeGrid').innerHTML = venueSlotList().map(hm =>
-      '<button class="restime-tile' + (hm === nrPickedTime ? ' active' : '') + '" data-res-time="' + hm + '">' + hm + '</button>'
-    ).join('');
+      : '<button class="restime-icon-btn" id="newReserveClockBtn" type="button" aria-label="Ещё время">' + RES_CLOCK_ICON + '</button>';
+    document.getElementById('newReserveTimeGrid').innerHTML = rest.length
+      ? rest.map(hm =>
+          '<button class="restime-tile' + (hm === nrPickedTime ? ' active' : '') + '" data-res-time="' + hm + '">' + hm + '</button>'
+        ).join('')
+      : '<div class="reserve-empty">Позже мест нет — резервы принимаются до ' + all[all.length - 1] + '</div>';
   }
 
   function nrUpdate() {
@@ -17762,8 +17813,10 @@
       newReserveSelectedTable = newReservePrefillTable;
     }
     pick.innerHTML = free.map(t =>
-      '<button class="reserve-table-pick-row' + (t.id === newReserveSelectedTable ? ' active' : '') + '" data-pick-table="' + t.id + '">' +
-        reserveTableLabel(t.id) +
+      '<button class="reserve-table-pick-tile' + (t.id === newReserveSelectedTable ? ' active' : '') + '" data-pick-table="' + t.id + '">' +
+        '<span class="reserve-table-pick-num">№' + tableNum(t) + '</span>' +
+        '<span class="reserve-table-pick-seats"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c1-4 4-6 7-6s6 2 7 6"/></svg>' + t.seats + '</span>' +
+        '<span class="reserve-table-pick-zone">' + reserveZoneName(t.zone) + '</span>' +
       '</button>'
     ).join('');
     newReservePrefillTable = null;
@@ -17807,7 +17860,7 @@
     if (!btn) return;
     newReserveSelectedTable = btn.dataset.pickTable;
     newReserveBufferAcked = false;
-    document.querySelectorAll('#newReserveTablePick .reserve-table-pick-row').forEach(b => b.classList.toggle('active', b === btn));
+    document.querySelectorAll('#newReserveTablePick .reserve-table-pick-tile').forEach(b => b.classList.toggle('active', b === btn));
     const slot = newReserveSlot();
     if (slot) updateNewReserveBuffer(document.getElementById('newReserveDate').value, slot);
     updateNewReserveSubmit();
@@ -17947,6 +18000,19 @@
   document.getElementById('restaurantAddZoneBtn').addEventListener('click', () => {
     openNewZoneForm();
     showProfileDetail('profile-new-zone');
+  });
+  document.getElementById('reserveCutoffValue').textContent = venueProfile.reserveCutoffMin;
+  document.getElementById('reserveCutoffMinus').addEventListener('click', () => {
+    if (venueProfile.reserveCutoffMin <= 0) return;
+    venueProfile.reserveCutoffMin -= 15;
+    document.getElementById('reserveCutoffValue').textContent = venueProfile.reserveCutoffMin;
+    nrUpdate();
+  });
+  document.getElementById('reserveCutoffPlus').addEventListener('click', () => {
+    if (venueProfile.reserveCutoffMin >= 120) return;
+    venueProfile.reserveCutoffMin += 15;
+    document.getElementById('reserveCutoffValue').textContent = venueProfile.reserveCutoffMin;
+    nrUpdate();
   });
   document.getElementById('newZoneCountMinus').addEventListener('click', () => {
     if (newZoneCount <= 1) return;
