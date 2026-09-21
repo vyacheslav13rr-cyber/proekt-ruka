@@ -7962,12 +7962,27 @@
           </div>
           <div id="restaurantHoursTimesBlock">
             <div class="reserve-form-row">
+              <span class="reserve-form-label">День недели</span>
+              <div class="reserve-occasion-chips" id="restaurantHoursDayPicker">
+                <button class="filter-chip" type="button" data-hours-day="1">Пн</button>
+                <button class="filter-chip" type="button" data-hours-day="2">Вт</button>
+                <button class="filter-chip" type="button" data-hours-day="3">Ср</button>
+                <button class="filter-chip" type="button" data-hours-day="4">Чт</button>
+                <button class="filter-chip" type="button" data-hours-day="5">Пт</button>
+                <button class="filter-chip" type="button" data-hours-day="6">Сб</button>
+                <button class="filter-chip" type="button" data-hours-day="0">Вс</button>
+              </div>
+            </div>
+            <div class="reserve-form-row">
               <span class="reserve-form-label">Открывается</span>
               <input class="auth-field-input" type="time" id="restaurantHoursOpen">
             </div>
             <div class="reserve-form-row">
               <span class="reserve-form-label">Закрывается</span>
               <input class="auth-field-input" type="time" id="restaurantHoursClose">
+            </div>
+            <div class="reserve-form-row">
+              <span class="reserve-form-label" id="restaurantHoursCrossNote"></span>
             </div>
           </div>
         </div>
@@ -9139,8 +9154,24 @@
     name: 'Москва',
     /* mode: 'scheduled' — часы работы ниже; '24-7' — круглосуточно.
        Единственный источник времени закрытия/открытия для шапки и строки
-       смены — счётчик считается от него, а не от графика сотрудника */
-    hours: { mode: 'scheduled', open: '10:00', close: '01:00' },
+       смены — счётчик считается от него, а не от графика сотрудника.
+       byDay — свои открытие/закрытие на каждый день недели (ключ — как у
+       Date.getDay(): 0 — воскресенье, ..., 6 — суббота), «Режим работы»
+       позволяет настроить каждый день отдельно; закрытие раньше открытия
+       для конкретного дня означает переход через полночь именно в графике
+       этого дня (см. hoursForDay/venueSlotList) */
+    hours: {
+      mode: 'scheduled',
+      byDay: {
+        0: { open: '10:00', close: '01:00' },
+        1: { open: '10:00', close: '01:00' },
+        2: { open: '10:00', close: '01:00' },
+        3: { open: '10:00', close: '01:00' },
+        4: { open: '10:00', close: '01:00' },
+        5: { open: '10:00', close: '01:00' },
+        6: { open: '10:00', close: '01:00' }
+      }
+    },
     /* за сколько минут до закрытия резервы уже не принимаются — настраивается
        в «Настройках ресторана» (МН-10.3), т.к. у заведений разный график.
        Например, закрытие в 2:00 и отступ 30 мин → последний слот 1:30 */
@@ -14987,23 +15018,44 @@
     return Number(parts[0]) * 60 + Number(parts[1]);
   }
 
+  /* часы работы конкретного дня недели (0 — воскресенье, ... 6 — суббота,
+     как у Date.getDay()) — «Режим работы» настраивает каждый день отдельно */
+  function hoursForDay(dayIdx) { return venueProfile.hours.byDay[dayIdx]; }
+
   /* Состояние по часам работы заведения (venueProfile.hours) — единственный
      источник для «до закрытия»/«откроется через» в строке смены: одинаков
-     для всех ролей и не связан с графиком конкретного сотрудника */
+     для всех ролей и не связан с графиком конкретного сотрудника.
+     У каждого дня свой график, поэтому «сейчас» может относиться либо к
+     сегодняшнему графику, либо ещё к вчерашнему, если вчера закрывались
+     за полночь и время закрытия ещё не наступило — проверяем именно в
+     этом порядке, а не только сегодняшний день */
   function getVenueHoursState(now) {
-    const hours = venueProfile.hours;
-    if (hours.mode === '24-7') return { mode: '24-7' };
+    if (venueProfile.hours.mode === '24-7') return { mode: '24-7' };
+    const nowMin = now.getHours() * 60 + now.getMinutes();
+
+    const yesterdayIdx = (now.getDay() + 6) % 7;
+    const yHours = hoursForDay(yesterdayIdx);
+    const yOpenMin = parseHM(yHours.open);
+    const yCloseMin = parseHM(yHours.close);
+    if (yCloseMin <= yOpenMin && nowMin < yCloseMin) {
+      /* вчерашняя смена перешла через полночь и ещё не закрылась */
+      return { mode: 'open', minutesToClose: Math.max(0, yCloseMin - nowMin) };
+    }
+
+    const hours = hoursForDay(now.getDay());
     const openMin = parseHM(hours.open);
     const closeMinRaw = parseHM(hours.close);
     const crossesMidnight = closeMinRaw <= openMin;
     const closeMin = crossesMidnight ? closeMinRaw + 24 * 60 : closeMinRaw;
-    let nowMin = now.getHours() * 60 + now.getMinutes();
-    if (crossesMidnight && nowMin < openMin) nowMin += 24 * 60;
     if (nowMin >= openMin && nowMin < closeMin) {
       return { mode: 'open', minutesToClose: Math.max(0, closeMin - nowMin) };
     }
-    const minutesToOpen = nowMin < openMin ? (openMin - nowMin) : (openMin + 24 * 60 - nowMin);
-    return { mode: 'closed', minutesToOpen: Math.max(0, minutesToOpen) };
+    if (nowMin < openMin) {
+      return { mode: 'closed', minutesToOpen: Math.max(0, openMin - nowMin) };
+    }
+    /* сегодня уже закрылись — открытие только завтра, и оно может отличаться */
+    const tomorrowOpenMin = parseHM(hoursForDay((now.getDay() + 1) % 7).open);
+    return { mode: 'closed', minutesToOpen: Math.max(0, (24 * 60 - nowMin) + tomorrowOpenMin) };
   }
 
   function formatDuration(totalMinutes) {
@@ -15035,11 +15087,21 @@
     shiftLineEl.hidden = !line;
   }
 
+  /* все 7 дней настроены одинаково — тогда «Ежедневно ЧЧ:ММ–ЧЧ:ММ», иначе
+     единой строкой не описать (см. «Режим работы» за расписанием по дням) */
+  function venueHoursUniform() {
+    const days = [0, 1, 2, 3, 4, 5, 6].map(hoursForDay);
+    return days.every(d => d.open === days[0].open && d.close === days[0].close) ? days[0] : null;
+  }
   function renderHomeVenueCard() {
     const type = VENUE_TYPES[venueProfile.type];
-    const hoursText = venueProfile.hours.mode === '24-7'
-      ? 'Круглосуточно'
-      : 'Ежедневно ' + venueProfile.hours.open + '–' + venueProfile.hours.close;
+    let hoursText;
+    if (venueProfile.hours.mode === '24-7') {
+      hoursText = 'Круглосуточно';
+    } else {
+      const uniform = venueHoursUniform();
+      hoursText = uniform ? 'Ежедневно ' + uniform.open + '–' + uniform.close : 'По дням недели — см. настройки';
+    }
     const rows = [
       ['Адрес', venueProfile.address],
       ['Телефон', venueProfile.phone],
@@ -17847,21 +17909,35 @@
   let nrPickedDay = null;
   let nrPickedTime = null;
 
-  const RESERVE_CROSSES_MIDNIGHT = venueProfile.hours.mode !== '24-7' && parseHM(venueProfile.hours.close) <= parseHM(venueProfile.hours.open);
-  function nrIsNightSlot(hm) { return RESERVE_CROSSES_MIDNIGHT && parseHM(hm) < parseHM(venueProfile.hours.open); }
-  /* все слоты одних деловых суток заведения, шагом 15 мин, от открытия до
-     закрытия — «00:00, 00:15…» продолжают список без разрывов. Верхняя
-     граница — не само закрытие, а закрытие минус reserveCutoffMin (настройка
-     ресторана): например, закрытие в 2:00 и отступ 30 мин → последний слот
-     1:30 включительно */
-  function venueSlotList() {
+  /* переход через полночь — свойство графика КОНКРЕТНОГО дня (у каждого
+     дня недели свои открытие/закрытие, см. venueProfile.hours.byDay) */
+  function reserveCrossesMidnight(dayIdx) {
+    if (venueProfile.hours.mode === '24-7') return false;
+    const h = hoursForDay(dayIdx);
+    return parseHM(h.close) <= parseHM(h.open);
+  }
+  /* dayIdx по умолчанию — день, который сейчас просматривается в «Новом
+     резерве» (nrPickedDay), а не «сегодня»: ночной слот определяется
+     относительно графика ИМЕННО ТОГО делового дня, который выбран */
+  function nrIsNightSlot(hm, dayIdx) {
+    if (dayIdx == null) dayIdx = (nrPickedDay || dateOnly(new Date())).getDay();
+    return reserveCrossesMidnight(dayIdx) && parseHM(hm) < parseHM(hoursForDay(dayIdx).open);
+  }
+  /* все слоты одних деловых суток заведения (график конкретного дня
+     недели day), шагом 15 мин, от открытия до закрытия — «00:00, 00:15…»
+     продолжают список без разрывов, если этот день закрывается за полночь.
+     Верхняя граница — не само закрытие, а закрытие минус reserveCutoffMin
+     (настройка ресторана): например, закрытие в 2:00 и отступ 30 мин →
+     последний слот 1:30 включительно */
+  function venueSlotList(day) {
     const list = [];
     if (venueProfile.hours.mode === '24-7') {
       for (let m = 0; m < 1440; m += 15) list.push(pad2(Math.floor(m / 60)) + ':' + pad2(m % 60));
       return list;
     }
-    const openMin = parseHM(venueProfile.hours.open);
-    let closeMin = parseHM(venueProfile.hours.close);
+    const h = hoursForDay(day.getDay());
+    const openMin = parseHM(h.open);
+    let closeMin = parseHM(h.close);
     if (closeMin <= openMin) closeMin += 1440;
     const cutoffClose = closeMin - (venueProfile.reserveCutoffMin || 0);
     for (let m = openMin; m <= cutoffClose; m += 15) list.push(pad2(Math.floor(m / 60) % 24) + ':' + pad2(m % 60));
@@ -17874,9 +17950,9 @@
   const NR_LANE_SPAN_MIN = 180;
   const NR_LANE_COUNT = NR_LANE_SPAN_MIN / 15 + 1;
   function nrLaneSlots(day, today) {
-    const all = venueSlotList();
+    const all = venueSlotList(day);
     if (!sameDay(day, today)) return all.slice(0, NR_LANE_COUNT);
-    const openMin = venueProfile.hours.mode === '24-7' ? 0 : parseHM(venueProfile.hours.open);
+    const openMin = venueProfile.hours.mode === '24-7' ? 0 : parseHM(hoursForDay(day.getDay()).open);
     const now = new Date();
     let nowMin = now.getHours() * 60 + now.getMinutes();
     if (nowMin < openMin) nowMin = openMin;
@@ -17963,7 +18039,7 @@
   /* ближайший разрешённый слот к введённому времени — шаг слотов 15 минут,
      а native time-picker может вернуть произвольное значение */
   function nrSnapToSlot(hm) {
-    const all = venueSlotList();
+    const all = venueSlotList(nrPickedDay || dateOnly(new Date()));
     if (!all.length) return null;
     if (all.includes(hm)) return hm;
     const mins = parseHM(hm);
@@ -17997,13 +18073,15 @@
   document.getElementById('newReserveClockSlot').addEventListener('click', e => {
     if (!e.target.closest('#newReserveClockBtn')) return;
     const input = document.getElementById('newReserveTimeInput');
-    /* открытие рабочих часов ресторана — рамки для нативного пикера, чтобы
-       колесо времени сразу листалось в пределах графика, а не по всем 24ч;
-       за полночь (закрытие раньше открытия) min/max не поддерживают
-       перенос через сутки — тогда просто не ограничиваем пикер */
-    if (venueProfile.hours.mode !== '24-7' && parseHM(venueProfile.hours.close) > parseHM(venueProfile.hours.open)) {
-      input.min = venueProfile.hours.open;
-      input.max = venueProfile.hours.close;
+    /* открытие рабочих часов ИМЕННО выбранного дня — рамки для нативного
+       пикера, чтобы колесо времени сразу листалось в пределах графика,
+       а не по всем 24ч; за полночь (закрытие раньше открытия у этого дня)
+       min/max не поддерживают перенос через сутки — тогда просто не
+       ограничиваем пикер */
+    const pickedDayHours = hoursForDay((nrPickedDay || dateOnly(new Date())).getDay());
+    if (venueProfile.hours.mode !== '24-7' && parseHM(pickedDayHours.close) > parseHM(pickedDayHours.open)) {
+      input.min = pickedDayHours.open;
+      input.max = pickedDayHours.close;
     } else {
       input.removeAttribute('min');
       input.removeAttribute('max');
@@ -18288,9 +18366,30 @@
     showProfileDetail('profile-new-zone');
   });
   function renderRestaurantHoursNote() {
-    document.getElementById('restaurantHoursNote').textContent = venueProfile.hours.mode === '24-7'
-      ? 'Круглосуточно'
-      : venueProfile.hours.open + '–' + venueProfile.hours.close;
+    let text;
+    if (venueProfile.hours.mode === '24-7') {
+      text = 'Круглосуточно';
+    } else {
+      const uniform = venueHoursUniform();
+      text = uniform ? uniform.open + '–' + uniform.close : 'По дням недели';
+    }
+    document.getElementById('restaurantHoursNote').textContent = text;
+  }
+  /* день недели, чей график сейчас показан/редактируется на экране —
+     по умолчанию открывается на сегодняшнем дне */
+  let restaurantHoursSelectedDay = new Date().getDay();
+  function renderRestaurantHoursDay() {
+    const h = hoursForDay(restaurantHoursSelectedDay);
+    document.querySelectorAll('#restaurantHoursDayPicker .filter-chip').forEach(btn => {
+      btn.classList.toggle('active', Number(btn.dataset.hoursDay) === restaurantHoursSelectedDay);
+    });
+    document.getElementById('restaurantHoursOpen').value = h.open;
+    document.getElementById('restaurantHoursClose').value = h.close;
+    /* переход через полночь — явно показываем, что учли, а не просто
+       молча считаем: закрытие раньше открытия для этого же дня значит
+       «на следующие сутки» */
+    document.getElementById('restaurantHoursCrossNote').textContent =
+      parseHM(h.close) <= parseHM(h.open) ? 'Закрытие — уже на следующий день' : '';
   }
   function renderRestaurantHoursMode() {
     document.querySelectorAll('#restaurantHoursModeSwitch .segmented-btn').forEach(btn => {
@@ -18300,8 +18399,8 @@
   }
   renderRestaurantHoursNote();
   document.getElementById('restaurantHoursOpenBtn').addEventListener('click', () => {
-    document.getElementById('restaurantHoursOpen').value = venueProfile.hours.open;
-    document.getElementById('restaurantHoursClose').value = venueProfile.hours.close;
+    restaurantHoursSelectedDay = new Date().getDay();
+    renderRestaurantHoursDay();
     renderRestaurantHoursMode();
     showProfileDetail('profile-settings-restaurant-hours');
   });
@@ -18313,15 +18412,23 @@
       nrUpdate();
     });
   });
+  document.getElementById('restaurantHoursDayPicker').addEventListener('click', e => {
+    const btn = e.target.closest('[data-hours-day]');
+    if (!btn) return;
+    restaurantHoursSelectedDay = Number(btn.dataset.hoursDay);
+    renderRestaurantHoursDay();
+  });
   document.getElementById('restaurantHoursOpen').addEventListener('change', e => {
     if (!e.target.value) return;
-    venueProfile.hours.open = e.target.value;
+    hoursForDay(restaurantHoursSelectedDay).open = e.target.value;
+    renderRestaurantHoursDay();
     renderRestaurantHoursNote();
     nrUpdate();
   });
   document.getElementById('restaurantHoursClose').addEventListener('change', e => {
     if (!e.target.value) return;
-    venueProfile.hours.close = e.target.value;
+    hoursForDay(restaurantHoursSelectedDay).close = e.target.value;
+    renderRestaurantHoursDay();
     renderRestaurantHoursNote();
     nrUpdate();
   });
