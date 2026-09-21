@@ -5690,6 +5690,8 @@
   .shift-detail[data-detail="newReserve"]{height:calc(100% + 130px); overflow-y:auto; padding-bottom:130px; scrollbar-width:none; -ms-overflow-style:none;}
   .shift-detail[data-detail="newReserve"]::-webkit-scrollbar{display:none; width:0; height:0;}
   .reserve-form-row{margin-bottom:14px;}
+  .reserve-form-row-split{display:flex; gap:8px;}
+  .reserve-form-row-split .auth-field-input{flex:1; min-width:0;}
   .reserve-form-label{
     display:block;
     font-size:11.5px; font-weight:700;
@@ -7332,19 +7334,13 @@
             </div>
           </div>
 
-          <div class="reserve-form-row">
-            <span class="reserve-form-label">Имя</span>
+          <div class="reserve-form-row reserve-form-row-split">
             <input class="auth-field-input" type="text" id="newReserveName" placeholder="Имя гостя">
+            <input class="auth-field-input" type="text" id="newReserveTg" placeholder="@ник в Телеграме">
           </div>
 
           <div class="reserve-form-row">
-            <span class="reserve-form-label">Телефон</span>
             <input class="auth-field-input" type="text" id="newReservePhone" inputmode="tel" placeholder="+7 900 000-00-00">
-          </div>
-
-          <div class="reserve-form-row">
-            <span class="reserve-form-label">Ник в Телеграме (ТГ — мессенджер Telegram, необязательно)</span>
-            <input class="auth-field-input" type="text" id="newReserveTg" placeholder="@ник">
           </div>
 
           <div class="reserve-form-row">
@@ -7954,13 +7950,20 @@
              приём резервов (venueSlotList) -->
         <div class="shift-detail" data-detail="profile-settings-restaurant-hours" hidden>
           <button class="back-btn">Назад</button>
-          <div class="reserve-form-row">
-            <span class="reserve-form-label">Открывается</span>
-            <input class="auth-field-input" type="time" id="restaurantHoursOpen">
+          <div class="settings-subtitle">График работы</div>
+          <div class="segmented" role="tablist" id="restaurantHoursModeSwitch">
+            <button class="segmented-btn" data-hours-mode="scheduled">По расписанию</button>
+            <button class="segmented-btn" data-hours-mode="24-7">Круглосуточно</button>
           </div>
-          <div class="reserve-form-row">
-            <span class="reserve-form-label">Закрывается</span>
-            <input class="auth-field-input" type="time" id="restaurantHoursClose">
+          <div id="restaurantHoursTimesBlock">
+            <div class="reserve-form-row">
+              <span class="reserve-form-label">Открывается</span>
+              <input class="auth-field-input" type="time" id="restaurantHoursOpen">
+            </div>
+            <div class="reserve-form-row">
+              <span class="reserve-form-label">Закрывается</span>
+              <input class="auth-field-input" type="time" id="restaurantHoursClose">
+            </div>
           </div>
         </div>
 
@@ -17868,7 +17871,7 @@
   function nrLaneSlots(day, today) {
     const all = venueSlotList();
     if (!sameDay(day, today)) return all.slice(0, NR_LANE_COUNT);
-    const openMin = parseHM(venueProfile.hours.open);
+    const openMin = venueProfile.hours.mode === '24-7' ? 0 : parseHM(venueProfile.hours.open);
     const now = new Date();
     let nowMin = now.getHours() * 60 + now.getMinutes();
     if (nowMin < openMin) nowMin = openMin;
@@ -17990,10 +17993,26 @@
     if (!e.target.closest('#newReserveClockBtn')) return;
     const wrap = document.getElementById('newReserveTimeSetWrap');
     const input = document.getElementById('newReserveTimeInput');
+    const wasHidden = wrap.hidden;
     wrap.hidden = !wrap.hidden;
-    if (!wrap.hidden) {
-      input.value = nrPickedTime || nrSnapToSlot(pad2(new Date().getHours()) + ':' + pad2(new Date().getMinutes()));
-      input.focus();
+    if (wrap.hidden) return;
+    /* открытие рабочих часов ресторана — рамки для нативного пикера, чтобы
+       колесо времени сразу листалось в пределах графика, а не по всем 24ч;
+       за полночь (закрытие раньше открытия) min/max не поддерживают
+       перенос через сутки — тогда просто не ограничиваем пикер */
+    if (venueProfile.hours.mode !== '24-7' && parseHM(venueProfile.hours.close) > parseHM(venueProfile.hours.open)) {
+      input.min = venueProfile.hours.open;
+      input.max = venueProfile.hours.close;
+    } else {
+      input.removeAttribute('min');
+      input.removeAttribute('max');
+    }
+    input.value = nrPickedTime || nrSnapToSlot(pad2(new Date().getHours()) + ':' + pad2(new Date().getMinutes()));
+    /* один клик по иконке — сразу открыт пикер, без лишнего повторного
+       тапа по самому полю (showPicker есть не везде — молча пропускаем) */
+    input.focus();
+    if (wasHidden && typeof input.showPicker === 'function') {
+      try { input.showPicker(); } catch (err) {}
     }
   });
   document.getElementById('newReserveTimeInput').addEventListener('change', e => {
@@ -18268,14 +18287,30 @@
     showProfileDetail('profile-new-zone');
   });
   function renderRestaurantHoursNote() {
-    document.getElementById('restaurantHoursNote').textContent =
-      venueProfile.hours.open + '–' + venueProfile.hours.close;
+    document.getElementById('restaurantHoursNote').textContent = venueProfile.hours.mode === '24-7'
+      ? 'Круглосуточно'
+      : venueProfile.hours.open + '–' + venueProfile.hours.close;
+  }
+  function renderRestaurantHoursMode() {
+    document.querySelectorAll('#restaurantHoursModeSwitch .segmented-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.hoursMode === venueProfile.hours.mode);
+    });
+    document.getElementById('restaurantHoursTimesBlock').hidden = venueProfile.hours.mode === '24-7';
   }
   renderRestaurantHoursNote();
   document.getElementById('restaurantHoursOpenBtn').addEventListener('click', () => {
     document.getElementById('restaurantHoursOpen').value = venueProfile.hours.open;
     document.getElementById('restaurantHoursClose').value = venueProfile.hours.close;
+    renderRestaurantHoursMode();
     showProfileDetail('profile-settings-restaurant-hours');
+  });
+  document.querySelectorAll('#restaurantHoursModeSwitch .segmented-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      venueProfile.hours.mode = btn.dataset.hoursMode;
+      renderRestaurantHoursMode();
+      renderRestaurantHoursNote();
+      nrUpdate();
+    });
   });
   document.getElementById('restaurantHoursOpen').addEventListener('change', e => {
     if (!e.target.value) return;
