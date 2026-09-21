@@ -5669,7 +5669,8 @@
      высота 100% (та же цепочка) и overflow-y:auto: он прокручивается сам
      в границах доступного места, кнопка «Создать резерв» и комментарий
      остаются внутри и никогда не попадают под нижнее меню */
-  .shift-detail[data-detail="newReserve"]{height:100%; overflow-y:auto; padding-bottom:20px;}
+  .shift-detail[data-detail="newReserve"]{height:100%; overflow-y:auto; padding-bottom:20px; scrollbar-width:none; -ms-overflow-style:none;}
+  .shift-detail[data-detail="newReserve"]::-webkit-scrollbar{display:none; width:0; height:0;}
   .reserve-form-row{margin-bottom:14px;}
   .reserve-form-label{
     display:block;
