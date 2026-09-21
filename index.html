@@ -3,7 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Приложение Рука — мастер-шаблон</title>
+<title>РУКА — Менеджер</title>
+<!-- PWA: манифест, иконки, цвет темы — чтобы приложение ставилось на телефон -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0E1C2E">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="РУКА">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -2129,6 +2139,24 @@
   .hall-divider.guest-divider{margin:4px 0 10px;}
   /* в зале полоса залов подтянута к кнопке сворачивания */
   #hallSticky .hall-divider{margin-bottom:4px;}
+  /* залы и кнопка сворачивания в одну строку — пропорции те же, что у
+     .reserve-zone-row/.reserve-collapse-thread на «Резервах»: нить по 20px
+     с обеих сторон кнопки, табы занимают всё оставшееся место */
+  .hall-divider.zone-divider{gap:4px;}
+  .hall-divider.zone-divider .zone-tabs{flex:1 1 auto; min-width:0; margin:0;}
+  .hall-divider.zone-divider .divider-line{flex:0 0 20px;}
+  .hall-divider.zone-divider .zone-tab{padding:4.5px 11px; font-size:11.5px;}
+  /* строка залов стоит ровно между золотой нитью шапки сверху и единственной
+     золотой полоской снизу (это нижний край #hallSticky на стыке с
+     остальным контентом — не отдельный элемент, самого .zone-row-divider
+     здесь больше нет, чтобы не получалось двух нитей). Отступ до неё
+     регулируется только margin-bottom самой строки — только на «Заказах» */
+  #hallSticky .hall-divider.zone-divider{margin:0 0 -1px;}
+  .zone-row-divider{
+    height:1px;
+    margin:0 0 6px;
+    background:linear-gradient(90deg, transparent, rgba(198,153,47,0.6), transparent);
+  }
 
 
   /* МН-16 поднят выше: меньше воздуха под «Назад» и над шапкой заказа */
@@ -5124,7 +5152,21 @@
   .catalog-card-price{font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--accent);}
 
   /* ---------- МН-09 · Планировщик: доски, колонки, карточки задач ---------- */
-  .planner-topbar{display:flex; align-items:flex-start; gap:4px;}
+  /* #plannerBoardView растянут на всю высоту (тот же приём с height:100%,
+     что и у .shift-detail[data-detail="reserves"] — см. комментарий там же
+     про цепочку процентов), а под колонками — свой невидимый «заполнитель»
+     с touch-action:pan-y на всё оставшееся место вниз до нижнего меню.
+     Не вешаем pan-y на общего предка .planner-columns — тогда бы браузер
+     из-за пересечения pan-y/pan-x перестал сам скроллить колонки нативно
+     (как это уже принято для узкой строки .reserve-zone-tabs, но там это
+     мелочь, а тут — основной жест). Заполнитель отдельным сиблингом решает
+     это без компромиссов: свайп ниже колонок (см. plannerSwipe* в скрипте)
+     реально долетает до pointerup на реальном тач-устройстве, а не
+     перехватывается браузером как обычный вертикальный скролл. */
+  .panel[data-panel="planner"]{height:100%;}
+  #plannerBoardView{height:100%; display:flex; flex-direction:column;}
+  .planner-swipe-fill{flex:1 1 auto; min-height:24px; touch-action:pan-y;}
+  .planner-topbar{display:flex; align-items:flex-start; gap:4px; flex:0 0 auto;}
   .planner-topbar .folder-tabs{flex:1; min-width:0;}
   .planner-add-btn{
     flex-shrink:0;
@@ -5141,6 +5183,7 @@
   .planner-add-btn:active{transform:scale(.92);}
 
   .planner-columns{
+    flex:0 0 auto;
     display:flex;
     gap:12px;
     overflow-x:auto;
@@ -5367,7 +5410,7 @@
      переносятся, а скроллятся горизонтально (тот же приём, что у папок
      чатов/досок планировщика — .folder-tabs внутри .planner-topbar),
      кнопка с нитью — закреплённый сосед, не участвует в скролле */
-  .reserve-zone-row{display:flex; align-items:center; gap:4px; margin-top:10px;}
+  .reserve-zone-row{display:flex; align-items:center; gap:4px; margin:6px 0;}
   .reserve-zone-tabs{
     flex:1;
     min-width:0;
@@ -6654,22 +6697,21 @@
             </div>
           </div>
 
-          <!-- разделитель со сворачиванием — над прокруткой залов -->
-          <div class="hall-divider">
+          <!-- залы и кнопка сворачивания — в одну строку, нить с обеих сторон
+               кнопки, как на «Резервах» (см. .reserve-zone-row) -->
+          <div class="hall-divider zone-divider">
+            <div class="zone-tabs" id="zoneTabs">
+              <button class="zone-tab" data-zone="hall">Основной</button>
+              <button class="zone-tab" data-zone="veranda">Веранда</button>
+              <button class="zone-tab" data-zone="bar">Бар</button>
+            </div>
             <span class="divider-line is-left"></span>
             <button class="hall-collapse" id="hallCollapse" aria-label="Свернуть">
               <svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg>
             </button>
             <span class="divider-line is-right"></span>
           </div>
-
-          <div class="zone-tabs" id="zoneTabs">
-            <button class="zone-tab" data-zone="hall">Основной зал</button>
-            <button class="zone-tab" data-zone="veranda">Веранда</button>
-            <button class="zone-tab" data-zone="bar">Барная стойка</button>
           </div>
-          </div>
-
 
           <div class="table-grid" id="tableGrid"></div>
 
@@ -6972,9 +7014,9 @@
 
           <div class="detail-section-title">По залам</div>
           <div class="finance-rows">
-            <div class="finance-row"><span>Основной зал</span><strong>18 гостей</strong></div>
+            <div class="finance-row"><span>Основной</span><strong>18 гостей</strong></div>
             <div class="finance-row"><span>Веранда</span><strong>8 гостей</strong></div>
-            <div class="finance-row"><span>Барная стойка</span><strong>3 гостя</strong></div>
+            <div class="finance-row"><span>Бар</span><strong>3 гостя</strong></div>
           </div>
 
           <div class="detail-section-title">Поток по часам</div>
@@ -7132,6 +7174,8 @@
             </button>
             <span class="reserve-collapse-thread is-right"></span>
           </div>
+
+          <div class="zone-row-divider"></div>
 
           <div class="reserve-status-tabs" id="reserveStatusTabs">
             <button class="reserve-zone-tab active" data-reserve-status="waiting">Ожидаем</button>
@@ -7679,6 +7723,9 @@
             </button>
           </div>
           <div class="planner-columns" id="plannerColumns"></div>
+          <!-- заполняет всё место под колонками до нижнего меню — нужен только
+               чтобы дать этой пустой зоне свой touch-action:pan-y, см. CSS выше -->
+          <div class="planner-swipe-fill" aria-hidden="true"></div>
         </div>
 
         <!-- МН-18: карточка задачи -->
@@ -9769,7 +9816,7 @@
   }
 
   /* ---------- МН-12/МН-16: столы и заказы ---------- */
-  const ZONE_NAMES = { hall:'Основной зал', veranda:'Веранда', bar:'Барная стойка' };
+  const ZONE_NAMES = { hall:'Основной', veranda:'Веранда', bar:'Бар' };
 
   /* calling — стол позвал официанта; снимается, когда официант открыл заказ */
   /* num — сквозной служебный id (роуты, поиск стола). zoneNum — номер внутри зала,
@@ -17050,9 +17097,8 @@
   /* залы — не фиксированный словарь: новые добавляются из «Настроек ресторана»
      (см. createReserveZone), поэтому список, а не константный объект */
   const reserveZones = [
-    { id:'main',    name:'Основной зал', tab:'Основной' },
-    { id:'second',  name:'Второй зал',   tab:'Второй' },
-    { id:'veranda', name:'Веранда',      tab:'Веранда' }
+    { id:'main',    name:'Основной', tab:'Основной' },
+    { id:'veranda', name:'Веранда',  tab:'Веранда' }
   ];
   function reserveZoneName(id) {
     const z = reserveZones.find(z => z.id === id);
@@ -17073,9 +17119,6 @@
     { id:'rt2',  zone:'main',    shape:'circle', x:40, y:16, w:18, h:18, seats:4 },
     { id:'rt3',  zone:'main',    shape:'rect',   x:66, y:12, w:27, h:18, seats:6 },
     { id:'rt4',  zone:'main',    shape:'circle', x:16, y:58, w:16, h:16, seats:2 },
-    { id:'rt5',  zone:'second',  shape:'rect',   x:10, y:16, w:26, h:16, seats:4 },
-    { id:'rt6',  zone:'second',  shape:'circle', x:48, y:18, w:20, h:20, seats:4 },
-    { id:'rt7',  zone:'second',  shape:'rect',   x:64, y:52, w:28, h:18, seats:8 },
     { id:'rt8',  zone:'veranda', shape:'circle', x:12, y:20, w:18, h:18, seats:4 },
     { id:'rt9',  zone:'veranda', shape:'rect',   x:44, y:16, w:28, h:16, seats:6 },
     { id:'rt10', zone:'veranda', shape:'circle', x:70, y:54, w:16, h:16, seats:2 }
@@ -17158,18 +17201,12 @@
       log:[ reserveEvent('Создан', 'Хостес Аня', reserveNow0 - 3 * 3600000) ] },
     { id:'r2', tableId:'rt2', time:reserveNow0 + 40 * 60000,  persons:2, name:'Елена Ким',       phone:'+7 916 000-01-02', tg:'',          occasion:'date',     comment:'', confirmed:true,  deposit:false, arrived:false, tableFreed:false,
       log:[ reserveEvent('Создан', 'Хостес Аня', reserveNow0 - 5 * 3600000) ] },
-    { id:'r3', tableId:'rt7', time:reserveNow0 - 8 * 60000,   persons:6, name:'Мария Соколова',  phone:'+7 916 000-01-03', tg:'@sokolova', occasion:'business', comment:'Отдельный вход, если можно', confirmed:true,  deposit:true,  arrived:false, tableFreed:false,
-      log:[ reserveEvent('Создан', 'Менеджер Игорь', reserveNow0 - 26 * 3600000), reserveEvent('Изменён', 'Менеджер Игорь', reserveNow0 - 2 * 3600000, 'Время 19:45 → 20:00') ] },
-    { id:'r4', tableId:'rt6', time:reserveNow0 + 150 * 60000, persons:4, name:'Руслан Гаджиев',  phone:'+7 916 000-01-04', tg:'',          occasion:'',         comment:'', confirmed:false, deposit:false, arrived:false, tableFreed:false,
-      log:[ reserveEvent('Создан', 'Хостес Аня', reserveNow0 - 60 * 60000) ] },
     { id:'r5', tableId:'rt10', time:reserveNow0 + 12 * 60000, persons:2, name:'Сергей Литвинов', phone:'+7 916 000-01-05', tg:'@litvinov', occasion:'date',     comment:'', confirmed:true,  deposit:false, arrived:false, tableFreed:false,
       log:[ reserveEvent('Создан', 'Менеджер Игорь', reserveNow0 - 40 * 60000) ] },
     { id:'r6', tableId:'rt1', time:reserveNow0 - 50 * 60000,  persons:2, name:'Татьяна Орлова',  phone:'+7 916 000-01-06', tg:'',          occasion:'date',     comment:'', confirmed:true,  deposit:true,  arrived:true,  tableFreed:false,
       log:[ reserveEvent('Создан', 'Хостес Аня', reserveNow0 - 5 * 3600000), reserveEvent('Гость пришёл', 'Хостес Аня', reserveNow0 - 46 * 60000) ] },
     { id:'r7', tableId:'rt9', time:reserveNow0 - 90 * 60000,  persons:4, name:'Виктор Дьяченко', phone:'+7 916 000-01-07', tg:'',          occasion:'business', comment:'', confirmed:true,  deposit:false, arrived:true,  tableFreed:false,
       log:[ reserveEvent('Создан', 'Менеджер Игорь', reserveNow0 - 8 * 3600000), reserveEvent('Гость пришёл', 'Хостес Аня', reserveNow0 - 85 * 60000) ] },
-    { id:'r8', tableId:'rt5', time:reserveNow0 - 140 * 60000, persons:4, name:'Наталья Белова',  phone:'+7 916 000-01-08', tg:'@belova',   occasion:'',         comment:'Счёт на компанию', confirmed:true,  deposit:false, arrived:true,  tableFreed:true,
-      log:[ reserveEvent('Создан', 'Хостес Аня', reserveNow0 - 9 * 3600000), reserveEvent('Гость пришёл', 'Хостес Аня', reserveNow0 - 135 * 60000), reserveEvent('Стол освободился', 'Официант Марина', reserveNow0 - 15 * 60000) ] },
     { id:'r9', tableId:'rt3', time:reserveNow0 + 170 * 60000, persons:3, name:'Дмитрий Крылов',  phone:'+7 916 000-01-09', tg:'',          occasion:'business', comment:'', confirmed:true,  deposit:false, arrived:false, tableFreed:false,
       log:[ reserveEvent('Создан', 'Менеджер Игорь', reserveNow0 - 20 * 60000) ] }
   ];
@@ -18622,6 +18659,62 @@
     plannerCardDragMoved = false;
   });
 
+  /* свайп влево/вправо по доске листает колонки — не только над самими
+     колонками (там это и так работает нативной прокруткой .planner-columns),
+     но и в пустом месте под ними, если колонки короче экрана: тот же приём
+     ловли жеста по всему контенту, что и на «Резервах» (см. reserveSwipe*) */
+  function plannerBoardScreenIsActive() {
+    const panel = document.querySelector('.panel[data-panel="planner"]');
+    const boardView = document.getElementById('plannerBoardView');
+    return !!panel && !panel.hidden && !!boardView && !boardView.hidden;
+  }
+  function plannerColumnStep() {
+    const col = plannerColumnsEl.querySelector('.planner-column');
+    return col ? col.getBoundingClientRect().width + 12 : plannerColumnsEl.clientWidth * 0.8;
+  }
+  let plannerSwipeX = 0, plannerSwipeY = 0, plannerSwipeTracking = false, plannerSwipeMoved = false, plannerSwipeTimer = null;
+  function plannerSwipeReset() {
+    window.removeEventListener('pointermove', plannerSwipeMove);
+    window.removeEventListener('pointerup', plannerSwipeEnd);
+    window.removeEventListener('pointercancel', plannerSwipeCancel);
+    clearTimeout(plannerSwipeTimer);
+    plannerSwipeTracking = false;
+  }
+  function plannerSwipeMove(e) {
+    if (!plannerSwipeTracking) return;
+    if (Math.abs(e.clientX - plannerSwipeX) > 10 || Math.abs(e.clientY - plannerSwipeY) > 10) plannerSwipeMoved = true;
+  }
+  function plannerSwipeEnd(e) {
+    if (!plannerSwipeTracking) return;
+    const moved = plannerSwipeMoved;
+    const dx = e.clientX - plannerSwipeX;
+    const dy = Math.abs(e.clientY - plannerSwipeY);
+    plannerSwipeReset();
+    if (moved) suppressNextClickGlobally();
+    if (!plannerBoardScreenIsActive()) return;
+    if (Math.abs(dx) < 50 || Math.abs(dx) < dy * 1.2) return;
+    const step = plannerColumnStep();
+    plannerColumnsEl.scrollBy({ left: dx < 0 ? step : -step, behavior: 'smooth' });
+  }
+  function plannerSwipeCancel() { plannerSwipeReset(); }
+  const plannerSwipeAreaEl = document.querySelector('.content');
+  plannerSwipeAreaEl.addEventListener('pointerdown', e => {
+    if (!plannerBoardScreenIsActive()) return;
+    /* по самим колонкам (кроме «ручки» карточки) и по табам досок жест уже
+       обрабатывается своей нативной прокруткой/перетаскиванием — не мешаем им */
+    if (e.target.closest('.planner-columns') || e.target.closest('.planner-topbar')) return;
+    plannerSwipeReset();
+    plannerSwipeX = e.clientX; plannerSwipeY = e.clientY;
+    plannerSwipeTracking = true; plannerSwipeMoved = false;
+    window.addEventListener('pointermove', plannerSwipeMove);
+    window.addEventListener('pointerup', plannerSwipeEnd);
+    window.addEventListener('pointercancel', plannerSwipeCancel);
+    plannerSwipeTimer = setTimeout(plannerSwipeReset, 800);
+  });
+  plannerSwipeAreaEl.addEventListener('click', e => {
+    if (plannerSwipeMoved) { e.stopPropagation(); e.preventDefault(); }
+  }, true);
+
   /* отметка выполнения — карточка переезжает в колонку «Выполнено» той же доски */
   function plannerMarkDone(colId, cardId) {
     const fromCol = plannerFindColumn(colId);
@@ -18830,6 +18923,25 @@
   /* старт: первый экран файла — МН-00 */
   if (!location.hash) location.hash = 'мн-00';
   applyRoute();
+</script>
+
+
+<script>
+  /* регистрация сервис-воркера — включает офлайн-режим и «установку» на телефон.
+     Новая версия активируется сразу, не дожидаясь закрытия всех вкладок
+     (см. skipWaiting/clients.claim в sw.js) — как только это произошло,
+     перезагружаем страницу, чтобы обновление стало видно сразу, а не через раз */
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').then(reg => reg.update()).catch(() => {});
+    });
+    let reloadedForUpdate = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (reloadedForUpdate) return;
+      reloadedForUpdate = true;
+      location.reload();
+    });
+  }
 </script>
 
 </body>
