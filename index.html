@@ -3,17 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>РУКА — Менеджер</title>
-<!-- PWA: манифест, иконки, цвет темы — чтобы приложение ставилось на телефон -->
-<link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#0E1C2E">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="РУКА">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
+<title>Приложение Рука — мастер-шаблон</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -2139,24 +2129,6 @@
   .hall-divider.guest-divider{margin:4px 0 10px;}
   /* в зале полоса залов подтянута к кнопке сворачивания */
   #hallSticky .hall-divider{margin-bottom:4px;}
-  /* залы и кнопка сворачивания в одну строку — пропорции те же, что у
-     .reserve-zone-row/.reserve-collapse-thread на «Резервах»: нить по 20px
-     с обеих сторон кнопки, табы занимают всё оставшееся место */
-  .hall-divider.zone-divider{gap:4px;}
-  .hall-divider.zone-divider .zone-tabs{flex:1 1 auto; min-width:0; margin:0;}
-  .hall-divider.zone-divider .divider-line{flex:0 0 20px;}
-  .hall-divider.zone-divider .zone-tab{padding:4.5px 11px; font-size:11.5px;}
-  /* строка залов стоит ровно между золотой нитью шапки сверху и единственной
-     золотой полоской снизу (это нижний край #hallSticky на стыке с
-     остальным контентом — не отдельный элемент, самого .zone-row-divider
-     здесь больше нет, чтобы не получалось двух нитей). Отступ до неё
-     регулируется только margin-bottom самой строки — только на «Заказах» */
-  #hallSticky .hall-divider.zone-divider{margin:0 0 -1px;}
-  .zone-row-divider{
-    height:1px;
-    margin:0 0 6px;
-    background:linear-gradient(90deg, transparent, rgba(198,153,47,0.6), transparent);
-  }
 
 
   /* МН-16 поднят выше: меньше воздуха под «Назад» и над шапкой заказа */
@@ -5152,21 +5124,7 @@
   .catalog-card-price{font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--accent);}
 
   /* ---------- МН-09 · Планировщик: доски, колонки, карточки задач ---------- */
-  /* #plannerBoardView растянут на всю высоту (тот же приём с height:100%,
-     что и у .shift-detail[data-detail="reserves"] — см. комментарий там же
-     про цепочку процентов), а под колонками — свой невидимый «заполнитель»
-     с touch-action:pan-y на всё оставшееся место вниз до нижнего меню.
-     Не вешаем pan-y на общего предка .planner-columns — тогда бы браузер
-     из-за пересечения pan-y/pan-x перестал сам скроллить колонки нативно
-     (как это уже принято для узкой строки .reserve-zone-tabs, но там это
-     мелочь, а тут — основной жест). Заполнитель отдельным сиблингом решает
-     это без компромиссов: свайп ниже колонок (см. plannerSwipe* в скрипте)
-     реально долетает до pointerup на реальном тач-устройстве, а не
-     перехватывается браузером как обычный вертикальный скролл. */
-  .panel[data-panel="planner"]{height:100%;}
-  #plannerBoardView{height:100%; display:flex; flex-direction:column;}
-  .planner-swipe-fill{flex:1 1 auto; min-height:24px; touch-action:pan-y;}
-  .planner-topbar{display:flex; align-items:flex-start; gap:4px; flex:0 0 auto;}
+  .planner-topbar{display:flex; align-items:flex-start; gap:4px;}
   .planner-topbar .folder-tabs{flex:1; min-width:0;}
   .planner-add-btn{
     flex-shrink:0;
@@ -5183,7 +5141,6 @@
   .planner-add-btn:active{transform:scale(.92);}
 
   .planner-columns{
-    flex:0 0 auto;
     display:flex;
     gap:12px;
     overflow-x:auto;
@@ -5410,7 +5367,7 @@
      переносятся, а скроллятся горизонтально (тот же приём, что у папок
      чатов/досок планировщика — .folder-tabs внутри .planner-topbar),
      кнопка с нитью — закреплённый сосед, не участвует в скролле */
-  .reserve-zone-row{display:flex; align-items:center; gap:4px; margin:6px 0;}
+  .reserve-zone-row{display:flex; align-items:center; gap:4px; margin-top:10px;}
   .reserve-zone-tabs{
     flex:1;
     min-width:0;
@@ -5700,6 +5657,147 @@
     cursor:pointer;
   }
   .reserve-occasion-chips{display:flex; flex-wrap:wrap; gap:7px;}
+
+  /* ---------- МН-31: блоки «Дата» и «Время» ---------- */
+  .resdate-head{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:6px;}
+  .resdate-monthyear{font-size:11px; font-weight:800; color:var(--gold);}
+  .resdate-lane-wrap, .restime-lane-wrap{display:flex; align-items:center; gap:8px;}
+  #newReserveCalSlot, #newReserveClockSlot{display:contents;}
+  .resdate-lane, .restime-lane{
+    flex:1; min-width:0;
+    display:flex; gap:6px;
+    overflow-x:auto; padding:2px 0;
+    -webkit-overflow-scrolling:touch;
+    touch-action:pan-x;
+    scrollbar-width:none;
+  }
+  .resdate-lane::-webkit-scrollbar, .restime-lane::-webkit-scrollbar{display:none;}
+  .resdate-lane.dim .resdate-tile, .restime-lane.dim .restime-tile{opacity:.45;}
+  .resdate-tile{
+    flex:0 0 auto;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    width:44px; height:50px;
+    border-radius:12px;
+    border:1.5px solid var(--card-border);
+    background:var(--surface);
+    font-family:'Manrope', sans-serif;
+    cursor:pointer;
+  }
+  .resdate-tile-wd{font-size:10px; font-weight:700; color:var(--text-muted);}
+  .resdate-tile-num{font-size:15px; font-weight:700; color:var(--text-primary); margin-top:2px;}
+  .resdate-tile.active{background:var(--navy); border-color:var(--navy);}
+  .resdate-tile.active .resdate-tile-wd{color:var(--gold-light);}
+  .resdate-tile.active .resdate-tile-num{color:var(--cream);}
+
+  .restime-tile{
+    flex:0 0 auto;
+    min-width:58px; height:38px;
+    display:flex; align-items:center; justify-content:center;
+    border-radius:10px;
+    border:1.5px solid var(--card-border);
+    background:var(--surface);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px; font-weight:700;
+    color:var(--text-primary);
+    cursor:pointer;
+  }
+  .restime-tile.active{background:var(--navy); border-color:var(--navy); color:var(--cream);}
+
+  .resdate-icon-btn, .restime-icon-btn{
+    flex:0 0 auto;
+    display:flex; align-items:center; justify-content:center;
+    border-radius:12px;
+    border:1.5px solid var(--gold);
+    background:var(--surface);
+    cursor:pointer;
+  }
+  .resdate-icon-btn{width:44px; height:50px;}
+  .restime-icon-btn{width:44px; height:38px;}
+  .resdate-icon-btn svg, .restime-icon-btn svg{stroke:var(--gold); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+  .resdate-icon-btn svg{width:20px; height:20px;}
+  .restime-icon-btn svg{width:18px; height:18px;}
+
+  .resdate-chip, .restime-chip{
+    flex:0 0 auto;
+    display:flex; align-items:center; justify-content:center;
+    gap:5px;
+    padding:0 10px;
+    border-radius:12px;
+    border:1.5px solid transparent;
+    background:var(--navy);
+    cursor:pointer;
+    font-family:'Manrope', sans-serif;
+  }
+  /* фон чипа/активной плитки --navy — в тёмной теме это и есть фон всего
+     экрана (--content-bg), плитка/чип иначе сливались бы с ним; золотая
+     рамка нужна только здесь, в светлой теме и так всё контрастно */
+  .screen.dark .resdate-tile.active, .screen.dark .restime-tile.active,
+  .screen.dark .resdate-chip, .screen.dark .restime-chip{border-color:var(--gold);}
+  .resdate-chip{flex-direction:column; gap:2px; min-width:66px; height:50px;}
+  .restime-chip{min-width:58px; height:38px;}
+  .resdate-chip svg, .restime-chip svg{stroke:var(--gold-light); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0;}
+  .resdate-chip svg{width:14px; height:14px;}
+  .restime-chip svg{width:15px; height:15px;}
+  .resdate-chip-top{display:flex; align-items:center; gap:4px;}
+  .resdate-chip-main{font-size:12.5px; font-weight:800; color:var(--cream);}
+  .resdate-chip-sub{font-size:9.5px; font-weight:700; color:var(--cream); opacity:.85;}
+  .restime-chip-main{font-size:13px; font-weight:800; color:var(--cream); font-family:'IBM Plex Mono', monospace;}
+
+  .restime-grid-wrap{margin-top:8px;}
+  .restime-grid-wrap[hidden]{display:none;}
+  .restime-grid{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:6px;}
+  .restime-grid .restime-tile{width:100%; min-width:0;}
+
+  /* ---------- МН-13/МН-31: месячный календарь (общий) ---------- */
+  .cal-box{padding:18px 16px 14px;}
+  .cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;}
+  .cal-month-label{font-family:'Fraunces', serif; font-size:15px; font-weight:600; color:var(--text-primary);}
+  .cal-nav-btn{
+    width:30px; height:30px;
+    display:flex; align-items:center; justify-content:center;
+    border-radius:9px;
+    border:1px solid var(--card-border);
+    background:var(--surface);
+    cursor:pointer;
+  }
+  .cal-nav-btn svg{width:16px; height:16px; stroke:var(--text-primary); fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round;}
+  .cal-nav-btn:disabled{opacity:.3; cursor:default;}
+  .cal-weekdays{display:grid; grid-template-columns:repeat(7,1fr); gap:2px; margin-bottom:4px;}
+  .cal-weekdays span{display:block; text-align:center; font-size:10px; font-weight:700; color:var(--text-muted);}
+  .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:4px;}
+  .cal-cell{
+    aspect-ratio:1;
+    display:flex; align-items:center; justify-content:center;
+    border-radius:10px;
+    border:none;
+    background:none;
+    font-family:'Manrope', sans-serif; font-size:13px; font-weight:700;
+    color:var(--text-primary);
+    cursor:pointer;
+  }
+  .cal-cell-empty{cursor:default;}
+  .cal-cell.is-disabled{color:var(--text-muted); opacity:.35; cursor:default;}
+  .cal-cell.is-selected{background:var(--navy); color:var(--cream);}
+
+  /* ---------- МН-13: иконка календаря в строке «История»/переключателя ---------- */
+  .reserve-cal-btn{
+    flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    width:34px; height:34px;
+    border-radius:10px;
+    border:1px solid var(--gold);
+    background:var(--surface);
+    cursor:pointer;
+  }
+  .reserve-cal-btn svg{width:17px; height:17px; stroke:var(--gold); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+  .reserve-card-date{
+    display:block;
+    text-align:center;
+    margin-top:3px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px; font-weight:700;
+    color:var(--accent);
+  }
 
 </style>
 </head>
@@ -6556,21 +6654,22 @@
             </div>
           </div>
 
-          <!-- залы и кнопка сворачивания — в одну строку, нить с обеих сторон
-               кнопки, как на «Резервах» (см. .reserve-zone-row) -->
-          <div class="hall-divider zone-divider">
-            <div class="zone-tabs" id="zoneTabs">
-              <button class="zone-tab" data-zone="hall">Основной</button>
-              <button class="zone-tab" data-zone="veranda">Веранда</button>
-              <button class="zone-tab" data-zone="bar">Бар</button>
-            </div>
+          <!-- разделитель со сворачиванием — над прокруткой залов -->
+          <div class="hall-divider">
             <span class="divider-line is-left"></span>
             <button class="hall-collapse" id="hallCollapse" aria-label="Свернуть">
               <svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg>
             </button>
             <span class="divider-line is-right"></span>
           </div>
+
+          <div class="zone-tabs" id="zoneTabs">
+            <button class="zone-tab" data-zone="hall">Основной зал</button>
+            <button class="zone-tab" data-zone="veranda">Веранда</button>
+            <button class="zone-tab" data-zone="bar">Барная стойка</button>
           </div>
+          </div>
+
 
           <div class="table-grid" id="tableGrid"></div>
 
@@ -6873,9 +6972,9 @@
 
           <div class="detail-section-title">По залам</div>
           <div class="finance-rows">
-            <div class="finance-row"><span>Основной</span><strong>18 гостей</strong></div>
+            <div class="finance-row"><span>Основной зал</span><strong>18 гостей</strong></div>
             <div class="finance-row"><span>Веранда</span><strong>8 гостей</strong></div>
-            <div class="finance-row"><span>Бар</span><strong>3 гостя</strong></div>
+            <div class="finance-row"><span>Барная стойка</span><strong>3 гостя</strong></div>
           </div>
 
           <div class="detail-section-title">Поток по часам</div>
@@ -7020,6 +7119,9 @@
               <option value="tile">Плитка</option>
               <option value="scheme">Схема</option>
             </select>
+            <button class="reserve-cal-btn" id="reserveCalBtn" type="button" aria-label="Выбрать дату">
+              <svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M8 3v4"/><path d="M16 3v4"/><path d="M3.5 10h17"/></svg>
+            </button>
           </div>
 
           <div class="reserve-zone-row">
@@ -7030,8 +7132,6 @@
             </button>
             <span class="reserve-collapse-thread is-right"></span>
           </div>
-
-          <div class="zone-row-divider"></div>
 
           <div class="reserve-status-tabs" id="reserveStatusTabs">
             <button class="reserve-zone-tab active" data-reserve-status="waiting">Ожидаем</button>
@@ -7086,14 +7186,29 @@
             Назад
           </button>
 
-          <div class="reserve-form-row">
-            <span class="reserve-form-label">Дата</span>
-            <input class="auth-field-input" type="date" id="newReserveDate">
-          </div>
+          <input type="hidden" id="newReserveDate">
+          <input type="hidden" id="newReserveTime">
 
           <div class="reserve-form-row">
+            <div class="resdate-head">
+              <span class="reserve-form-label" style="margin-bottom:0;">Дата</span>
+              <span class="resdate-monthyear" id="newReserveDateMonth"></span>
+            </div>
+            <div class="resdate-lane-wrap">
+              <div class="resdate-lane" id="newReserveDateLane"></div>
+              <span id="newReserveCalSlot"></span>
+            </div>
+          </div>
+
+          <div class="reserve-form-row" data-res-block="time">
             <span class="reserve-form-label">Время</span>
-            <input class="auth-field-input" type="time" id="newReserveTime">
+            <div class="restime-lane-wrap">
+              <div class="restime-lane" id="newReserveTimeLane"></div>
+              <span id="newReserveClockSlot"></span>
+            </div>
+            <div class="restime-grid-wrap" id="newReserveTimeGridWrap" hidden>
+              <div class="restime-grid" id="newReserveTimeGrid"></div>
+            </div>
           </div>
 
           <div class="reserve-form-row">
@@ -7564,9 +7679,6 @@
             </button>
           </div>
           <div class="planner-columns" id="plannerColumns"></div>
-          <!-- заполняет всё место под колонками до нижнего меню — нужен только
-               чтобы дать этой пустой зоне свой touch-action:pan-y, см. CSS выше -->
-          <div class="planner-swipe-fill" aria-hidden="true"></div>
         </div>
 
         <!-- МН-18: карточка задачи -->
@@ -7992,6 +8104,28 @@
         </div>
         <div class="modal-actions-single">
           <button class="modal-btn modal-btn-ghost" id="unsentBack">Вернуться в заказ</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- МН-13/МН-31: общий месячный календарь -->
+    <div class="modal-overlay" id="calOverlay" hidden>
+      <div class="modal-box cal-box">
+        <div class="cal-head">
+          <button class="cal-nav-btn" id="calPrevBtn" type="button" aria-label="Предыдущий месяц">
+            <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+          </button>
+          <span class="cal-month-label" id="calMonthLabel"></span>
+          <button class="cal-nav-btn" id="calNextBtn" type="button" aria-label="Следующий месяц">
+            <svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+        <div class="cal-weekdays">
+          <span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+        <div class="modal-actions-single">
+          <button class="modal-btn modal-btn-ghost" id="calCancelBtn" type="button">Закрыть</button>
         </div>
       </div>
     </div>
@@ -9540,7 +9674,7 @@
       newReserveFab.hidden = true;
       titleEl.textContent = detailTitle(detail);
       subEl.textContent = detail.dataset.subtitle || 'Детали';
-      if (el.dataset.subblock === 'reserves') renderReserves();
+      if (el.dataset.subblock === 'reserves') { reserveSelectedDate = null; renderReserves(); }
     });
   });
 
@@ -9635,7 +9769,7 @@
   }
 
   /* ---------- МН-12/МН-16: столы и заказы ---------- */
-  const ZONE_NAMES = { hall:'Основной', veranda:'Веранда', bar:'Бар' };
+  const ZONE_NAMES = { hall:'Основной зал', veranda:'Веранда', bar:'Барная стойка' };
 
   /* calling — стол позвал официанта; снимается, когда официант открыл заказ */
   /* num — сквозной служебный id (роуты, поиск стола). zoneNum — номер внутри зала,
@@ -16916,8 +17050,9 @@
   /* залы — не фиксированный словарь: новые добавляются из «Настроек ресторана»
      (см. createReserveZone), поэтому список, а не константный объект */
   const reserveZones = [
-    { id:'main',    name:'Основной', tab:'Основной' },
-    { id:'veranda', name:'Веранда',  tab:'Веранда' }
+    { id:'main',    name:'Основной зал', tab:'Основной' },
+    { id:'second',  name:'Второй зал',   tab:'Второй' },
+    { id:'veranda', name:'Веранда',      tab:'Веранда' }
   ];
   function reserveZoneName(id) {
     const z = reserveZones.find(z => z.id === id);
@@ -16938,6 +17073,9 @@
     { id:'rt2',  zone:'main',    shape:'circle', x:40, y:16, w:18, h:18, seats:4 },
     { id:'rt3',  zone:'main',    shape:'rect',   x:66, y:12, w:27, h:18, seats:6 },
     { id:'rt4',  zone:'main',    shape:'circle', x:16, y:58, w:16, h:16, seats:2 },
+    { id:'rt5',  zone:'second',  shape:'rect',   x:10, y:16, w:26, h:16, seats:4 },
+    { id:'rt6',  zone:'second',  shape:'circle', x:48, y:18, w:20, h:20, seats:4 },
+    { id:'rt7',  zone:'second',  shape:'rect',   x:64, y:52, w:28, h:18, seats:8 },
     { id:'rt8',  zone:'veranda', shape:'circle', x:12, y:20, w:18, h:18, seats:4 },
     { id:'rt9',  zone:'veranda', shape:'rect',   x:44, y:16, w:28, h:16, seats:6 },
     { id:'rt10', zone:'veranda', shape:'circle', x:70, y:54, w:16, h:16, seats:2 }
@@ -16954,18 +17092,84 @@
 
   function reserveEvent(title, who, at, note) { return { title:title, who:who, at:at, note:note || '' }; }
 
+  /* ---------- Даты: общие хелперы для МН-13 (фильтр по дню) и МН-31 (лента дней/времени) ---------- */
+  function pad2(n) { return String(n).padStart(2, '0'); }
+  function dateOnly(d) { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; }
+  function sameDay(a, b) { return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate(); }
+  function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
+  function ymd(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
+  const WD2 = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+  const MONTH_SHORT = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+  const MONTH_NOM = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+  function fmtMonYear(d) { return pad2(d.getMonth() + 1) + '.' + String(d.getFullYear()).slice(-2); }
+  function fmtDDMMYY(d) { return pad2(d.getDate()) + '.' + pad2(d.getMonth() + 1) + '.' + String(d.getFullYear()).slice(-2); }
+  function fmtChipDate(d) { return d.getDate() + ' ' + MONTH_SHORT[d.getMonth()]; }
+
+  /* ---------- Общий месячный календарь (МН-13, МН-31): только UI, дата возвращается через onPick ---------- */
+  let calCtx = null;
+  function renderCalGrid() {
+    const y = calCtx.viewYear, m = calCtx.viewMonth;
+    document.getElementById('calMonthLabel').textContent = MONTH_NOM[m] + ' ' + y;
+    const first = new Date(y, m, 1);
+    const startOffset = (first.getDay() + 6) % 7;
+    const daysInMonth = new Date(y, m + 1, 0).getDate();
+    const cells = [];
+    for (let i = 0; i < startOffset; i++) cells.push('<span class="cal-cell cal-cell-empty"></span>');
+    for (let d = 1; d <= daysInMonth; d++) {
+      const cellDate = new Date(y, m, d);
+      const disabled = calCtx.minDate && cellDate < calCtx.minDate;
+      const isSelected = sameDay(cellDate, calCtx.selected);
+      cells.push('<button class="cal-cell' + (disabled ? ' is-disabled' : '') + (isSelected ? ' is-selected' : '') + '"' +
+        (disabled ? ' disabled' : ' data-cal-day="' + d + '"') + '>' + d + '</button>');
+    }
+    document.getElementById('calGrid').innerHTML = cells.join('');
+    document.getElementById('calPrevBtn').disabled = !!(calCtx.minDate &&
+      (y < calCtx.minDate.getFullYear() || (y === calCtx.minDate.getFullYear() && m <= calCtx.minDate.getMonth())));
+  }
+  function openMonthCalendar(selected, minDate, onPick) {
+    const base = selected || minDate || new Date();
+    calCtx = { minDate: minDate ? dateOnly(minDate) : null, selected: dateOnly(base), onPick: onPick, viewYear: base.getFullYear(), viewMonth: base.getMonth() };
+    renderCalGrid();
+    document.getElementById('calOverlay').hidden = false;
+  }
+  function closeMonthCalendar() { document.getElementById('calOverlay').hidden = true; calCtx = null; }
+  document.getElementById('calPrevBtn').addEventListener('click', () => {
+    calCtx.viewMonth--; if (calCtx.viewMonth < 0) { calCtx.viewMonth = 11; calCtx.viewYear--; }
+    renderCalGrid();
+  });
+  document.getElementById('calNextBtn').addEventListener('click', () => {
+    calCtx.viewMonth++; if (calCtx.viewMonth > 11) { calCtx.viewMonth = 0; calCtx.viewYear++; }
+    renderCalGrid();
+  });
+  document.getElementById('calGrid').addEventListener('click', e => {
+    const btn = e.target.closest('[data-cal-day]');
+    if (!btn) return;
+    const d = new Date(calCtx.viewYear, calCtx.viewMonth, Number(btn.dataset.calDay));
+    const onPick = calCtx.onPick;
+    closeMonthCalendar();
+    onPick(d);
+  });
+  document.getElementById('calCancelBtn').addEventListener('click', closeMonthCalendar);
+  document.getElementById('calOverlay').addEventListener('click', e => { if (e.target.id === 'calOverlay') closeMonthCalendar(); });
+
   const reserveNow0 = Date.now();
   const reservations = [
     { id:'r1', tableId:'rt3', time:reserveNow0 + 8 * 60000,   persons:4, name:'Игорь Петров',    phone:'+7 916 000-01-01', tg:'',          occasion:'bday',     comment:'Просили торт со свечками', confirmed:true,  deposit:true,  arrived:false, tableFreed:false,
       log:[ reserveEvent('Создан', 'Хостес Аня', reserveNow0 - 3 * 3600000) ] },
     { id:'r2', tableId:'rt2', time:reserveNow0 + 40 * 60000,  persons:2, name:'Елена Ким',       phone:'+7 916 000-01-02', tg:'',          occasion:'date',     comment:'', confirmed:true,  deposit:false, arrived:false, tableFreed:false,
       log:[ reserveEvent('Создан', 'Хостес Аня', reserveNow0 - 5 * 3600000) ] },
+    { id:'r3', tableId:'rt7', time:reserveNow0 - 8 * 60000,   persons:6, name:'Мария Соколова',  phone:'+7 916 000-01-03', tg:'@sokolova', occasion:'business', comment:'Отдельный вход, если можно', confirmed:true,  deposit:true,  arrived:false, tableFreed:false,
+      log:[ reserveEvent('Создан', 'Менеджер Игорь', reserveNow0 - 26 * 3600000), reserveEvent('Изменён', 'Менеджер Игорь', reserveNow0 - 2 * 3600000, 'Время 19:45 → 20:00') ] },
+    { id:'r4', tableId:'rt6', time:reserveNow0 + 150 * 60000, persons:4, name:'Руслан Гаджиев',  phone:'+7 916 000-01-04', tg:'',          occasion:'',         comment:'', confirmed:false, deposit:false, arrived:false, tableFreed:false,
+      log:[ reserveEvent('Создан', 'Хостес Аня', reserveNow0 - 60 * 60000) ] },
     { id:'r5', tableId:'rt10', time:reserveNow0 + 12 * 60000, persons:2, name:'Сергей Литвинов', phone:'+7 916 000-01-05', tg:'@litvinov', occasion:'date',     comment:'', confirmed:true,  deposit:false, arrived:false, tableFreed:false,
       log:[ reserveEvent('Создан', 'Менеджер Игорь', reserveNow0 - 40 * 60000) ] },
     { id:'r6', tableId:'rt1', time:reserveNow0 - 50 * 60000,  persons:2, name:'Татьяна Орлова',  phone:'+7 916 000-01-06', tg:'',          occasion:'date',     comment:'', confirmed:true,  deposit:true,  arrived:true,  tableFreed:false,
       log:[ reserveEvent('Создан', 'Хостес Аня', reserveNow0 - 5 * 3600000), reserveEvent('Гость пришёл', 'Хостес Аня', reserveNow0 - 46 * 60000) ] },
     { id:'r7', tableId:'rt9', time:reserveNow0 - 90 * 60000,  persons:4, name:'Виктор Дьяченко', phone:'+7 916 000-01-07', tg:'',          occasion:'business', comment:'', confirmed:true,  deposit:false, arrived:true,  tableFreed:false,
       log:[ reserveEvent('Создан', 'Менеджер Игорь', reserveNow0 - 8 * 3600000), reserveEvent('Гость пришёл', 'Хостес Аня', reserveNow0 - 85 * 60000) ] },
+    { id:'r8', tableId:'rt5', time:reserveNow0 - 140 * 60000, persons:4, name:'Наталья Белова',  phone:'+7 916 000-01-08', tg:'@belova',   occasion:'',         comment:'Счёт на компанию', confirmed:true,  deposit:false, arrived:true,  tableFreed:true,
+      log:[ reserveEvent('Создан', 'Хостес Аня', reserveNow0 - 9 * 3600000), reserveEvent('Гость пришёл', 'Хостес Аня', reserveNow0 - 135 * 60000), reserveEvent('Стол освободился', 'Официант Марина', reserveNow0 - 15 * 60000) ] },
     { id:'r9', tableId:'rt3', time:reserveNow0 + 170 * 60000, persons:3, name:'Дмитрий Крылов',  phone:'+7 916 000-01-09', tg:'',          occasion:'business', comment:'', confirmed:true,  deposit:false, arrived:false, tableFreed:false,
       log:[ reserveEvent('Создан', 'Менеджер Игорь', reserveNow0 - 20 * 60000) ] }
   ];
@@ -17009,6 +17213,9 @@
   let reserveZoneFilter = 'all';
   /* null — фильтр снят, показаны все резервы разом (см. reserveGridAll) */
   let reserveStatus = 'waiting';
+  /* null — просматриваем сегодня; сбрасывается на null при каждом новом входе
+     на экран «Резервы» (см. [data-subblock] click-обработчик) — выбор дня не запоминается */
+  let reserveSelectedDate = null;
   let currentReserveId = null;
   function reserveZoneMatch(zone) { return reserveZoneFilter === 'all' || zone === reserveZoneFilter; }
   const RESERVE_STATUS_GRID = { waiting:'reserveGridWaiting', inhall:'reserveGridInhall', late:'reserveGridLate' };
@@ -17040,11 +17247,12 @@
       '<span class="reserve-card-badge" title="' + b.title + '"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + b.icon + '</svg></span>'
     ).join('') + '</span>';
   }
-  function reserveCardHtml(r) {
+  function reserveCardHtml(r, showDate) {
     const t = reserveTable(r.tableId);
     return '<button class="reserve-card ' + reserveBorderClass(r) + '" data-reserve-open="' + r.id + '">' +
       reserveCardBadges(r) +
       '<span class="reserve-card-name">' + reserveShortName(r.name) + '</span>' +
+      (showDate ? '<span class="reserve-card-date">' + fmtDDMMYY(new Date(r.time)) + '</span>' : '') +
       '<span class="reserve-card-row2"><span class="reserve-card-table">№ ' + (t ? tableNum(t) : '—') + '</span></span>' +
       '<span class="reserve-card-persons"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c1-4 4-6 7-6s6 2 7 6"/></svg>' + r.persons + '</span>' +
       '<span class="reserve-card-time">' + stampText(r.time) + '</span>' +
@@ -17053,19 +17261,24 @@
   }
 
   function renderReserveTiles() {
+    const today = dateOnly(new Date());
+    const viewDate = reserveSelectedDate || today;
+    const showDate = !sameDay(viewDate, today);
     const active = reservations.filter(r => {
       if (r.tableFreed) return false;
       const t = reserveTable(r.tableId);
-      return t && reserveZoneMatch(t.zone);
+      if (!t || !reserveZoneMatch(t.zone)) return false;
+      return sameDay(new Date(r.time), viewDate);
     });
+    const cardHtml = r => reserveCardHtml(r, showDate);
     const inhall = active.filter(r => r.arrived).sort((a, b) => a.time - b.time);
     const late = active.filter(r => !r.arrived && reserveIsLate(r)).sort((a, b) => a.time - b.time);
     const waiting = active.filter(r => !r.arrived && !reserveIsLate(r)).sort((a, b) => a.time - b.time);
     const all = active.slice().sort((a, b) => a.time - b.time);
-    document.getElementById('reserveGridWaiting').innerHTML = waiting.length ? waiting.map(reserveCardHtml).join('') : '<div class="reserve-empty">Нет резервов</div>';
-    document.getElementById('reserveGridInhall').innerHTML = inhall.length ? inhall.map(reserveCardHtml).join('') : '<div class="reserve-empty">Нет резервов</div>';
-    document.getElementById('reserveGridLate').innerHTML = late.length ? late.map(reserveCardHtml).join('') : '<div class="reserve-empty">Нет резервов</div>';
-    document.getElementById('reserveGridAll').innerHTML = all.length ? all.map(reserveCardHtml).join('') : '<div class="reserve-empty">Нет резервов</div>';
+    document.getElementById('reserveGridWaiting').innerHTML = waiting.length ? waiting.map(cardHtml).join('') : '<div class="reserve-empty">Нет резервов</div>';
+    document.getElementById('reserveGridInhall').innerHTML = inhall.length ? inhall.map(cardHtml).join('') : '<div class="reserve-empty">Нет резервов</div>';
+    document.getElementById('reserveGridLate').innerHTML = late.length ? late.map(cardHtml).join('') : '<div class="reserve-empty">Нет резервов</div>';
+    document.getElementById('reserveGridAll').innerHTML = all.length ? all.map(cardHtml).join('') : '<div class="reserve-empty">Нет резервов</div>';
 
     /* пока ни один резерв не «Задерживается» — сама кнопка вкладки не
        отображается; если она была выбрана и опустела, возвращаемся к «Ожидаем» */
@@ -17110,6 +17323,14 @@
   document.getElementById('reserveViewSelect').addEventListener('change', e => {
     reserveView = e.target.value;
     renderReserves();
+  });
+
+  document.getElementById('reserveCalBtn').addEventListener('click', () => {
+    const today = dateOnly(new Date());
+    openMonthCalendar(reserveSelectedDate || today, null, d => {
+      reserveSelectedDate = sameDay(d, today) ? null : dateOnly(d);
+      renderReserves();
+    });
   });
 
   document.getElementById('reserveStatusTabs').addEventListener('click', e => {
@@ -17308,10 +17529,146 @@
   let newReservePrefillTable = null;
   let newReserveBufferAcked = false;
 
-  function newReserveDateMin() {
-    const d = new Date();
-    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  /* ---------- МН-31: блоки «Дата»/«Время» ----------
+     nrPickedDay — день, выбранный тапом по ленте/календарём (деловые сутки
+     заведения: время в лете «Время» может уйти за полночь и всё ещё
+     относиться к этому же дню). nrPickedTime — 'HH:MM' или null.
+     Фактическая календарная дата резерва — nrEffectiveDate(): nrPickedDay,
+     сдвинутый на +1, если выбранный слот приходится на ночную часть суток
+     (после полуночи, до открытия) — см. «Готовить пораньше»-подобную логику
+     в задании: «Выбран слот после полуночи → активным становится следующий день» */
+  let nrPickedDay = null;
+  let nrPickedTime = null;
+
+  const RESERVE_CROSSES_MIDNIGHT = venueProfile.hours.mode !== '24-7' && parseHM(venueProfile.hours.close) <= parseHM(venueProfile.hours.open);
+  function nrIsNightSlot(hm) { return RESERVE_CROSSES_MIDNIGHT && parseHM(hm) < parseHM(venueProfile.hours.open); }
+  /* все слоты одних деловых суток заведения, шагом 15 мин, от открытия до
+     закрытия (не включая) — «00:00, 00:15…» продолжают список без разрывов */
+  function venueSlotList() {
+    const list = [];
+    if (venueProfile.hours.mode === '24-7') {
+      for (let m = 0; m < 1440; m += 15) list.push(pad2(Math.floor(m / 60)) + ':' + pad2(m % 60));
+      return list;
+    }
+    const openMin = parseHM(venueProfile.hours.open);
+    let closeMin = parseHM(venueProfile.hours.close);
+    if (closeMin <= openMin) closeMin += 1440;
+    for (let m = openMin; m < closeMin; m += 15) list.push(pad2(Math.floor(m / 60) % 24) + ':' + pad2(m % 60));
+    return list;
   }
+  /* лента показывает 4 слота (ближайший час): для сегодня — от текущего
+     времени (округление вверх до 15 мин), для остальных дней — с открытия */
+  function nrLaneSlots(day, today) {
+    const all = venueSlotList();
+    if (!sameDay(day, today)) return all.slice(0, 4);
+    const openMin = parseHM(venueProfile.hours.open);
+    const now = new Date();
+    let nowMin = now.getHours() * 60 + now.getMinutes();
+    if (nowMin < openMin) nowMin = openMin;
+    const rounded = Math.ceil(nowMin / 15) * 15;
+    const idx = Math.min(Math.max(0, Math.round((rounded - openMin) / 15)), Math.max(0, all.length - 4));
+    return all.slice(idx, idx + 4);
+  }
+  function nrEffectiveDate() {
+    if (!nrPickedDay) return null;
+    const d = new Date(nrPickedDay);
+    if (nrPickedTime && nrIsNightSlot(nrPickedTime)) d.setDate(d.getDate() + 1);
+    return d;
+  }
+  const RES_CAL_ICON = '<svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M8 3v4"/><path d="M16 3v4"/><path d="M3.5 10h17"/></svg>';
+  const RES_CLOCK_ICON = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>';
+
+  function nrRenderDateBlock() {
+    const today = dateOnly(new Date());
+    const eff = nrEffectiveDate() || today;
+    const laneDays = []; for (let i = 0; i < 7; i++) laneDays.push(addDays(today, i));
+    const isFar = !laneDays.some(d => sameDay(d, eff));
+    document.getElementById('newReserveDateMonth').textContent = fmtMonYear(eff);
+    document.getElementById('newReserveDateLane').innerHTML = laneDays.map(d =>
+      '<button class="resdate-tile' + (!isFar && sameDay(d, eff) ? ' active' : '') + '" data-res-day="' + ymd(d) + '">' +
+        '<span class="resdate-tile-wd">' + WD2[d.getDay()] + '</span>' +
+        '<span class="resdate-tile-num">' + d.getDate() + '</span>' +
+      '</button>'
+    ).join('');
+    document.getElementById('newReserveDateLane').classList.toggle('dim', isFar);
+    document.getElementById('newReserveCalSlot').innerHTML = isFar
+      ? '<button class="resdate-chip" id="newReserveCalBtn" type="button" aria-label="Изменить дату">' +
+          '<span class="resdate-chip-top">' + RES_CAL_ICON + '<span class="resdate-chip-main">' + fmtChipDate(eff) + '</span></span>' +
+          '<span class="resdate-chip-sub">' + WD2[eff.getDay()].toLowerCase() + '</span>' +
+        '</button>'
+      : '<button class="resdate-icon-btn" id="newReserveCalBtn" type="button" aria-label="Календарь">' + RES_CAL_ICON + '</button>';
+  }
+
+  function nrRenderTimeBlock() {
+    const today = dateOnly(new Date());
+    const day = nrPickedDay || today;
+    const lane = nrLaneSlots(day, today);
+    const far = !!nrPickedTime && !lane.includes(nrPickedTime);
+    document.getElementById('newReserveTimeLane').innerHTML = lane.map(hm =>
+      '<button class="restime-tile' + (!far && hm === nrPickedTime ? ' active' : '') + '" data-res-time="' + hm + '">' + hm + '</button>'
+    ).join('');
+    document.getElementById('newReserveTimeLane').classList.toggle('dim', far);
+    document.getElementById('newReserveClockSlot').innerHTML = far
+      ? '<button class="restime-chip" id="newReserveClockBtn" type="button" aria-label="Изменить время">' + RES_CLOCK_ICON + '<span class="restime-chip-main">' + nrPickedTime + '</span></button>'
+      : '<button class="restime-icon-btn" id="newReserveClockBtn" type="button" aria-label="Все слоты">' + RES_CLOCK_ICON + '</button>';
+    document.getElementById('newReserveTimeGrid').innerHTML = venueSlotList().map(hm =>
+      '<button class="restime-tile' + (hm === nrPickedTime ? ' active' : '') + '" data-res-time="' + hm + '">' + hm + '</button>'
+    ).join('');
+  }
+
+  function nrUpdate() {
+    newReserveBufferAcked = false;
+    const eff = nrEffectiveDate();
+    document.getElementById('newReserveDate').value = eff ? ymd(eff) : '';
+    document.getElementById('newReserveTime').value = nrPickedTime || '';
+    nrRenderDateBlock();
+    nrRenderTimeBlock();
+    renderNewReserveTables();
+  }
+
+  function nrPickDay(day) {
+    const d = dateOnly(day);
+    /* «Выбор другого дня сбрасывает ночной слот» — если было выбрано
+       время после полуночи, оно относилось к суткам именно прежнего дня */
+    if (nrPickedTime && nrIsNightSlot(nrPickedTime)) nrPickedTime = null;
+    nrPickedDay = d;
+    nrUpdate();
+  }
+  function nrPickTime(hm) {
+    nrPickedTime = hm;
+    document.getElementById('newReserveTimeGridWrap').hidden = true;
+    nrUpdate();
+  }
+
+  document.getElementById('newReserveDateLane').addEventListener('click', e => {
+    const btn = e.target.closest('[data-res-day]');
+    if (!btn) return;
+    nrPickDay(new Date(btn.dataset.resDay + 'T00:00:00'));
+  });
+  document.getElementById('newReserveCalSlot').addEventListener('click', e => {
+    if (!e.target.closest('#newReserveCalBtn')) return;
+    const today = dateOnly(new Date());
+    openMonthCalendar(nrEffectiveDate() || today, today, d => {
+      nrPickDay(d);
+      const timeBlock = document.querySelector('.reserve-form-row[data-res-block="time"]');
+      if (timeBlock) timeBlock.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+  });
+  document.getElementById('newReserveTimeLane').addEventListener('click', e => {
+    const btn = e.target.closest('[data-res-time]');
+    if (!btn) return;
+    nrPickTime(btn.dataset.resTime);
+  });
+  document.getElementById('newReserveClockSlot').addEventListener('click', e => {
+    if (!e.target.closest('#newReserveClockBtn')) return;
+    const wrap = document.getElementById('newReserveTimeGridWrap');
+    wrap.hidden = !wrap.hidden;
+  });
+  document.getElementById('newReserveTimeGrid').addEventListener('click', e => {
+    const btn = e.target.closest('[data-res-time]');
+    if (!btn) return;
+    nrPickTime(btn.dataset.resTime);
+  });
 
   function newReserveSlot() {
     const dateStr = document.getElementById('newReserveDate').value;
@@ -17393,9 +17750,9 @@
     newReserveSelectedTable = null;
     newReservePrefillTable = prefillTableId || null;
     newReserveBufferAcked = false;
-    document.getElementById('newReserveDate').min = newReserveDateMin();
-    document.getElementById('newReserveDate').value = newReserveDateMin();
-    document.getElementById('newReserveTime').value = '';
+    nrPickedDay = dateOnly(new Date());
+    nrPickedTime = null;
+    document.getElementById('newReserveTimeGridWrap').hidden = true;
     document.getElementById('newReservePersonsCount').textContent = newReservePersons;
     document.getElementById('newReserveName').value = '';
     document.getElementById('newReservePhone').value = '';
@@ -17403,13 +17760,10 @@
     document.getElementById('newReserveComment').value = '';
     document.querySelectorAll('#newReserveOccasion .filter-chip').forEach(b => b.classList.toggle('active', b.dataset.occasion === ''));
     document.getElementById('newReserveBufferWarn').hidden = true;
-    renderNewReserveTables();
+    nrUpdate();
     updateNewReserveSubmit();
     showDetail('newReserve', 'Новый резерв', 'Создание резерва');
   }
-
-  document.getElementById('newReserveDate').addEventListener('change', () => { newReserveBufferAcked = false; renderNewReserveTables(); });
-  document.getElementById('newReserveTime').addEventListener('change', () => { newReserveBufferAcked = false; renderNewReserveTables(); });
 
   document.getElementById('newReservePersonsMinus').addEventListener('click', () => {
     if (newReservePersons <= 1) return;
@@ -18268,62 +18622,6 @@
     plannerCardDragMoved = false;
   });
 
-  /* свайп влево/вправо по доске листает колонки — не только над самими
-     колонками (там это и так работает нативной прокруткой .planner-columns),
-     но и в пустом месте под ними, если колонки короче экрана: тот же приём
-     ловли жеста по всему контенту, что и на «Резервах» (см. reserveSwipe*) */
-  function plannerBoardScreenIsActive() {
-    const panel = document.querySelector('.panel[data-panel="planner"]');
-    const boardView = document.getElementById('plannerBoardView');
-    return !!panel && !panel.hidden && !!boardView && !boardView.hidden;
-  }
-  function plannerColumnStep() {
-    const col = plannerColumnsEl.querySelector('.planner-column');
-    return col ? col.getBoundingClientRect().width + 12 : plannerColumnsEl.clientWidth * 0.8;
-  }
-  let plannerSwipeX = 0, plannerSwipeY = 0, plannerSwipeTracking = false, plannerSwipeMoved = false, plannerSwipeTimer = null;
-  function plannerSwipeReset() {
-    window.removeEventListener('pointermove', plannerSwipeMove);
-    window.removeEventListener('pointerup', plannerSwipeEnd);
-    window.removeEventListener('pointercancel', plannerSwipeCancel);
-    clearTimeout(plannerSwipeTimer);
-    plannerSwipeTracking = false;
-  }
-  function plannerSwipeMove(e) {
-    if (!plannerSwipeTracking) return;
-    if (Math.abs(e.clientX - plannerSwipeX) > 10 || Math.abs(e.clientY - plannerSwipeY) > 10) plannerSwipeMoved = true;
-  }
-  function plannerSwipeEnd(e) {
-    if (!plannerSwipeTracking) return;
-    const moved = plannerSwipeMoved;
-    const dx = e.clientX - plannerSwipeX;
-    const dy = Math.abs(e.clientY - plannerSwipeY);
-    plannerSwipeReset();
-    if (moved) suppressNextClickGlobally();
-    if (!plannerBoardScreenIsActive()) return;
-    if (Math.abs(dx) < 50 || Math.abs(dx) < dy * 1.2) return;
-    const step = plannerColumnStep();
-    plannerColumnsEl.scrollBy({ left: dx < 0 ? step : -step, behavior: 'smooth' });
-  }
-  function plannerSwipeCancel() { plannerSwipeReset(); }
-  const plannerSwipeAreaEl = document.querySelector('.content');
-  plannerSwipeAreaEl.addEventListener('pointerdown', e => {
-    if (!plannerBoardScreenIsActive()) return;
-    /* по самим колонкам (кроме «ручки» карточки) и по табам досок жест уже
-       обрабатывается своей нативной прокруткой/перетаскиванием — не мешаем им */
-    if (e.target.closest('.planner-columns') || e.target.closest('.planner-topbar')) return;
-    plannerSwipeReset();
-    plannerSwipeX = e.clientX; plannerSwipeY = e.clientY;
-    plannerSwipeTracking = true; plannerSwipeMoved = false;
-    window.addEventListener('pointermove', plannerSwipeMove);
-    window.addEventListener('pointerup', plannerSwipeEnd);
-    window.addEventListener('pointercancel', plannerSwipeCancel);
-    plannerSwipeTimer = setTimeout(plannerSwipeReset, 800);
-  });
-  plannerSwipeAreaEl.addEventListener('click', e => {
-    if (plannerSwipeMoved) { e.stopPropagation(); e.preventDefault(); }
-  }, true);
-
   /* отметка выполнения — карточка переезжает в колонку «Выполнено» той же доски */
   function plannerMarkDone(colId, cardId) {
     const fromCol = plannerFindColumn(colId);
@@ -18532,25 +18830,6 @@
   /* старт: первый экран файла — МН-00 */
   if (!location.hash) location.hash = 'мн-00';
   applyRoute();
-</script>
-
-
-<script>
-  /* регистрация сервис-воркера — включает офлайн-режим и «установку» на телефон.
-     Новая версия активируется сразу, не дожидаясь закрытия всех вкладок
-     (см. skipWaiting/clients.claim в sw.js) — как только это произошло,
-     перезагружаем страницу, чтобы обновление стало видно сразу, а не через раз */
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js').then(reg => reg.update()).catch(() => {});
-    });
-    let reloadedForUpdate = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (reloadedForUpdate) return;
-      reloadedForUpdate = true;
-      location.reload();
-    });
-  }
 </script>
 
 </body>
