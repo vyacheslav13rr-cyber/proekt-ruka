@@ -4820,6 +4820,8 @@
     color:#3B2A18;
     appearance:none;
     -webkit-appearance:none;
+    overflow:hidden;
+    text-overflow:ellipsis;
   }
   .auth-field-input::placeholder{color:#8a7a5f; font-weight:500;}
   select.auth-field-input{
@@ -5841,9 +5843,12 @@
   .resdate-chip-sub{font-size:9.5px; font-weight:700; color:var(--cream); opacity:.85;}
   .restime-chip-main{font-size:13px; font-weight:800; color:var(--cream); font-family:'IBM Plex Mono', monospace;}
 
-  .restime-set-wrap{margin-top:8px;}
-  .restime-set-wrap[hidden]{display:none;}
-  .restime-set-wrap .auth-field-input{width:100%;}
+  /* поле времени нужно только чтобы получить нативный пикер по клику на
+     иконку часов — само по себе видимой строкой в макете быть не должно */
+  .restime-set-wrap{
+    position:absolute; width:1px; height:1px; margin:-1px; padding:0;
+    overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+  }
 
   /* ---------- МН-13/МН-31: месячный календарь (общий) ---------- */
   .cal-box{padding:18px 16px 14px;}
@@ -7308,8 +7313,8 @@
               <div class="restime-lane" id="newReserveTimeLane"></div>
               <span id="newReserveClockSlot"></span>
             </div>
-            <div class="restime-set-wrap" id="newReserveTimeSetWrap" hidden>
-              <input class="auth-field-input" type="time" id="newReserveTimeInput" step="900">
+            <div class="restime-set-wrap">
+              <input class="auth-field-input" type="time" id="newReserveTimeInput" step="900" tabindex="-1" aria-hidden="true">
             </div>
           </div>
 
@@ -7335,8 +7340,8 @@
           </div>
 
           <div class="reserve-form-row reserve-form-row-split">
-            <input class="auth-field-input" type="text" id="newReserveName" placeholder="Имя гостя">
-            <input class="auth-field-input" type="text" id="newReserveTg" placeholder="@ник в Телеграме">
+            <input class="auth-field-input" type="text" id="newReserveName" placeholder="Имя Фамилия">
+            <input class="auth-field-input" type="text" id="newReserveTg" placeholder="@ник (из мессенджера)">
           </div>
 
           <div class="reserve-form-row">
@@ -17925,8 +17930,9 @@
       '<button class="restime-tile' + (!far && hm === nrPickedTime ? ' active' : '') + '" data-res-time="' + hm + '">' + hm + '</button>'
     ).join('');
     document.getElementById('newReserveTimeLane').classList.toggle('dim', far);
-    /* кнопка-часы — не список «ещё времени», а прямая установка: клик
-       открывает под лентой native time-picker (см. #newReserveTimeSetWrap) */
+    /* кнопка-часы — не список «ещё времени», а прямая установка: клик сразу
+       поднимает native time-picker через визуально скрытое поле (см.
+       #newReserveTimeSetWrap) — на экране остаётся только иконка */
     document.getElementById('newReserveClockSlot').innerHTML = far
       ? '<button class="restime-chip" id="newReserveClockBtn" type="button" aria-label="Изменить время">' + RES_CLOCK_ICON + '<span class="restime-chip-main">' + nrPickedTime + '</span></button>'
       : '<button class="restime-icon-btn" id="newReserveClockBtn" type="button" aria-label="Установить время">' + RES_CLOCK_ICON + '</button>';
@@ -17952,7 +17958,6 @@
   }
   function nrPickTime(hm) {
     nrPickedTime = hm;
-    document.getElementById('newReserveTimeSetWrap').hidden = true;
     nrUpdate();
   }
   /* ближайший разрешённый слот к введённому времени — шаг слотов 15 минут,
@@ -17991,11 +17996,7 @@
   });
   document.getElementById('newReserveClockSlot').addEventListener('click', e => {
     if (!e.target.closest('#newReserveClockBtn')) return;
-    const wrap = document.getElementById('newReserveTimeSetWrap');
     const input = document.getElementById('newReserveTimeInput');
-    const wasHidden = wrap.hidden;
-    wrap.hidden = !wrap.hidden;
-    if (wrap.hidden) return;
     /* открытие рабочих часов ресторана — рамки для нативного пикера, чтобы
        колесо времени сразу листалось в пределах графика, а не по всем 24ч;
        за полночь (закрытие раньше открытия) min/max не поддерживают
@@ -18008,10 +18009,11 @@
       input.removeAttribute('max');
     }
     input.value = nrPickedTime || nrSnapToSlot(pad2(new Date().getHours()) + ':' + pad2(new Date().getMinutes()));
-    /* один клик по иконке — сразу открыт пикер, без лишнего повторного
-       тапа по самому полю (showPicker есть не везде — молча пропускаем) */
+    /* поле само по себе визуально скрыто (см. .restime-set-wrap) — на
+       экране только иконка, но клик по ней сразу поднимает нативный
+       пикер, без лишнего второго тапа по полю */
     input.focus();
-    if (wasHidden && typeof input.showPicker === 'function') {
+    if (typeof input.showPicker === 'function') {
       try { input.showPicker(); } catch (err) {}
     }
   });
@@ -18104,7 +18106,6 @@
     newReserveBufferAcked = false;
     nrPickedDay = dateOnly(new Date());
     nrPickedTime = null;
-    document.getElementById('newReserveTimeSetWrap').hidden = true;
     document.getElementById('newReservePersonsCount').value = newReservePersons;
     document.getElementById('newReserveName').value = '';
     document.getElementById('newReservePhone').value = '';
