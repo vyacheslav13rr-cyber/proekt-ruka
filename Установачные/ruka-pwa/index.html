@@ -5676,10 +5676,18 @@
      где под-экран короче панели, лишний хвост просто продолжается ниже
      рамки и не мешает, но здесь избыток (много строк формы) на глаз уже
      заезжает под нижнее меню. Поэтому этому конкретному под-экрану — своя
-     высота 100% (та же цепочка) и overflow-y:auto: он прокручивается сам
-     в границах доступного места, кнопка «Создать резерв» и комментарий
-     остаются внутри и никогда не попадают под нижнее меню */
-  .shift-detail[data-detail="newReserve"]{height:100%; overflow-y:auto; padding-bottom:20px; scrollbar-width:none; -ms-overflow-style:none;}
+     прокрутка (overflow-y:auto), а не расчёт на .content, у которого
+     проценты вниз по цепочке не «видят» этот лишний хвост вовсе.
+     height:100% дал бы видимую область высотой с .panel — короче, чем
+     на других экранах (там прокручивает .content, а он высотой со ВСЮ
+     доступную часть экрана, включая нижний зазор под меню) — и экран
+     на глаз казался обрезанным заметно раньше, чем на «Заказах»/«Главной».
+     +130px компенсирует именно то, что у .content съедает его собственный
+     padding-bottom при вычислении процента для .panel — так видимая
+     область равна полной высоте .content, как и везде; своим же
+     padding-bottom:130px (тот же приём, что у .content) кнопка «Создать
+     резерв» на прокрутке всё равно не залезает под нижнее меню */
+  .shift-detail[data-detail="newReserve"]{height:calc(100% + 130px); overflow-y:auto; padding-bottom:130px; scrollbar-width:none; -ms-overflow-style:none;}
   .shift-detail[data-detail="newReserve"]::-webkit-scrollbar{display:none; width:0; height:0;}
   .reserve-form-row{margin-bottom:14px;}
   .reserve-form-label{
