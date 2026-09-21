@@ -5833,13 +5833,6 @@
   .resdate-chip-sub{font-size:9.5px; font-weight:700; color:var(--cream); opacity:.85;}
   .restime-chip-main{font-size:13px; font-weight:800; color:var(--cream); font-family:'IBM Plex Mono', monospace;}
 
-  /* поле времени нужно только чтобы получить нативный пикер по клику на
-     иконку часов — само по себе видимой строкой в макете быть не должно */
-  .restime-set-wrap{
-    position:absolute; width:1px; height:1px; margin:-1px; padding:0;
-    overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
-  }
-
   /* ---------- МН-13/МН-31: месячный календарь (общий) ---------- */
   .cal-box{padding:18px 16px 14px;}
   .cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;}
@@ -5870,6 +5863,49 @@
   .cal-cell-empty{cursor:default;}
   .cal-cell.is-disabled{color:var(--text-muted); opacity:.35; cursor:default;}
   .cal-cell.is-selected{background:var(--navy); color:var(--cream);}
+
+  /* ---------- МН-31: барабан выбора времени ---------- */
+  .time-wheel-box{padding:20px 18px 14px;}
+  .time-wheel-row{
+    position:relative;
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    height:220px;
+    margin-top:14px;
+  }
+  .time-wheel-col{
+    flex:0 0 74px;
+    height:100%;
+    overflow-y:auto;
+    scroll-snap-type:y mandatory;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+  }
+  .time-wheel-col::-webkit-scrollbar{display:none;}
+  /* паддинг сверху/снизу — половина высоты видимой области минус
+     половина строки: только так первая/последняя строка может
+     доскроллить до центра (см. scrollWheelTo в скрипте) */
+  .time-wheel-col-inner{padding:88px 0;}
+  .time-wheel-item{
+    height:44px;
+    display:flex; align-items:center; justify-content:center;
+    scroll-snap-align:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:20px; font-weight:600;
+    color:var(--text-muted);
+    opacity:.35;
+    cursor:pointer;
+    transition:opacity .15s ease, color .15s ease;
+  }
+  .time-wheel-item.is-near{opacity:.65;}
+  .time-wheel-item.is-active{opacity:1; color:var(--gold); font-weight:800; font-size:23px;}
+  .time-wheel-colon{font-family:'IBM Plex Mono', monospace; font-size:20px; font-weight:800; color:var(--text-primary);}
+  .time-wheel-selection{
+    position:absolute; left:18px; right:18px; top:50%; height:44px; transform:translateY(-50%);
+    border-top:1.5px solid var(--gold); border-bottom:1.5px solid var(--gold);
+    pointer-events:none;
+    background:linear-gradient(180deg, rgba(198,153,47,0.1), rgba(198,153,47,0.03));
+  }
+  .time-wheel-note{font-size:11.5px; color:var(--text-muted); line-height:1.4; margin-top:8px;}
 
   /* ---------- МН-13: иконка календаря в строке «История»/переключателя ---------- */
   .reserve-cal-btn{
@@ -7303,9 +7339,6 @@
               <div class="restime-lane" id="newReserveTimeLane"></div>
               <span id="newReserveClockSlot"></span>
             </div>
-            <div class="restime-set-wrap">
-              <input class="auth-field-input" type="time" id="newReserveTimeInput" step="900" tabindex="-1" aria-hidden="true">
-            </div>
           </div>
 
           <div class="reserve-form-row">
@@ -8274,6 +8307,24 @@
         <div class="cal-grid" id="calGrid"></div>
         <div class="modal-actions-single">
           <button class="modal-btn modal-btn-ghost" id="calCancelBtn" type="button">Закрыть</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- МН-31: барабан выбора времени — часы и минуты, оба ограничены
+         рабочим графиком выбранного дня (см. venueSlotList) -->
+    <div class="modal-overlay" id="timeWheelOverlay" hidden>
+      <div class="modal-box time-wheel-box">
+        <div class="modal-title">Время</div>
+        <div class="time-wheel-row">
+          <div class="time-wheel-selection" aria-hidden="true"></div>
+          <div class="time-wheel-col" id="timeWheelHours"><div class="time-wheel-col-inner"></div></div>
+          <span class="time-wheel-colon">:</span>
+          <div class="time-wheel-col" id="timeWheelMinutes"><div class="time-wheel-col-inner"></div></div>
+        </div>
+        <div class="time-wheel-note" id="timeWheelNote"></div>
+        <div class="modal-actions-single">
+          <button class="modal-btn modal-btn-gold" id="timeWheelDoneBtn" type="button">Готово</button>
         </div>
       </div>
     </div>
@@ -18062,32 +18113,113 @@
   });
   document.getElementById('newReserveClockSlot').addEventListener('click', e => {
     if (!e.target.closest('#newReserveClockBtn')) return;
-    const input = document.getElementById('newReserveTimeInput');
-    /* открытие рабочих часов ИМЕННО выбранного дня — рамки для нативного
-       пикера, чтобы колесо времени сразу листалось в пределах графика,
-       а не по всем 24ч; за полночь (закрытие раньше открытия у этого дня)
-       min/max не поддерживают перенос через сутки — тогда просто не
-       ограничиваем пикер */
-    const pickedDayHours = hoursForDay((nrPickedDay || dateOnly(new Date())).getDay());
-    if (venueProfile.hours.mode !== '24-7' && parseHM(pickedDayHours.close) > parseHM(pickedDayHours.open)) {
-      input.min = pickedDayHours.open;
-      input.max = pickedDayHours.close;
-    } else {
-      input.removeAttribute('min');
-      input.removeAttribute('max');
-    }
-    input.value = nrPickedTime || nrSnapToSlot(pad2(new Date().getHours()) + ':' + pad2(new Date().getMinutes()));
-    /* поле само по себе визуально скрыто (см. .restime-set-wrap) — на
-       экране только иконка, но клик по ней сразу поднимает нативный
-       пикер, без лишнего второго тапа по полю */
-    input.focus();
-    if (typeof input.showPicker === 'function') {
-      try { input.showPicker(); } catch (err) {}
-    }
+    openTimeWheel();
   });
-  document.getElementById('newReserveTimeInput').addEventListener('change', e => {
-    if (!e.target.value) return;
-    nrPickTime(nrSnapToSlot(e.target.value));
+
+  /* ---------- Барабан выбора времени: часы и минуты в пределах графика
+     выбранного дня (кнопка-часы на «Новом резерве», см. venueSlotList) ---------- */
+  const WHEEL_ITEM_H = 44;
+  let timeWheelCtx = null;
+  let wheelHourTimer = null, wheelMinuteTimer = null;
+
+  function timeWheelHourList(day) {
+    const seen = [];
+    venueSlotList(day).forEach(s => { const h = s.slice(0, 2); if (seen[seen.length - 1] !== h) seen.push(h); });
+    return seen;
+  }
+  function timeWheelMinuteList(day, hour) {
+    return venueSlotList(day).filter(s => s.slice(0, 2) === hour).map(s => s.slice(3));
+  }
+  function renderWheelColumn(colId, items) {
+    document.querySelector('#' + colId + ' .time-wheel-col-inner').innerHTML =
+      items.map(v => '<div class="time-wheel-item" data-value="' + v + '">' + v + '</div>').join('');
+  }
+  function scrollWheelTo(colId, idx, smooth) {
+    document.getElementById(colId).scrollTo({ top: Math.max(0, idx) * WHEEL_ITEM_H, behavior: smooth ? 'smooth' : 'auto' });
+  }
+  function updateWheelHighlight(colId) {
+    const col = document.getElementById(colId);
+    const idx = Math.round(col.scrollTop / WHEEL_ITEM_H);
+    [...col.querySelectorAll('.time-wheel-item')].forEach((it, i) => {
+      it.classList.toggle('is-active', i === idx);
+      it.classList.toggle('is-near', Math.abs(i - idx) === 1);
+    });
+    return idx;
+  }
+  function renderTimeWheelNote(day) {
+    const h = hoursForDay(day.getDay());
+    const crosses = venueProfile.hours.mode !== '24-7' && parseHM(h.close) <= parseHM(h.open);
+    document.getElementById('timeWheelNote').textContent = venueProfile.hours.mode === '24-7'
+      ? 'Круглосуточно, шаг 15 мин'
+      : 'Часы ' + h.open + '…' + h.close + ', минуты по 15 мин.' + (crosses ? ' После полуночи — ночь той же смены.' : '');
+  }
+  function openTimeWheel() {
+    const day = nrPickedDay || dateOnly(new Date());
+    const hours = timeWheelHourList(day);
+    if (!hours.length) return;
+    let hour = nrPickedTime ? nrPickedTime.slice(0, 2) : hours[0];
+    if (!hours.includes(hour)) hour = hours[0];
+    const minutes = timeWheelMinuteList(day, hour);
+    let minute = nrPickedTime ? nrPickedTime.slice(3) : minutes[0];
+    if (!minutes.includes(minute)) minute = minutes[0];
+    timeWheelCtx = { day: day };
+    renderTimeWheelNote(day);
+    renderWheelColumn('timeWheelHours', hours);
+    renderWheelColumn('timeWheelMinutes', minutes);
+    document.getElementById('timeWheelOverlay').hidden = false;
+    /* без rAF колонки ещё нулевой высоты (оверлей только что показан) —
+       scrollTo(idx*H) сработает, но подсветка «активной» строки после
+       showBrowser-паузы должна пересчитаться уже по факту скролла */
+    requestAnimationFrame(() => {
+      scrollWheelTo('timeWheelHours', hours.indexOf(hour));
+      scrollWheelTo('timeWheelMinutes', minutes.indexOf(minute));
+      updateWheelHighlight('timeWheelHours');
+      updateWheelHighlight('timeWheelMinutes');
+    });
+  }
+  function closeTimeWheel() { document.getElementById('timeWheelOverlay').hidden = true; timeWheelCtx = null; }
+  function currentWheelValue(colId) {
+    const col = document.getElementById(colId);
+    const idx = Math.round(col.scrollTop / WHEEL_ITEM_H);
+    const items = col.querySelectorAll('.time-wheel-item');
+    return items[idx] ? items[idx].dataset.value : null;
+  }
+  document.getElementById('timeWheelHours').addEventListener('scroll', () => {
+    updateWheelHighlight('timeWheelHours');
+    clearTimeout(wheelHourTimer);
+    wheelHourTimer = setTimeout(() => {
+      if (!timeWheelCtx) return;
+      const hour = currentWheelValue('timeWheelHours');
+      if (!hour) return;
+      const minutes = timeWheelMinuteList(timeWheelCtx.day, hour);
+      const keepMinute = currentWheelValue('timeWheelMinutes');
+      const minute = minutes.includes(keepMinute) ? keepMinute : minutes[0];
+      renderWheelColumn('timeWheelMinutes', minutes);
+      scrollWheelTo('timeWheelMinutes', minutes.indexOf(minute));
+      updateWheelHighlight('timeWheelMinutes');
+    }, 150);
+  });
+  document.getElementById('timeWheelMinutes').addEventListener('scroll', () => {
+    updateWheelHighlight('timeWheelMinutes');
+    clearTimeout(wheelMinuteTimer);
+    wheelMinuteTimer = setTimeout(() => updateWheelHighlight('timeWheelMinutes'), 150);
+  });
+  ['timeWheelHours', 'timeWheelMinutes'].forEach(colId => {
+    document.getElementById(colId).addEventListener('click', e => {
+      const item = e.target.closest('.time-wheel-item');
+      if (!item) return;
+      const items = [...document.querySelectorAll('#' + colId + ' .time-wheel-item')];
+      scrollWheelTo(colId, items.indexOf(item), true);
+    });
+  });
+  document.getElementById('timeWheelDoneBtn').addEventListener('click', () => {
+    const hour = currentWheelValue('timeWheelHours');
+    const minute = currentWheelValue('timeWheelMinutes');
+    closeTimeWheel();
+    if (hour && minute) nrPickTime(hour + ':' + minute);
+  });
+  document.getElementById('timeWheelOverlay').addEventListener('click', e => {
+    if (e.target.id === 'timeWheelOverlay') closeTimeWheel();
   });
 
   function newReserveSlot() {
