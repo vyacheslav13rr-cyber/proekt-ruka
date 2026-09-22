@@ -1982,15 +1982,15 @@
      и у .table-card-bill-icon здесь же; размер плитки не меняется — значок
      просто накладывается сверху (position:absolute). Живёт до закрытия
      стола (releaseTable). Счёт (.table-card-bill-icon) на том же месте
-     бывает редко, но одновременно с поводом — возможно: тогда сдвигаем
-     повод левее чека на его ширину + небольшой зазор (класс has-bill),
-     чтобы значки не наезжали друг на друга */
+     бывает редко, но одновременно с поводом — возможно: тогда чек остаётся
+     в верхнем углу как есть, а повод (класс has-bill) опускается на
+     середину правого края, чтобы значки не наезжали друг на друга */
   .table-card-occasion-icon{
     position:absolute; top:8px; right:8px;
     width:14px; height:14px;
     color:var(--gold);
   }
-  .table-card-occasion-icon.has-bill{right:30px;}
+  .table-card-occasion-icon.has-bill{top:50%; right:8px; transform:translateY(-50%);}
   .table-card-occasion-icon svg{width:100%; height:100%; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
 
   /* ---------- Свободные столы: свёрнуты до двух рядов ---------- */
