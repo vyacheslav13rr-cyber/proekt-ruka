@@ -5823,6 +5823,27 @@
   .reserve-table-pick-summary{font-size:11.5px; font-weight:700; color:var(--text-muted); white-space:nowrap;}
   .reserve-table-pick-summary[hidden]{display:none;}
   .reserve-table-pick-chips{margin-bottom:2px;}
+  /* «Столы резерва» после «Объединить» — своя версия чипов: у левого края
+     (а не у правого, как в карточках резерва на МН-13/МН-30 — там это
+     общий .table-chips-row), кружки с золотой заливкой явно читаются как
+     подтверждённый выбор, а не как обычная приглушённая метка */
+  #newReserveTableChips{justify-content:flex-start;}
+  #newReserveTableChips .table-chip{
+    border-color:transparent;
+    background:linear-gradient(160deg, var(--gold-light), var(--gold));
+    color:var(--navy-deep);
+  }
+  #newReserveTableChips .table-chip.is-waiting-hard,
+  #newReserveTableChips .table-chip.is-waiting-soon{
+    background:none;
+    color:var(--text-primary);
+    border-color:var(--dot-red);
+  }
+  #newReserveTableChips .table-chip.is-released{
+    background:none;
+    color:var(--text-muted);
+    border-color:var(--card-border);
+  }
   /* плашка «Объединить»/«Изменить» | «Отменить» — тот же стиль (хаки-фон,
      золотая рамка), что у .transfer-bar в МН-16; висит над нижним меню и
      опускается вместе с ним ровно по тем же правилам, что и
@@ -18683,6 +18704,12 @@
   function nrSelectedSeats() {
     return newReserveSelectedTables.reduce((sum, x) => { const t = reserveTable(x.id); return sum + (t ? t.seats : 0); }, 0);
   }
+  /* объединять можно только столы одного зала — «Объединить» остаётся
+     неактивной, если выбраны столы из разных залов (см. actionPrimary.disabled) */
+  function nrSelectedSameZone() {
+    const zones = newReserveSelectedTables.map(x => { const t = reserveTable(x.id); return t ? t.zone : null; });
+    return new Set(zones).size <= 1;
+  }
   function nrFreeTableIds(dateStr, slot) {
     return reserveTables.filter(t => {
       const others = tableReservesOnDate(t.id, dateStr);
@@ -18770,10 +18797,13 @@
         return reserveTablePickTileHtml(t, cls);
       });
       summary.hidden = false;
-      summary.textContent = 'Мест выбрано: ' + nrSelectedSeats() + ' из ' + newReservePersons;
+      const sameZone = nrSelectedSameZone();
+      summary.textContent = sameZone
+        ? 'Мест выбрано: ' + nrSelectedSeats() + ' из ' + newReservePersons
+        : 'Столы разных залов — выберите один зал';
       actionBar.hidden = false;
       actionPrimary.textContent = 'Объединить';
-      actionPrimary.disabled = newReserveSelectedTables.length < 2;
+      actionPrimary.disabled = newReserveSelectedTables.length < 2 || !sameZone;
       newReservePrefillTable = null;
       updateNewReserveBuffer(dateStr, slot);
       updateNewReserveSubmit();
@@ -18841,7 +18871,9 @@
 
   function nrUpdatePickSummary() {
     if (!newReserveMultiMode || newReserveMerged) return;
-    document.getElementById('newReserveTablePickSummary').textContent = 'Мест выбрано: ' + nrSelectedSeats() + ' из ' + newReservePersons;
+    document.getElementById('newReserveTablePickSummary').textContent = nrSelectedSameZone()
+      ? 'Мест выбрано: ' + nrSelectedSeats() + ' из ' + newReservePersons
+      : 'Столы разных залов — выберите один зал';
   }
   document.getElementById('newReservePersonsMinus').addEventListener('click', () => {
     if (newReservePersons <= 1) return;
