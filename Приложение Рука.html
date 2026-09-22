@@ -5740,6 +5740,13 @@
     color:var(--text-muted);
     margin-bottom:6px;
   }
+  /* «Свободные столы на это время»/«Выбор столов»/«Столы резерва» — эта
+     подпись держит целую секцию (залы + плитки) ниже, поэтому крупнее и
+     по центру, в отличие от обычных подписей полей формы */
+  #newReserveTablePickLabel{
+    text-align:center;
+    font-size:14px;
+  }
   .reserve-persons-stepper{display:flex; align-items:center; gap:12px;}
   .reserve-persons-stepper .step-count{font-size:16px; min-width:22px;}
   .reserve-persons-stepper .step-count-input{width:2ch; cursor:pointer;}
@@ -5747,21 +5754,28 @@
      списка по одному столу в строке */
   .reserve-table-pick-group{margin-bottom:12px;}
   .reserve-table-pick-group:last-child{margin-bottom:0;}
-  /* название зала и золотая нитка (1px) в одной строке — нитка тянется
-     остатком ширины через ::after, плитки зала идут ниже */
+  /* название зала — короткая плавная нить слева (та же пропорция и
+     градиент, что у .reserve-collapse-thread на «Резервах»), длинная
+     тонкая нить справа тянется остатком ширины; плитки зала идут ниже */
   .reserve-table-pick-group-title{
-    display:flex; align-items:center; gap:8px;
-    font-size:11px; font-weight:800;
+    display:flex; align-items:center; gap:7px;
+    font-size:9.5px; font-weight:800;
     color:var(--text-muted);
     text-transform:uppercase; letter-spacing:.02em;
     margin-bottom:8px;
     white-space:nowrap;
   }
+  .reserve-table-pick-group-title::before{
+    content:'';
+    flex:0 0 20px;
+    height:1px;
+    background:linear-gradient(90deg, transparent, rgba(198,153,47,0.6));
+  }
   .reserve-table-pick-group-title::after{
     content:'';
     flex:1;
     height:1px;
-    background:var(--gold);
+    background:linear-gradient(90deg, rgba(198,153,47,0.6), transparent);
   }
   .reserve-table-pick{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:7px;}
   .reserve-table-pick-tile{
@@ -5797,14 +5811,18 @@
   .reserve-table-pick-tile.is-occupied .reserve-table-pick-zone{color:var(--text-muted);}
   .reserve-table-pick-summary{font-size:11.5px; font-weight:700; color:var(--text-muted); text-align:right; margin-bottom:6px;}
   .reserve-table-pick-chips{margin-bottom:2px;}
-  /* плашка «Объединить в один резерв»/«Изменить» | «Отменить» — тот же
-     стиль (хаки-фон, золотая рамка), что у .transfer-bar в МН-16 */
+  /* плашка «Объединить»/«Изменить» | «Отменить» — тот же стиль (хаки-фон,
+     золотая рамка), что у .transfer-bar в МН-16; держится поверх контента
+     над нижним меню тем же приёмом, что .hall-transfer-bar в «Зале»
+     (position:sticky + тот же bottom:14px) — если меню свёрнуто, область
+     прокрутки становится выше и плашка вместе с ней опускается ниже */
   .reserve-action-bar{
-    display:flex; align-items:center; gap:8px;
+    position:sticky; bottom:14px; z-index:6;
+    display:flex; align-items:center; gap:6px;
     background:var(--khaki-block-bg);
     border:1px solid var(--gold);
-    border-radius:14px;
-    padding:8px;
+    border-radius:12px;
+    padding:6px;
     margin-top:10px;
     box-shadow:0 12px 26px -14px var(--card-shadow);
   }
@@ -5813,10 +5831,10 @@
     flex:2;
     background:linear-gradient(160deg, var(--gold-light), var(--gold));
     border:none;
-    border-radius:12px;
-    padding:11px;
+    border-radius:10px;
+    padding:8px;
     font-family:'Manrope', sans-serif;
-    font-size:13px; font-weight:700;
+    font-size:12px; font-weight:700;
     color:var(--navy-deep);
     cursor:pointer;
   }
@@ -5825,10 +5843,10 @@
     flex:1;
     background:var(--segment-track);
     border:1px solid var(--card-border);
-    border-radius:12px;
-    padding:11px;
+    border-radius:10px;
+    padding:8px;
     font-family:'Manrope', sans-serif;
-    font-size:13px; font-weight:700;
+    font-size:12px; font-weight:700;
     color:var(--text-muted);
     cursor:pointer;
   }
@@ -7503,7 +7521,7 @@
                  ней открывает плашку «Изменить»/«Отменить» ниже -->
             <div class="table-chips-row reserve-table-pick-chips" id="newReserveTableChips" hidden></div>
             <div class="reserve-action-bar" id="newReserveActionBar" hidden>
-              <button class="reserve-action-primary" id="newReserveActionPrimaryBtn" type="button">Объединить в один резерв</button>
+              <button class="reserve-action-primary" id="newReserveActionPrimaryBtn" type="button">Объединить</button>
               <button class="reserve-action-cancel" id="newReserveActionCancelBtn" type="button">Отменить</button>
             </div>
             <div class="reserve-buffer-warn" id="newReserveBufferWarn" hidden>
@@ -17608,7 +17626,7 @@
   const reserveNow0 = Date.now();
   /* каждый резерв держит МАССИВ столов ({id, state}), а не один tableId:
      обычный резерв — массив из 1 стола (state всегда 'ready'); объединённый
-     резерв (см. «Объединить в один резерв» на МН-31) может занимать
+     резерв (см. «Объединить» на МН-31) может занимать
      несколько столов сразу, каждый со своим состоянием —
      'ready' (свободен под этот резерв), 'waiting' (стол ещё занят другим
      резервом, ждём, пока освободится) или 'released' (гости с этого стола
@@ -18701,7 +18719,7 @@
       return;
     }
 
-    /* объединено (см. «Объединить в один резерв») — плитки скрыты,
+    /* объединено (см. «Объединить») — плитки скрыты,
        показана строка чипов; долгое удержание по ней (nrChipsPressTimer)
        открывает плашку «Изменить»/«Отменить» (newReserveMergedActionOpen) */
     if (newReserveMerged) {
@@ -18739,7 +18757,7 @@
       summary.hidden = false;
       summary.textContent = 'Мест выбрано: ' + nrSelectedSeats() + ' из ' + newReservePersons;
       actionBar.hidden = false;
-      actionPrimary.textContent = 'Объединить в один резерв';
+      actionPrimary.textContent = 'Объединить';
       actionPrimary.disabled = newReserveSelectedTables.length < 2;
       newReservePrefillTable = null;
       updateNewReserveBuffer(dateStr, slot);
@@ -18879,7 +18897,7 @@
     }, 700);
   });
 
-  /* плашка «Объединить в один резерв»/«Изменить» — основное действие */
+  /* плашка «Объединить»/«Изменить» — основное действие */
   document.getElementById('newReserveActionPrimaryBtn').addEventListener('click', () => {
     const btn = document.getElementById('newReserveActionPrimaryBtn');
     if (btn.disabled) return;
