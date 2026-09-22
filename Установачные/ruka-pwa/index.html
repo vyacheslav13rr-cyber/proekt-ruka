@@ -5568,6 +5568,25 @@
   .reserve-card.is-overdue{ animation:reservePulseRed .85s ease-in-out infinite; }
   .reserve-card.is-overdue .reserve-card-time{color:var(--dot-red);}
 
+  /* ---------- Строка чипов столов — общий компонент МН-13/МН-30/МН-31:
+     один стол — как раньше, простым номером; несколько — чипами через
+     золотой «+», flex-wrap, выравнивание вправо ---------- */
+  .table-chips-row{display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; gap:4px;}
+  .table-chip{
+    display:inline-flex; align-items:center; justify-content:center;
+    padding:2px 7px;
+    border-radius:8px;
+    border:1.5px solid var(--gold);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px; font-weight:800;
+    color:var(--text-primary);
+    white-space:nowrap;
+  }
+  .table-chip-plus{width:12px; height:12px; stroke:var(--gold); stroke-width:3; fill:none; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0;}
+  .table-chip.is-waiting-hard{border-color:var(--dot-red);}
+  .table-chip.is-waiting-soon{border-color:var(--dot-red); animation:reservePulseRed .85s ease-in-out infinite;}
+  .table-chip.is-released{border-style:dashed; border-color:var(--card-border); color:var(--text-muted); text-decoration:line-through;}
+
   /* ---------- Схема зала ---------- */
   .reserve-scheme-zone{
     position:relative;
@@ -5653,6 +5672,36 @@
   .reserve-card-picker{margin:-6px 0 14px;}
   .reserve-card-picker[hidden]{display:none;}
   .reserve-card-picker .reserve-occasion-chips{margin-top:2px;}
+
+  /* ---------- МН-30: список столов объединённого резерва (tables.length > 1),
+     у каждого своя кнопка «Освободить» — см. reserveReleaseTable ---------- */
+  .reserve-table-group{display:flex; flex-direction:column; gap:8px; margin:-6px 0 14px;}
+  .reserve-table-group[hidden]{display:none;}
+  .reserve-table-group-row{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:10px 12px;
+    background:var(--surface);
+    border:1px solid var(--card-border);
+    border-radius:14px;
+  }
+  .reserve-table-group-row.is-waiting{border-color:var(--gold);}
+  .reserve-table-group-info{display:flex; flex-direction:column; gap:2px;}
+  .reserve-table-group-num{font-family:'Manrope', sans-serif; font-size:13px; font-weight:800; color:var(--text-primary);}
+  .reserve-table-group-note{font-size:11px; color:var(--text-muted);}
+  .reserve-table-group-release{
+    flex-shrink:0;
+    background:none;
+    border:1.5px solid var(--gold);
+    border-radius:11px;
+    padding:8px 14px;
+    font-family:'Manrope', sans-serif;
+    font-size:12px; font-weight:800;
+    color:var(--gold);
+    cursor:pointer;
+  }
+  .reserve-table-group-release:active{transform:scale(.96);}
+  .reserve-table-group-released{font-size:11.5px; font-weight:700; color:var(--text-muted); text-decoration:line-through;}
+
   .reserve-btn-outline{
     display:flex; align-items:center; justify-content:center; gap:7px;
     width:100%;
@@ -5702,6 +5751,7 @@
   }
   .reserve-persons-stepper{display:flex; align-items:center; gap:12px;}
   .reserve-persons-stepper .step-count{font-size:16px; min-width:22px;}
+  .reserve-persons-stepper .step-count-input{width:2ch; cursor:pointer;}
   /* плитки 4 в ряд: номер стола, вместимость (иконка) и зал — вместо
      списка по одному столу в строке */
   .reserve-table-pick{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:7px;}
@@ -5721,6 +5771,12 @@
     background:linear-gradient(160deg, rgba(233,203,126,0.22), rgba(198,153,47,0.14));
   }
   .reserve-table-pick-tile:disabled{opacity:.4; cursor:not-allowed;}
+  /* мультивыбор (МН-31, долгое удержание) — выбранные плитки пульсируют
+     золотой обводкой (тот же приём, что у карточки резерва «скоро»,
+     см. reservePulseGold), занятые столы показаны приглушённо с меткой «занят» */
+  .reserve-table-pick-tile.is-picked{ animation:reservePulseGold 1.7s ease-in-out infinite; }
+  .reserve-table-pick-tile.is-occupied{ opacity:.55; }
+  .reserve-table-pick-tile.is-occupied.is-picked{ opacity:.85; }
   .reserve-table-pick-num{font-size:13px; font-weight:800;}
   .reserve-table-pick-seats{
     display:flex; align-items:center; gap:3px;
@@ -5729,6 +5785,9 @@
   }
   .reserve-table-pick-seats svg{width:11px; height:11px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
   .reserve-table-pick-zone{font-size:9.5px; font-weight:800; color:var(--gold); text-transform:uppercase; letter-spacing:.02em;}
+  .reserve-table-pick-tile.is-occupied .reserve-table-pick-zone{color:var(--text-muted);}
+  .reserve-table-pick-summary{font-size:11.5px; font-weight:700; color:var(--text-muted); text-align:right; margin-bottom:6px;}
+  .reserve-table-pick-chips{margin-bottom:2px;}
   .reserve-buffer-warn{
     display:flex; align-items:flex-start; gap:8px;
     background:rgba(178,72,58,0.12);
@@ -5754,6 +5813,16 @@
     cursor:pointer;
   }
   .reserve-occasion-chips{display:flex; flex-wrap:wrap; gap:7px;}
+  .filter-chip:disabled{opacity:.45; pointer-events:none;}
+
+  /* ---------- МН-10.3.2: часы работы — мультивыбор дней, компактная строка открытия/закрытия ---------- */
+  .hours-week-check{margin-bottom:10px;}
+  .hours-week-check.is-disabled{opacity:.45;}
+  .hours-time-row{display:flex; gap:8px;}
+  .hours-time-col{flex:1; min-width:0;}
+  .hours-time-input{padding:6px 10px; font-size:12px;}
+  .hours-time-input:disabled{opacity:.45;}
+  .hours-247-row{margin-top:4px;}
 
   /* ---------- МН-31: блоки «Дата» и «Время» ---------- */
   .resdate-head{display:flex; align-items:baseline; gap:6px; margin-bottom:6px;}
@@ -5874,15 +5943,18 @@
   .cal-cell.is-disabled{color:var(--text-muted); opacity:.35; cursor:default;}
   .cal-cell.is-selected{background:var(--navy); color:var(--cream);}
 
-  /* ---------- МН-31: барабан выбора времени ---------- */
-  .time-wheel-box{padding:20px 18px 14px;}
-  .time-wheel-row{
+  /* ---------- МН-31: компонент-барабан — общий для времени и персон,
+     компактное окно снизу (не на весь экран) ---------- */
+  .drum-overlay{align-items:flex-end; padding:0;}
+  .drum-overlay .modal-box{border-radius:20px 20px 0 0; padding:18px 18px calc(16px + env(safe-area-inset-bottom));}
+  .drum-box{padding:20px 18px 14px;}
+  .drum-row{
     position:relative;
     display:flex; align-items:center; justify-content:center; gap:10px;
     height:220px;
     margin-top:14px;
   }
-  .time-wheel-col{
+  .drum-col{
     flex:0 0 74px;
     height:100%;
     overflow-y:auto;
@@ -5890,12 +5962,12 @@
     -webkit-overflow-scrolling:touch;
     scrollbar-width:none;
   }
-  .time-wheel-col::-webkit-scrollbar{display:none;}
+  .drum-col::-webkit-scrollbar{display:none;}
   /* паддинг сверху/снизу — половина высоты видимой области минус
      половина строки: только так первая/последняя строка может
      доскроллить до центра (см. scrollWheelTo в скрипте) */
-  .time-wheel-col-inner{padding:88px 0;}
-  .time-wheel-item{
+  .drum-col-inner{padding:88px 0;}
+  .drum-item{
     height:44px;
     display:flex; align-items:center; justify-content:center;
     scroll-snap-align:center;
@@ -5906,16 +5978,30 @@
     cursor:pointer;
     transition:opacity .15s ease, color .15s ease;
   }
-  .time-wheel-item.is-near{opacity:.65;}
-  .time-wheel-item.is-active{opacity:1; color:var(--gold); font-weight:800; font-size:23px;}
-  .time-wheel-colon{font-family:'IBM Plex Mono', monospace; font-size:20px; font-weight:800; color:var(--text-primary);}
-  .time-wheel-selection{
+  .drum-item.is-near{opacity:.65;}
+  .drum-item.is-active{opacity:1; color:var(--gold); font-weight:800; font-size:23px;}
+  .drum-colon{font-family:'IBM Plex Mono', monospace; font-size:20px; font-weight:800; color:var(--text-primary);}
+  .drum-selection{
     position:absolute; left:18px; right:18px; top:50%; height:44px; transform:translateY(-50%);
     border-top:1.5px solid var(--gold); border-bottom:1.5px solid var(--gold);
     pointer-events:none;
     background:linear-gradient(180deg, rgba(198,153,47,0.1), rgba(198,153,47,0.03));
   }
-  .time-wheel-note{font-size:11.5px; color:var(--text-muted); line-height:1.4; margin-top:8px;}
+  .drum-note{font-size:11.5px; color:var(--text-muted); line-height:1.4; margin-top:8px;}
+  .drum-more-btn{
+    display:flex; align-items:center; justify-content:center; gap:6px;
+    margin:10px auto 0;
+    padding:7px 16px;
+    border-radius:12px;
+    border:1.5px solid var(--gold);
+    background:none;
+    color:var(--gold);
+    font-family:'Manrope', sans-serif;
+    font-size:12.5px; font-weight:800;
+    cursor:pointer;
+  }
+  .drum-more-btn svg{width:15px; height:15px; stroke:var(--gold); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+  .drum-more-btn:active{transform:scale(.97);}
 
   /* ---------- МН-13: иконка календаря в строке «История»/переключателя ---------- */
   .reserve-cal-btn{
@@ -7309,6 +7395,12 @@
           <div class="finance-rows" id="reserveCardFields"></div>
           <div class="reserve-card-picker" id="reserveCardPicker" hidden></div>
 
+          <!-- объединённый резерв (tables.length > 1) — список столов группы
+               под строкой чипов, у каждого своя кнопка «Освободить» (см.
+               reserveReleaseTable); при одном столе список скрыт, действует
+               обычная «Стол освободился» ниже -->
+          <div class="reserve-table-group" id="reserveTableGroup" hidden></div>
+
           <div class="detail-section-title">Лента событий</div>
           <div class="history-log" id="reserveCardLog"></div>
 
@@ -7355,14 +7447,20 @@
             <span class="reserve-form-label">Персоны</span>
             <div class="reserve-persons-stepper">
               <button class="step-btn" id="newReservePersonsMinus" type="button">−</button>
-              <input class="step-count step-count-input" id="newReservePersonsCount" type="number" inputmode="numeric" min="1" max="30" value="2">
+              <input class="step-count step-count-input" id="newReservePersonsCount" type="text" inputmode="none" readonly min="1" value="2">
               <button class="step-btn" id="newReservePersonsPlus" type="button">+</button>
             </div>
           </div>
 
           <div class="reserve-form-row">
-            <span class="reserve-form-label">Свободные столы на это время</span>
+            <span class="reserve-form-label" id="newReserveTablePickLabel">Свободные столы на это время</span>
+            <div class="reserve-table-pick-summary" id="newReserveTablePickSummary" hidden></div>
             <div class="reserve-table-pick" id="newReserveTablePick"></div>
+            <!-- объединённый выбор столов (долгое удержание плитки, см.
+                 nrTablePressTimer) — свёрнут в строку чипов, удержание по
+                 ней возвращает развёрнутый мультивыбор -->
+            <div class="table-chips-row reserve-table-pick-chips" id="newReserveTableChips" hidden></div>
+            <button class="reserve-btn-outline" id="newReserveMergeBtn" type="button" hidden>Объединить в один резерв</button>
             <div class="reserve-buffer-warn" id="newReserveBufferWarn" hidden>
               <svg viewBox="0 0 24 24"><path d="M12 9v4"/><path d="M12 16.5h.01"/><path d="M10.3 3.9L2.6 18a1.8 1.8 0 0 0 1.6 2.6h15.6a1.8 1.8 0 0 0 1.6-2.6L13.7 3.9a1.8 1.8 0 0 0-3.4 0z"/></svg>
               <span class="reserve-buffer-warn-text">
@@ -7989,34 +8087,41 @@
         <div class="shift-detail" data-detail="profile-settings-restaurant-hours" hidden>
           <button class="back-btn">Назад</button>
           <div class="settings-subtitle">График работы</div>
-          <div class="segmented" role="tablist" id="restaurantHoursModeSwitch">
-            <button class="segmented-btn" data-hours-mode="scheduled">По расписанию</button>
-            <button class="segmented-btn" data-hours-mode="24-7">Круглосуточно</button>
+          <label class="stock-check-row hours-week-check">
+            <input type="checkbox" id="restaurantHoursAllWeek">
+            <span>Вся неделя</span>
+          </label>
+          <div class="reserve-form-row">
+            <div class="reserve-occasion-chips" id="restaurantHoursDayPicker">
+              <button class="filter-chip" type="button" data-hours-day="1">Пн</button>
+              <button class="filter-chip" type="button" data-hours-day="2">Вт</button>
+              <button class="filter-chip" type="button" data-hours-day="3">Ср</button>
+              <button class="filter-chip" type="button" data-hours-day="4">Чт</button>
+              <button class="filter-chip" type="button" data-hours-day="5">Пт</button>
+              <button class="filter-chip" type="button" data-hours-day="6">Сб</button>
+              <button class="filter-chip" type="button" data-hours-day="0">Вс</button>
+            </div>
           </div>
-          <div id="restaurantHoursTimesBlock">
-            <div class="reserve-form-row">
-              <span class="reserve-form-label">День недели</span>
-              <div class="reserve-occasion-chips" id="restaurantHoursDayPicker">
-                <button class="filter-chip" type="button" data-hours-day="1">Пн</button>
-                <button class="filter-chip" type="button" data-hours-day="2">Вт</button>
-                <button class="filter-chip" type="button" data-hours-day="3">Ср</button>
-                <button class="filter-chip" type="button" data-hours-day="4">Чт</button>
-                <button class="filter-chip" type="button" data-hours-day="5">Пт</button>
-                <button class="filter-chip" type="button" data-hours-day="6">Сб</button>
-                <button class="filter-chip" type="button" data-hours-day="0">Вс</button>
-              </div>
-            </div>
-            <div class="reserve-form-row">
+          <div class="reserve-form-row hours-time-row">
+            <div class="hours-time-col">
               <span class="reserve-form-label">Открывается</span>
-              <input class="auth-field-input" type="time" id="restaurantHoursOpen">
+              <input class="auth-field-input hours-time-input" type="time" id="restaurantHoursOpen">
             </div>
-            <div class="reserve-form-row">
+            <div class="hours-time-col">
               <span class="reserve-form-label">Закрывается</span>
-              <input class="auth-field-input" type="time" id="restaurantHoursClose">
+              <input class="auth-field-input hours-time-input" type="time" id="restaurantHoursClose">
             </div>
-            <div class="reserve-form-row">
-              <span class="reserve-form-label" id="restaurantHoursCrossNote"></span>
+          </div>
+          <div class="reserve-form-row">
+            <span class="reserve-form-label" id="restaurantHoursCrossNote"></span>
+          </div>
+          <div class="settings-row hours-247-row">
+            <div class="settings-row-text">
+              <span class="settings-row-title">Круглосуточно</span>
             </div>
+            <button class="switch" id="restaurantHours247Switch" role="switch" aria-checked="false">
+              <span class="switch-thumb"></span>
+            </button>
           </div>
         </div>
 
@@ -8323,18 +8428,37 @@
 
     <!-- МН-31: барабан выбора времени — часы и минуты, оба ограничены
          рабочим графиком выбранного дня (см. venueSlotList) -->
-    <div class="modal-overlay" id="timeWheelOverlay" hidden>
-      <div class="modal-box time-wheel-box">
+    <div class="modal-overlay drum-overlay" id="timeWheelOverlay" hidden>
+      <div class="modal-box drum-box">
         <div class="modal-title">Время</div>
-        <div class="time-wheel-row">
-          <div class="time-wheel-selection" aria-hidden="true"></div>
-          <div class="time-wheel-col" id="timeWheelHours"><div class="time-wheel-col-inner"></div></div>
-          <span class="time-wheel-colon">:</span>
-          <div class="time-wheel-col" id="timeWheelMinutes"><div class="time-wheel-col-inner"></div></div>
+        <div class="drum-row">
+          <div class="drum-selection" aria-hidden="true"></div>
+          <div class="drum-col" id="timeWheelHours"><div class="drum-col-inner"></div></div>
+          <span class="drum-colon">:</span>
+          <div class="drum-col" id="timeWheelMinutes"><div class="drum-col-inner"></div></div>
         </div>
-        <div class="time-wheel-note" id="timeWheelNote"></div>
+        <div class="drum-note" id="timeWheelNote"></div>
         <div class="modal-actions-single">
           <button class="modal-btn modal-btn-gold" id="timeWheelDoneBtn" type="button">Готово</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- МН-31: барабан выбора количества персон — 1 колонка, 1…50, дальше
+         кнопкой «+» (тот же компонент-барабан, что и у времени выше) -->
+    <div class="modal-overlay drum-overlay" id="personsWheelOverlay" hidden>
+      <div class="modal-box drum-box">
+        <div class="modal-title" id="personsWheelTitle">Персоны</div>
+        <div class="drum-row">
+          <div class="drum-selection" aria-hidden="true"></div>
+          <div class="drum-col" id="personsWheelCol"><div class="drum-col-inner"></div></div>
+        </div>
+        <button class="drum-more-btn" id="personsWheelMoreBtn" type="button">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c1-4 4-6 7-6s6 2 7 6"/></svg>
+          <span>+1 гость</span>
+        </button>
+        <div class="modal-actions-single">
+          <button class="modal-btn modal-btn-gold" id="personsWheelDoneBtn" type="button">Готово</button>
         </div>
       </div>
     </div>
@@ -17353,6 +17477,12 @@
      у столов новых залов (см. createReserveZone) номер задаётся отдельно —
      то, что ввели в «Первый номер стола», не обязано совпадать с id */
   function tableNum(t) { return t.num != null ? t.num : parseInt(t.id.replace('rt', ''), 10); }
+  /* «главный» стол резерва — первый в массиве r.tables: для одиночного
+     резерва это единственный стол, для объединённого — тот, что показывают
+     там, где места на несколько чипов нет (не используется, если места на
+     чипы есть — см. tableChipsHtml) */
+  function reservePrimaryTable(r) { return reserveTable(r.tables[0].id); }
+  function reserveHasTable(r, tableId) { return r.tables.some(x => x.id === tableId); }
 
   /* залы «Резервов» и «Заказов» — разные списки с независимой нумерацией
      (совпадений номеров между ними нет и не предполагается), поэтому
@@ -17431,20 +17561,29 @@
   document.getElementById('calOverlay').addEventListener('click', e => { if (e.target.id === 'calOverlay') closeMonthCalendar(); });
 
   const reserveNow0 = Date.now();
+  /* каждый резерв держит МАССИВ столов ({id, state}), а не один tableId:
+     обычный резерв — массив из 1 стола (state всегда 'ready'); объединённый
+     резерв (см. «Объединить в один резерв» на МН-31) может занимать
+     несколько столов сразу, каждый со своим состоянием —
+     'ready' (свободен под этот резерв), 'waiting' (стол ещё занят другим
+     резервом, ждём, пока освободится) или 'released' (гости с этого стола
+     уже ушли, стол сдан) — см. tableChipsHtml/renderReserveTableGroup */
   const reservations = [
-    { id:'r1', tableId:'rt3', time:reserveNow0 + 8 * 60000,   persons:4, name:'Игорь Петров',    phone:'+7 916 000-01-01', tg:'',          occasion:'bday',     comment:'Просили торт со свечками', confirmed:true,  deposit:true,  arrived:false, tableFreed:false,
+    { id:'r1', tables:[{id:'rt3', state:'ready'}], time:reserveNow0 + 8 * 60000,   persons:4, name:'Игорь Петров',    phone:'+7 916 000-01-01', tg:'',          occasion:'bday',     comment:'Просили торт со свечками', confirmed:true,  deposit:true,  arrived:false, tableFreed:false,
       log:[ reserveEvent('Создан', 'Хостес Аня', reserveNow0 - 3 * 3600000) ] },
-    { id:'r2', tableId:'rt2', time:reserveNow0 + 40 * 60000,  persons:2, name:'Елена Ким',       phone:'+7 916 000-01-02', tg:'',          occasion:'date',     comment:'', confirmed:true,  deposit:false, arrived:false, tableFreed:false,
+    { id:'r2', tables:[{id:'rt2', state:'ready'}], time:reserveNow0 + 40 * 60000,  persons:2, name:'Елена Ким',       phone:'+7 916 000-01-02', tg:'',          occasion:'date',     comment:'', confirmed:true,  deposit:false, arrived:false, tableFreed:false,
       log:[ reserveEvent('Создан', 'Хостес Аня', reserveNow0 - 5 * 3600000) ] },
-    { id:'r5', tableId:'rt10', time:reserveNow0 + 12 * 60000, persons:2, name:'Сергей Литвинов', phone:'+7 916 000-01-05', tg:'@litvinov', occasion:'date',     comment:'', confirmed:true,  deposit:false, arrived:false, tableFreed:false,
+    { id:'r5', tables:[{id:'rt10', state:'ready'}], time:reserveNow0 + 12 * 60000, persons:2, name:'Сергей Литвинов', phone:'+7 916 000-01-05', tg:'@litvinov', occasion:'date',     comment:'', confirmed:true,  deposit:false, arrived:false, tableFreed:false,
       log:[ reserveEvent('Создан', 'Менеджер Игорь', reserveNow0 - 40 * 60000) ] },
-    { id:'r6', tableId:'rt1', time:reserveNow0 - 50 * 60000,  persons:2, name:'Татьяна Орлова',  phone:'+7 916 000-01-06', tg:'',          occasion:'date',     comment:'', confirmed:true,  deposit:true,  arrived:true,  tableFreed:false,
+    { id:'r6', tables:[{id:'rt1', state:'ready'}], time:reserveNow0 - 50 * 60000,  persons:2, name:'Татьяна Орлова',  phone:'+7 916 000-01-06', tg:'',          occasion:'date',     comment:'', confirmed:true,  deposit:true,  arrived:true,  tableFreed:false,
       orderZone:'hall', orderNum:1,
       log:[ reserveEvent('Создан', 'Хостес Аня', reserveNow0 - 5 * 3600000), reserveEvent('Гость пришёл', 'Хостес Аня', reserveNow0 - 46 * 60000) ] },
-    { id:'r7', tableId:'rt9', time:reserveNow0 - 90 * 60000,  persons:4, name:'Виктор Дьяченко', phone:'+7 916 000-01-07', tg:'',          occasion:'business', comment:'', confirmed:true,  deposit:false, arrived:true,  tableFreed:false,
+    /* демо объединённого резерва — два стола, второй ещё «ждёт» (занят
+       другой компанией) — показывает чипы и список освобождения на МН-30 */
+    { id:'r7', tables:[{id:'rt9', state:'ready'}, {id:'rt16', state:'waiting'}], time:reserveNow0 - 90 * 60000,  persons:4, name:'Виктор Дьяченко', phone:'+7 916 000-01-07', tg:'',          occasion:'business', comment:'', confirmed:true,  deposit:false, arrived:true,  tableFreed:false,
       orderZone:'veranda', orderNum:13,
       log:[ reserveEvent('Создан', 'Менеджер Игорь', reserveNow0 - 8 * 3600000), reserveEvent('Гость пришёл', 'Хостес Аня', reserveNow0 - 85 * 60000) ] },
-    { id:'r9', tableId:'rt3', time:reserveNow0 + 170 * 60000, persons:3, name:'Дмитрий Крылов',  phone:'+7 916 000-01-09', tg:'',          occasion:'business', comment:'', confirmed:true,  deposit:false, arrived:false, tableFreed:false,
+    { id:'r9', tables:[{id:'rt3', state:'ready'}], time:reserveNow0 + 170 * 60000, persons:3, name:'Дмитрий Крылов',  phone:'+7 916 000-01-09', tg:'',          occasion:'business', comment:'', confirmed:true,  deposit:false, arrived:false, tableFreed:false,
       log:[ reserveEvent('Создан', 'Менеджер Игорь', reserveNow0 - 20 * 60000) ] }
   ];
   let reserveSeq = 9;
@@ -17475,8 +17614,15 @@
     if (reserveIsSoon(r)) return 'is-soon';
     return '';
   }
+  /* «waiting»-чип на строке столов пульсирует красным в последние 30 минут
+     до резерва (включая просрочку) — свой порог, отдельный от 15-минутной
+     золотой пульсации всей плитки (reserveIsSoon) */
+  function reserveWaitingPulses(r) { return r.time - Date.now() <= 30 * 60000; }
+  /* состояние физического стола на схеме зала — считает столы только тех
+     резервов, где этот стол ещё не 'released' (освобождённый в рамках
+     объединённого резерва стол больше не держит место) */
   function reserveTableState(tableId) {
-    const rs = reservations.filter(r => r.tableId === tableId && !r.tableFreed);
+    const rs = reservations.filter(r => !r.tableFreed && r.tables.some(x => x.id === tableId && x.state !== 'released'));
     if (!rs.length) return 'free';
     if (rs.some(r => r.arrived)) return 'inhall';
     if (rs.some(r => reserveIsLate(r))) return 'late';
@@ -17521,13 +17667,35 @@
       '<span class="reserve-card-badge" title="' + b.title + '"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + b.icon + '</svg></span>'
     ).join('') + '</span>';
   }
+  /* ---------- Строка чипов столов — общий компонент МН-13/МН-30/МН-31 ----------
+     Один стол показывается как раньше, простым номером без чипа — чипы
+     появляются только при tables.length > 1. Состояние чипа: ready —
+     обычный; waiting — красная обводка (статичная, если до резерва больше
+     получаса, иначе пульсирует, см. reserveWaitingPulses); released —
+     пунктирная, приглушённый текст, зачёркнут, из строки не убирается */
+  const TABLE_CHIP_PLUS = '<svg class="table-chip-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>';
+  function tableChipClass(entry, pulses) {
+    if (entry.state === 'released') return ' is-released';
+    if (entry.state === 'waiting') return pulses ? ' is-waiting-soon' : ' is-waiting-hard';
+    return '';
+  }
+  function tableChipsHtml(tableRefs, pulses) {
+    return tableRefs.map((entry, i) => {
+      const t = reserveTable(entry.id);
+      return (i > 0 ? TABLE_CHIP_PLUS : '') +
+        '<span class="table-chip' + tableChipClass(entry, pulses) + '">№' + (t ? tableNum(t) : '?') + '</span>';
+    }).join('');
+  }
+
   function reserveCardHtml(r, showDate) {
-    const t = reserveTable(r.tableId);
+    const tableCell = r.tables.length > 1
+      ? '<span class="table-chips-row">' + tableChipsHtml(r.tables, reserveWaitingPulses(r)) + '</span>'
+      : '<span class="reserve-card-table">№ ' + (reservePrimaryTable(r) ? tableNum(reservePrimaryTable(r)) : '—') + '</span>';
     return '<button class="reserve-card ' + reserveBorderClass(r) + '" data-reserve-open="' + r.id + '">' +
       reserveCardBadges(r) +
       '<span class="reserve-card-name">' + reserveShortName(r.name) + '</span>' +
       (showDate ? '<span class="reserve-card-date">' + fmtDDMMYY(new Date(r.time)) + '</span>' : '') +
-      '<span class="reserve-card-row2"><span class="reserve-card-table">№ ' + (t ? tableNum(t) : '—') + '</span></span>' +
+      '<span class="reserve-card-row2">' + tableCell + '</span>' +
       '<span class="reserve-card-persons"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c1-4 4-6 7-6s6 2 7 6"/></svg>' + r.persons + '</span>' +
       '<span class="reserve-card-time">' + stampText(r.time) + '</span>' +
       '<span class="reserve-card-phone">' + r.phone + '</span>' +
@@ -17540,8 +17708,7 @@
     const showDate = !sameDay(viewDate, today);
     const active = reservations.filter(r => {
       if (r.tableFreed) return false;
-      const t = reserveTable(r.tableId);
-      if (!t || !reserveZoneMatch(t.zone)) return false;
+      if (!r.tables.some(x => { const t = reserveTable(x.id); return t && reserveZoneMatch(t.zone); })) return false;
       return sameDay(new Date(r.time), viewDate);
     });
     const cardHtml = r => reserveCardHtml(r, showDate);
@@ -17725,7 +17892,7 @@
     if (!btn) return;
     const tableId = btn.dataset.reserveTable;
     if (reserveTableState(tableId) === 'free') { openNewReserve(tableId); setRoute('мн-31'); return; }
-    const r = reservations.find(x => x.tableId === tableId && !x.tableFreed);
+    const r = reservations.find(x => !x.tableFreed && x.tables.some(tb => tb.id === tableId && tb.state !== 'released'));
     if (r) { openReserveCard(r.id); setRoute('мн-30'); }
   });
 
@@ -17747,21 +17914,37 @@
   const RESERVE_KEY_EVENTS = new Set(['Создан', 'Гость пришёл', 'Стол освободился']);
   let reserveCardEditField = null;   // null | 'table' | 'waiter'
 
+  /* залы всех столов группы, без повторов — используется, когда столов
+     больше одного и у одного поля «Зал» одного значения уже не хватает */
+  function reserveZonesLabel(r) {
+    const names = [];
+    r.tables.forEach(x => {
+      const t = reserveTable(x.id);
+      if (t && !names.includes(reserveZoneName(t.zone))) names.push(reserveZoneName(t.zone));
+    });
+    return names.length ? names.join(', ') : '—';
+  }
+
   function renderReserveCard() {
     const r = findReserve(currentReserveId);
     if (!r) return;
-    const t = reserveTable(r.tableId);
+    const single = r.tables.length === 1;
+    const t = reservePrimaryTable(r);
     /* менять стол и официанта можно только у уже занятого (гость на месте
        и стол ещё не освобождён) резерва — до этого «официант» ещё не
-       назначен и понятие «сменить стол» не имеет смысла */
+       назначен и понятие «сменить стол» не имеет смысла; смена стола через
+       эту строку — только у обычного, одностолового резерва (объединённый
+       ведётся списком ниже, см. renderReserveTableGroup) */
     const occupied = r.arrived && !r.tableFreed;
+    const canEditTable = occupied && single;
+    const tableValue = single ? (t ? '№' + tableNum(t) : '—') : '<span class="table-chips-row">' + tableChipsHtml(r.tables, reserveWaitingPulses(r)) + '</span>';
     document.getElementById('reserveCardFields').innerHTML =
       reserveFieldRow('Время', stampText(r.time)) +
       reserveFieldRow('Персоны', r.persons + ' гост' + guestWord(r.persons)) +
-      (occupied
-        ? reserveFieldRowEditable('Стол', t ? '№' + tableNum(t) : '—', 'table')
-        : reserveFieldRow('Стол', t ? '№' + tableNum(t) : '—')) +
-      reserveFieldRow('Зал', t ? reserveZoneName(t.zone) : '—') +
+      (canEditTable
+        ? reserveFieldRowEditable('Стол', tableValue, 'table')
+        : reserveFieldRow('Стол', tableValue)) +
+      reserveFieldRow('Зал', single ? (t ? reserveZoneName(t.zone) : '—') : reserveZonesLabel(r)) +
       (occupied
         ? reserveFieldRowEditable('Официант', reserveWaiterName(r), 'waiter')
         : reserveFieldRow('Официант', reserveWaiterName(r))) +
@@ -17771,8 +17954,9 @@
       reserveFieldRow('Повод', r.occasion ? RESERVE_OCCASION_NAME[r.occasion] : '—') +
       reserveFieldRow('Комментарий', r.comment || '—', true);
 
-    if (!occupied) reserveCardEditField = null;
+    if (!canEditTable && !occupied) reserveCardEditField = null;
     renderReserveCardPicker();
+    renderReserveTableGroup();
 
     const log = r.log.slice().sort((a, b) => b.at - a.at);
     document.getElementById('reserveCardLog').innerHTML = log.map(e =>
@@ -17786,10 +17970,68 @@
     ).join('');
 
     document.getElementById('reserveArrivedBtn').hidden = r.arrived;
-    document.getElementById('reserveFreedBtn').hidden = !r.arrived || r.tableFreed;
+    /* у объединённого резерва «Стол освободился» целиком заменяет список
+       столов ниже — своя кнопка «Освободить» есть у каждого стола там */
+    document.getElementById('reserveFreedBtn').hidden = !single || !r.arrived || r.tableFreed;
     document.getElementById('reserveNoteComposer').hidden = true;
     document.getElementById('reserveNoteInput').value = '';
   }
+
+  /* ---------- МН-30: список столов объединённого резерва ----------
+     'waiting' → «Освободить» переводит в 'ready' (гости с чужого резерва
+     пересажены, стол теперь наш); 'ready' → «Освободить» переводит в
+     'released' (наши гости ушли, стол сдан); все 'released' → резерв
+     закрывается автоматически (r.tableFreed), как единая «Стол
+     освободился» у обычного резерва */
+  function renderReserveTableGroup() {
+    const box = document.getElementById('reserveTableGroup');
+    const r = findReserve(currentReserveId);
+    if (!r || r.tables.length <= 1) { box.hidden = true; box.innerHTML = ''; return; }
+    box.hidden = false;
+    box.innerHTML = r.tables.map(entry => {
+      const t = reserveTable(entry.id);
+      const num = t ? tableNum(t) : '?';
+      const meta = t ? (t.seats + ' мест · ' + reserveZoneName(t.zone)) : '';
+      if (entry.state === 'released') {
+        return '<div class="reserve-table-group-row">' +
+          '<div class="reserve-table-group-info"><span class="reserve-table-group-num">Стол №' + num + '</span><span class="reserve-table-group-note">' + meta + '</span></div>' +
+          '<span class="reserve-table-group-released">Освобождён</span>' +
+        '</div>';
+      }
+      return '<div class="reserve-table-group-row' + (entry.state === 'waiting' ? ' is-waiting' : '') + '">' +
+        '<div class="reserve-table-group-info"><span class="reserve-table-group-num">Стол №' + num + '</span><span class="reserve-table-group-note">' +
+          (entry.state === 'waiting' ? 'Ждём, пока освободится · ' : '') + meta + '</span></div>' +
+        '<button class="reserve-table-group-release" type="button" data-release-table="' + entry.id + '">Освободить</button>' +
+      '</div>';
+    }).join('');
+  }
+
+  function reserveReleaseTable(tableId) {
+    const r = findReserve(currentReserveId);
+    if (!r) return;
+    const entry = r.tables.find(x => x.id === tableId);
+    if (!entry || entry.state === 'released') return;
+    const t = reserveTable(tableId);
+    const num = t ? tableNum(t) : tableId;
+    if (entry.state === 'waiting') {
+      entry.state = 'ready';
+      r.log.push(reserveEvent('Стол освободился', reserveStaffName(), Date.now(), '№' + num + ' — гости пересажены, стол наш'));
+    } else {
+      entry.state = 'released';
+      r.log.push(reserveEvent('Стол освободился', reserveStaffName(), Date.now(), '№' + num));
+      if (r.tables.every(x => x.state === 'released')) {
+        r.tableFreed = true;
+        r.log.push(reserveEvent('Стол освободился', reserveStaffName(), Date.now(), 'Все столы сданы — резерв закрыт'));
+      }
+    }
+    renderReserveCard();
+    renderReserveTiles();
+  }
+  document.getElementById('reserveTableGroup').addEventListener('click', e => {
+    const btn = e.target.closest('[data-release-table]');
+    if (!btn) return;
+    reserveReleaseTable(btn.dataset.releaseTable);
+  });
 
   function renderReserveCardPicker() {
     const picker = document.getElementById('reserveCardPicker');
@@ -17797,11 +18039,11 @@
     if (!r || !reserveCardEditField) { picker.hidden = true; picker.innerHTML = ''; return; }
     picker.hidden = false;
     if (reserveCardEditField === 'table') {
-      const t = reserveTable(r.tableId);
+      const t = reservePrimaryTable(r);
       const zoneTables = reserveTables.filter(x => x.zone === (t ? t.zone : null));
       picker.innerHTML = '<div class="reserve-table-pick">' + zoneTables.map(x => {
         const state = reserveTableState(x.id);
-        const isCurrent = x.id === r.tableId;
+        const isCurrent = x.id === r.tables[0].id;
         const isDisabled = !isCurrent && state === 'inhall';
         return '<button class="reserve-table-pick-tile' + (isCurrent ? ' active' : '') + '"' +
           (isDisabled ? ' disabled' : '') +
@@ -17836,12 +18078,12 @@
 
   function reserveChangeTable(newTableId) {
     const r = findReserve(currentReserveId);
-    const oldT = reserveTable(r.tableId);
+    const oldT = r ? reservePrimaryTable(r) : null;
     const newT = reserveTable(newTableId);
-    if (!r || !newT || newTableId === r.tableId) { reserveCardEditField = null; renderReserveCard(); return; }
+    if (!r || !newT || newTableId === r.tables[0].id) { reserveCardEditField = null; renderReserveCard(); return; }
     const oldNum = oldT ? tableNum(oldT) : null;
     const newNum = tableNum(newT);
-    r.tableId = newTableId;
+    r.tables[0] = { id: newTableId, state: 'ready' };
     const order = linkedOrderTable(r);
     if (order) {
       const targetZone = RESERVE_ZONE_TO_ORDER_ZONE[newT.zone];
@@ -17945,7 +18187,16 @@
   /* ---------- МН-31: новый резерв ---------- */
   let newReservePersons = 2;
   let newReserveOccasion = '';
-  let newReserveSelectedTable = null;
+  /* мультивыбор столов: массив {id, state} — обычный резерв всегда 1
+     элемент state:'ready' (выбор только из свободных, как раньше). Долгое
+     удержание любой плитки (nrTablePressTimer) включает newReserveMultiMode,
+     где видны ВСЕ столы, включая занятые — занятый попадает со state
+     'waiting', свободный — 'ready'. «Объединить в один резерв»
+     (newReserveMerged) сворачивает выбор в строку чипов; удержание по ней
+     возвращает развёрнутый мультивыбор */
+  let newReserveSelectedTables = [];
+  let newReserveMultiMode = false;
+  let newReserveMerged = false;
   let newReservePrefillTable = null;
   let newReserveBufferAcked = false;
 
@@ -17994,21 +18245,25 @@
     for (let m = openMin; m <= cutoffClose; m += 15) list.push(pad2(Math.floor(m / 60) % 24) + ':' + pad2(m % 60));
     return list;
   }
-  /* лента показывает все оставшиеся слоты выбранного дня до закрытия:
-     для сегодня — от текущего момента и до закрытия, для остальных дней —
-     с открытия и до закрытия целиком. Отсчёт от «сейчас» — строго
-     следующие 15 минут: если сейчас ровно 15:00, первый слот в ленте —
-     15:15, а не 15:00 (на текущий момент уже нельзя создать резерв) */
+  /* лента — не больше NR_LANE_SIZE ячеек (шаг 15 мин, окно ровно 3 часа от
+     первой до последней ячейки): для сегодня — от текущего момента,
+     округлённого ВВЕРХ до 15 мин (на ровной четверти часа ячейка не
+     сдвигается: 11:00 остаётся 11:00, 11:07 становится 11:15), для
+     остальных дней — с открытия. Меньше NR_LANE_SIZE ячеек — если слотов
+     до закрытия осталось меньше. Окно скользящее: см. таймер у
+     nrRenderTimeBlock — прошедшая ячейка уходит, в конец добавляется новая */
+  const NR_LANE_SIZE = 13;
+  function nrRoundUp15(min) { return min % 15 === 0 ? min : (Math.floor(min / 15) + 1) * 15; }
   function nrLaneSlots(day, today) {
     const all = venueSlotList(day);
-    if (!sameDay(day, today)) return all;
+    if (!sameDay(day, today)) return all.slice(0, NR_LANE_SIZE);
     const openMin = venueProfile.hours.mode === '24-7' ? 0 : parseHM(hoursForDay(day.getDay()).open);
     const now = new Date();
     const nowMin = now.getHours() * 60 + now.getMinutes();
-    if (nowMin < openMin) return all;
-    const rounded = (Math.floor(nowMin / 15) + 1) * 15;
+    if (nowMin < openMin) return all.slice(0, NR_LANE_SIZE);
+    const rounded = nrRoundUp15(nowMin);
     const idx = Math.min(all.length, Math.round((rounded - openMin) / 15));
-    return all.slice(idx);
+    return all.slice(idx, idx + NR_LANE_SIZE);
   }
   function nrEffectiveDate() {
     if (!nrPickedDay) return null;
@@ -18057,12 +18312,20 @@
     ).join('');
     document.getElementById('newReserveTimeLane').classList.toggle('dim', far);
     /* кнопка-часы — не список «ещё времени», а прямая установка: клик сразу
-       поднимает native time-picker через визуально скрытое поле (см.
-       #newReserveTimeSetWrap) — на экране остаётся только иконка */
+       открывает барабан (openTimeWheel) — на экране остаётся только иконка,
+       либо чип с выбранным временем (.restime-chip/.restime-chip-main),
+       если оно не входит в видимую ленту */
     document.getElementById('newReserveClockSlot').innerHTML = far
       ? '<button class="restime-chip" id="newReserveClockBtn" type="button" aria-label="Изменить время">' + RES_CLOCK_ICON + '<span class="restime-chip-main">' + nrPickedTime + '</span></button>'
       : '<button class="restime-icon-btn" id="newReserveClockBtn" type="button" aria-label="Установить время">' + RES_CLOCK_ICON + '</button>';
   }
+  /* окно ленты скользит само по себе, даже если пользователь не трогает
+     экран: раз в минуту пересчитываем — прошедшая ячейка уходит, в конец
+     добавляется новая (см. NR_LANE_SIZE у nrLaneSlots) */
+  setInterval(() => {
+    const panel = document.querySelector('.shift-detail[data-detail="newReserve"]');
+    if (panel && !panel.hidden) nrRenderTimeBlock();
+  }, 60000);
 
   function nrUpdate() {
     newReserveBufferAcked = false;
@@ -18140,8 +18403,8 @@
     return venueSlotList(day).filter(s => s.slice(0, 2) === hour).map(s => s.slice(3));
   }
   function renderWheelColumn(colId, items) {
-    document.querySelector('#' + colId + ' .time-wheel-col-inner').innerHTML =
-      items.map(v => '<div class="time-wheel-item" data-value="' + v + '">' + v + '</div>').join('');
+    document.querySelector('#' + colId + ' .drum-col-inner').innerHTML =
+      items.map(v => '<div class="drum-item" data-value="' + v + '">' + v + '</div>').join('');
   }
   function scrollWheelTo(colId, idx, smooth) {
     document.getElementById(colId).scrollTo({ top: Math.max(0, idx) * WHEEL_ITEM_H, behavior: smooth ? 'smooth' : 'auto' });
@@ -18149,7 +18412,7 @@
   function updateWheelHighlight(colId) {
     const col = document.getElementById(colId);
     const idx = Math.round(col.scrollTop / WHEEL_ITEM_H);
-    [...col.querySelectorAll('.time-wheel-item')].forEach((it, i) => {
+    [...col.querySelectorAll('.drum-item')].forEach((it, i) => {
       it.classList.toggle('is-active', i === idx);
       it.classList.toggle('is-near', Math.abs(i - idx) === 1);
     });
@@ -18162,14 +18425,26 @@
       ? 'Круглосуточно, шаг 15 мин'
       : 'Часы ' + h.open + '…' + h.close + ', минуты по 15 мин.' + (crosses ? ' После полуночи — ночь той же смены.' : '');
   }
+  /* без выбранного времени барабан открывается не с начала дня, а на первом
+     слоте после конца окна ленты (лента до 15:15 → барабан стартует на
+     15:30) — так пользователь листает дальше, а не назад к уже видимому */
+  function nrFirstSlotAfterLane(day) {
+    const today = dateOnly(new Date());
+    const all = venueSlotList(day);
+    const lane = nrLaneSlots(day, today);
+    if (!lane.length) return all[0] || null;
+    const nextIdx = all.indexOf(lane[lane.length - 1]) + 1;
+    return all[nextIdx] || lane[lane.length - 1];
+  }
   function openTimeWheel() {
     const day = nrPickedDay || dateOnly(new Date());
     const hours = timeWheelHourList(day);
     if (!hours.length) return;
-    let hour = nrPickedTime ? nrPickedTime.slice(0, 2) : hours[0];
+    const defaultHM = nrPickedTime || nrFirstSlotAfterLane(day);
+    let hour = defaultHM ? defaultHM.slice(0, 2) : hours[0];
     if (!hours.includes(hour)) hour = hours[0];
     const minutes = timeWheelMinuteList(day, hour);
-    let minute = nrPickedTime ? nrPickedTime.slice(3) : minutes[0];
+    let minute = defaultHM ? defaultHM.slice(3) : minutes[0];
     if (!minutes.includes(minute)) minute = minutes[0];
     timeWheelCtx = { day: day };
     renderTimeWheelNote(day);
@@ -18190,7 +18465,7 @@
   function currentWheelValue(colId) {
     const col = document.getElementById(colId);
     const idx = Math.round(col.scrollTop / WHEEL_ITEM_H);
-    const items = col.querySelectorAll('.time-wheel-item');
+    const items = col.querySelectorAll('.drum-item');
     return items[idx] ? items[idx].dataset.value : null;
   }
   document.getElementById('timeWheelHours').addEventListener('scroll', () => {
@@ -18215,9 +18490,9 @@
   });
   ['timeWheelHours', 'timeWheelMinutes'].forEach(colId => {
     document.getElementById(colId).addEventListener('click', e => {
-      const item = e.target.closest('.time-wheel-item');
+      const item = e.target.closest('.drum-item');
       if (!item) return;
-      const items = [...document.querySelectorAll('#' + colId + ' .time-wheel-item')];
+      const items = [...document.querySelectorAll('#' + colId + ' .drum-item')];
       scrollWheelTo(colId, items.indexOf(item), true);
     });
   });
@@ -18229,6 +18504,57 @@
   });
   document.getElementById('timeWheelOverlay').addEventListener('click', e => {
     if (e.target.id === 'timeWheelOverlay') closeTimeWheel();
+  });
+
+  /* ---------- МН-31: барабан персон — тот же компонент-барабан, одна
+     колонка 1…50; дальше — кнопкой «+», без верхнего предела ---------- */
+  let personsWheelTimer = null;
+  let personsWheelOverflow = null;
+  function renderPersonsWheelTitle(value) {
+    document.getElementById('personsWheelTitle').textContent = 'Персоны: ' + value;
+  }
+  function openPersonsWheel() {
+    const list = []; for (let i = 1; i <= 50; i++) list.push(String(i));
+    personsWheelOverflow = newReservePersons > 50 ? newReservePersons : null;
+    renderWheelColumn('personsWheelCol', list);
+    renderPersonsWheelTitle(newReservePersons);
+    document.getElementById('personsWheelOverlay').hidden = false;
+    requestAnimationFrame(() => {
+      const idx = Math.min(49, Math.max(0, newReservePersons - 1));
+      scrollWheelTo('personsWheelCol', idx);
+      updateWheelHighlight('personsWheelCol');
+    });
+  }
+  function closePersonsWheel() { document.getElementById('personsWheelOverlay').hidden = true; }
+  document.getElementById('newReservePersonsCount').addEventListener('click', openPersonsWheel);
+  document.getElementById('newReservePersonsCount').addEventListener('focus', e => e.target.blur());
+  document.getElementById('personsWheelCol').addEventListener('scroll', () => {
+    updateWheelHighlight('personsWheelCol');
+    clearTimeout(personsWheelTimer);
+    personsWheelTimer = setTimeout(() => {
+      const v = currentWheelValue('personsWheelCol');
+      if (!v) return;
+      personsWheelOverflow = null;
+      renderPersonsWheelTitle(v);
+    }, 150);
+  });
+  document.getElementById('personsWheelCol').addEventListener('click', e => {
+    const item = e.target.closest('.drum-item');
+    if (!item) return;
+    const items = [...document.querySelectorAll('#personsWheelCol .drum-item')];
+    scrollWheelTo('personsWheelCol', items.indexOf(item), true);
+  });
+  document.getElementById('personsWheelMoreBtn').addEventListener('click', () => {
+    personsWheelOverflow = (personsWheelOverflow || 50) + 1;
+    renderPersonsWheelTitle(personsWheelOverflow);
+  });
+  document.getElementById('personsWheelDoneBtn').addEventListener('click', () => {
+    const v = personsWheelOverflow || Number(currentWheelValue('personsWheelCol'));
+    closePersonsWheel();
+    if (v) setNewReservePersons(v);
+  });
+  document.getElementById('personsWheelOverlay').addEventListener('click', e => {
+    if (e.target.id === 'personsWheelOverlay') closePersonsWheel();
   });
 
   function newReserveSlot() {
@@ -18243,7 +18569,7 @@
   /* резервы этого стола на ту же календарную дату, что и выбранный слот */
   function tableReservesOnDate(tableId, dateStr) {
     return reservations.filter(r => {
-      if (r.tableId !== tableId || r.tableFreed) return false;
+      if (r.tableFreed || !r.tables.some(tb => tb.id === tableId && tb.state !== 'released')) return false;
       const d = new Date(r.time);
       const rd = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
       return rd === dateStr;
@@ -18252,70 +18578,144 @@
 
   function updateNewReserveBuffer(dateStr, slot) {
     const warn = document.getElementById('newReserveBufferWarn');
-    if (!newReserveSelectedTable) { warn.hidden = true; return; }
-    const others = tableReservesOnDate(newReserveSelectedTable, dateStr);
-    const tight = others.some(r => {
+    if (!newReserveSelectedTables.length) { warn.hidden = true; return; }
+    const tight = newReserveSelectedTables.some(sel => tableReservesOnDate(sel.id, dateStr).some(r => {
       const gapBefore = slot.start - (r.time + RESERVE_DURATION_MIN * 60000);
       const gapAfter = r.time - slot.end;
       return (gapBefore >= 0 && gapBefore < RESERVE_BUFFER_MIN * 60000) || (gapAfter >= 0 && gapAfter < RESERVE_BUFFER_MIN * 60000);
-    });
+    }));
     warn.hidden = !tight || newReserveBufferAcked;
   }
 
   function updateNewReserveSubmit() {
     const name = document.getElementById('newReserveName').value.trim();
     const phone = document.getElementById('newReservePhone').value.trim();
-    const ok = !!(newReserveSlot() && newReserveSelectedTable && name && phone);
+    const ok = !!(newReserveSlot() && newReserveSelectedTables.length && name && phone);
     document.getElementById('newReserveSubmit').disabled = !ok;
+  }
+
+  function nrSelectedIds() { return newReserveSelectedTables.map(x => x.id); }
+  function nrSelectedSeats() {
+    return newReserveSelectedTables.reduce((sum, x) => { const t = reserveTable(x.id); return sum + (t ? t.seats : 0); }, 0);
+  }
+  function nrFreeTableIds(dateStr, slot) {
+    return reserveTables.filter(t => {
+      const others = tableReservesOnDate(t.id, dateStr);
+      return !others.some(r => slot.start < r.time + RESERVE_DURATION_MIN * 60000 && r.time < slot.end);
+    }).map(t => t.id);
+  }
+  function reserveTablePickTileHtml(t, extraClass, zoneLabel) {
+    return '<button class="reserve-table-pick-tile' + extraClass + '" data-pick-table="' + t.id + '">' +
+      '<span class="reserve-table-pick-num">№' + tableNum(t) + '</span>' +
+      '<span class="reserve-table-pick-seats"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c1-4 4-6 7-6s6 2 7 6"/></svg>' + t.seats + '</span>' +
+      '<span class="reserve-table-pick-zone">' + zoneLabel + '</span>' +
+    '</button>';
   }
 
   function renderNewReserveTables() {
     const dateStr = document.getElementById('newReserveDate').value;
     const slot = newReserveSlot();
     const pick = document.getElementById('newReserveTablePick');
+    const summary = document.getElementById('newReserveTablePickSummary');
+    const chipsBox = document.getElementById('newReserveTableChips');
+    const mergeBtn = document.getElementById('newReserveMergeBtn');
+    const label = document.getElementById('newReserveTablePickLabel');
+    const warn = document.getElementById('newReserveBufferWarn');
+
     if (!slot) {
+      pick.hidden = false; summary.hidden = true; chipsBox.hidden = true; mergeBtn.hidden = true;
+      label.textContent = 'Свободные столы на это время';
       pick.innerHTML = '<div class="reserve-empty">Выберите дату и время</div>';
-      newReserveSelectedTable = null;
-      document.getElementById('newReserveBufferWarn').hidden = true;
+      newReserveSelectedTables = []; newReserveMultiMode = false; newReserveMerged = false;
+      warn.hidden = true;
       updateNewReserveSubmit();
       return;
     }
-    const free = reserveTables.filter(t => {
-      const others = tableReservesOnDate(t.id, dateStr);
-      return !others.some(r => slot.start < r.time + RESERVE_DURATION_MIN * 60000 && r.time < slot.end);
-    });
+
+    /* объединено (см. «Объединить в один резерв») — плитки скрыты,
+       показана строка чипов; долгое удержание по ней (nrChipsPressTimer)
+       возвращает развёрнутый мультивыбор */
+    if (newReserveMerged) {
+      pick.hidden = true; summary.hidden = true; mergeBtn.hidden = true;
+      label.textContent = 'Столы резерва';
+      chipsBox.hidden = false;
+      chipsBox.innerHTML = tableChipsHtml(newReserveSelectedTables, false);
+      updateNewReserveBuffer(dateStr, slot);
+      updateNewReserveSubmit();
+      return;
+    }
+    chipsBox.hidden = true;
+
+    const freeIds = nrFreeTableIds(dateStr, slot);
+
+    if (newReserveMultiMode) {
+      /* мультивыбор — единым потоком ВСЕ столы (и занятые), по залу и
+         номеру, без фильтров и отдельных блоков; состояние выбранных
+         пересчитываем каждый раз — занятый на новое время стол «ждёт»,
+         освободившийся снова просто «готов» */
+      label.textContent = 'Выбор столов';
+      newReserveSelectedTables.forEach(sel => { sel.state = freeIds.includes(sel.id) ? 'ready' : 'waiting'; });
+      const all = reserveTables.slice().sort((a, b) =>
+        a.zone === b.zone ? tableNum(a) - tableNum(b) : reserveZoneName(a.zone).localeCompare(reserveZoneName(b.zone), 'ru'));
+      pick.hidden = false;
+      pick.innerHTML = all.map(t => {
+        const occupied = !freeIds.includes(t.id);
+        const cls = (nrSelectedIds().includes(t.id) ? ' is-picked' : '') + (occupied ? ' is-occupied' : '');
+        return reserveTablePickTileHtml(t, cls, occupied ? 'Занят' : reserveZoneName(t.zone));
+      }).join('');
+      summary.hidden = false;
+      summary.textContent = 'Мест выбрано: ' + nrSelectedSeats() + ' из ' + newReservePersons;
+      mergeBtn.hidden = !newReserveSelectedTables.length;
+      newReservePrefillTable = null;
+      updateNewReserveBuffer(dateStr, slot);
+      updateNewReserveSubmit();
+      return;
+    }
+
+    /* обычный режим — как раньше: только свободные столы, одиночный выбор */
+    label.textContent = 'Свободные столы на это время';
+    summary.hidden = true; mergeBtn.hidden = true;
+    const free = reserveTables.filter(t => freeIds.includes(t.id));
     if (!free.length) {
+      pick.hidden = false;
       pick.innerHTML = '<div class="reserve-empty">Нет свободных столов на выбранное время</div>';
-      newReserveSelectedTable = null;
-      document.getElementById('newReserveBufferWarn').hidden = true;
+      newReserveSelectedTables = [];
+      warn.hidden = true;
       updateNewReserveSubmit();
       return;
     }
-    if (newReserveSelectedTable && !free.some(t => t.id === newReserveSelectedTable)) newReserveSelectedTable = null;
-    if (!newReserveSelectedTable && newReservePrefillTable && free.some(t => t.id === newReservePrefillTable)) {
-      newReserveSelectedTable = newReservePrefillTable;
+    let selectedId = newReserveSelectedTables[0] ? newReserveSelectedTables[0].id : null;
+    if (selectedId && !freeIds.includes(selectedId)) selectedId = null;
+    if (!selectedId && newReservePrefillTable && freeIds.includes(newReservePrefillTable)) {
+      selectedId = newReservePrefillTable;
     }
-    pick.innerHTML = free.map(t =>
-      '<button class="reserve-table-pick-tile' + (t.id === newReserveSelectedTable ? ' active' : '') + '" data-pick-table="' + t.id + '">' +
-        '<span class="reserve-table-pick-num">№' + tableNum(t) + '</span>' +
-        '<span class="reserve-table-pick-seats"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c1-4 4-6 7-6s6 2 7 6"/></svg>' + t.seats + '</span>' +
-        '<span class="reserve-table-pick-zone">' + reserveZoneName(t.zone) + '</span>' +
-      '</button>'
-    ).join('');
+    newReserveSelectedTables = selectedId ? [{ id: selectedId, state: 'ready' }] : [];
+    pick.hidden = false;
+    pick.innerHTML = free.map(t => reserveTablePickTileHtml(t, t.id === selectedId ? ' active' : '', reserveZoneName(t.zone))).join('');
     newReservePrefillTable = null;
     updateNewReserveBuffer(dateStr, slot);
     updateNewReserveSubmit();
   }
 
+  /* без верхнего предела — счётчик расширяется под 3+ цифры (см.
+     .step-count-input), барабан персон (openPersonsWheel) уходит за 50 через «+» */
+  function setNewReservePersons(n) {
+    newReservePersons = Math.max(1, n);
+    const el = document.getElementById('newReservePersonsCount');
+    el.value = newReservePersons;
+    el.style.width = Math.max(2, String(newReservePersons).length) + 'ch';
+  }
+
   function openNewReserve(prefillTableId) {
-    newReservePersons = 2;
     newReserveOccasion = '';
-    newReserveSelectedTable = null;
+    newReserveSelectedTables = [];
+    newReserveMultiMode = false;
+    newReserveMerged = false;
     newReservePrefillTable = prefillTableId || null;
     newReserveBufferAcked = false;
     nrPickedDay = dateOnly(new Date());
     nrPickedTime = null;
-    document.getElementById('newReservePersonsCount').value = newReservePersons;
+    setNewReservePersons(2);
     document.getElementById('newReserveName').value = '';
     document.getElementById('newReservePhone').value = '';
     document.getElementById('newReserveTg').value = '';
@@ -18327,34 +18727,102 @@
     showDetail('newReserve', 'Новый резерв', 'Создание резерва');
   }
 
+  function nrUpdatePickSummary() {
+    if (!newReserveMultiMode || newReserveMerged) return;
+    document.getElementById('newReserveTablePickSummary').textContent = 'Мест выбрано: ' + nrSelectedSeats() + ' из ' + newReservePersons;
+  }
   document.getElementById('newReservePersonsMinus').addEventListener('click', () => {
     if (newReservePersons <= 1) return;
-    newReservePersons--;
-    document.getElementById('newReservePersonsCount').value = newReservePersons;
+    setNewReservePersons(newReservePersons - 1);
+    nrUpdatePickSummary();
   });
   document.getElementById('newReservePersonsPlus').addEventListener('click', () => {
-    if (newReservePersons >= 30) return;
-    newReservePersons++;
-    document.getElementById('newReservePersonsCount').value = newReservePersons;
-  });
-  document.getElementById('newReservePersonsCount').addEventListener('change', e => {
-    let n = parseInt(e.target.value, 10);
-    if (!n || n < 1) n = 1;
-    if (n > 30) n = 30;
-    newReservePersons = n;
-    e.target.value = newReservePersons;
+    setNewReservePersons(newReservePersons + 1);
+    nrUpdatePickSummary();
   });
 
+  /* тап по плитке стола: в обычном режиме — одиночный выбор (как раньше);
+     в мультивыборе — переключает стол во/из выбора. Долгое удержание любой
+     плитки (порог 700 мс — тот же, что у удержания позиции заказа для
+     переноса/удаления, см. orderPositionsEl pointerdown выше) включает
+     мультивыбор — см. nrTablePress* ниже */
   document.getElementById('newReserveTablePick').addEventListener('click', e => {
+    if (nrTablePressMoved) { nrTablePressMoved = false; return; }
     const btn = e.target.closest('[data-pick-table]');
     if (!btn) return;
-    newReserveSelectedTable = btn.dataset.pickTable;
+    const id = btn.dataset.pickTable;
     newReserveBufferAcked = false;
+    if (newReserveMultiMode) {
+      const idx = newReserveSelectedTables.findIndex(x => x.id === id);
+      if (idx >= 0) newReserveSelectedTables.splice(idx, 1);
+      else newReserveSelectedTables.push({ id: id, state: 'ready' });
+      renderNewReserveTables();
+      return;
+    }
+    newReserveSelectedTables = [{ id: id, state: 'ready' }];
     document.querySelectorAll('#newReserveTablePick .reserve-table-pick-tile').forEach(b => b.classList.toggle('active', b === btn));
     const slot = newReserveSlot();
     if (slot) updateNewReserveBuffer(document.getElementById('newReserveDate').value, slot);
     updateNewReserveSubmit();
   });
+  document.getElementById('newReserveTablePick').addEventListener('contextmenu', e => e.preventDefault());
+
+  /* долгое удержание плитки — включает мультивыбор (см. renderNewReserveTables) */
+  let nrTablePressTimer = null, nrTablePressId = null, nrTablePressPoint = null, nrTablePressMoved = false;
+  function nrTablePressReset() {
+    window.removeEventListener('pointermove', nrTablePressMove);
+    window.removeEventListener('pointerup', nrTablePressEnd);
+    window.removeEventListener('pointercancel', nrTablePressEnd);
+    clearTimeout(nrTablePressTimer);
+    nrTablePressTimer = null; nrTablePressId = null; nrTablePressPoint = null;
+  }
+  function nrTablePressMove(e) {
+    if (!nrTablePressPoint) return;
+    if (Math.abs(e.clientX - nrTablePressPoint.x) > 10 || Math.abs(e.clientY - nrTablePressPoint.y) > 10) nrTablePressReset();
+  }
+  function nrTablePressEnd() { nrTablePressReset(); }
+  document.getElementById('newReserveTablePick').addEventListener('pointerdown', e => {
+    nrTablePressMoved = false;
+    const btn = e.target.closest('[data-pick-table]');
+    if (!btn) return;
+    nrTablePressId = btn.dataset.pickTable;
+    nrTablePressPoint = { x: e.clientX, y: e.clientY };
+    window.addEventListener('pointermove', nrTablePressMove);
+    window.addEventListener('pointerup', nrTablePressEnd);
+    window.addEventListener('pointercancel', nrTablePressEnd);
+    nrTablePressTimer = setTimeout(() => {
+      const id = nrTablePressId;
+      nrTablePressReset();
+      nrTablePressMoved = true;
+      suppressNextClickGlobally();
+      newReserveMultiMode = true;
+      if (!nrSelectedIds().includes(id)) newReserveSelectedTables.push({ id: id, state: 'ready' });
+      renderNewReserveTables();
+    }, 700);
+  });
+
+  /* объединение выбора в один резерв — сворачивает плитки в строку чипов */
+  document.getElementById('newReserveMergeBtn').addEventListener('click', () => {
+    if (!newReserveSelectedTables.length) return;
+    newReserveMerged = true;
+    renderNewReserveTables();
+  });
+
+  /* удержание по свёрнутой строке чипов возвращает развёрнутый мультивыбор
+     с сохранённым выбором — тот же порог, что и у плиток (nrTablePressTimer) */
+  let nrChipsPressTimer = null;
+  const newReserveTableChipsEl = document.getElementById('newReserveTableChips');
+  newReserveTableChipsEl.addEventListener('pointerdown', () => {
+    clearTimeout(nrChipsPressTimer);
+    nrChipsPressTimer = setTimeout(() => {
+      nrChipsPressTimer = null;
+      newReserveMerged = false;
+      renderNewReserveTables();
+    }, 700);
+  });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(evt =>
+    newReserveTableChipsEl.addEventListener(evt, () => clearTimeout(nrChipsPressTimer)));
+  newReserveTableChipsEl.addEventListener('contextmenu', e => e.preventDefault());
 
   document.getElementById('newReserveBufferAck').addEventListener('click', () => {
     newReserveBufferAcked = true;
@@ -18378,7 +18846,7 @@
     reserveSeq++;
     reservations.push({
       id:'r' + reserveSeq,
-      tableId:newReserveSelectedTable,
+      tables:newReserveSelectedTables.map(x => ({ id:x.id, state:x.state })),
       time:slot.start,
       persons:newReservePersons,
       name:document.getElementById('newReserveName').value.trim(),
@@ -18506,60 +18974,74 @@
     }
     document.getElementById('restaurantHoursNote').textContent = text;
   }
-  /* день недели, чей график сейчас показан/редактируется на экране —
-     по умолчанию открывается на сегодняшнем дне */
-  let restaurantHoursSelectedDay = new Date().getDay();
-  function renderRestaurantHoursDay() {
-    const h = hoursForDay(restaurantHoursSelectedDay);
+  /* дни недели, чей общий график сейчас редактируется на экране — любое
+     количество в любом порядке; по умолчанию вся неделя, как в исходных
+     данных (все дни настроены одинаково) */
+  let restaurantHoursSelectedDays = new Set([0, 1, 2, 3, 4, 5, 6]);
+  function renderRestaurantHoursDays() {
     document.querySelectorAll('#restaurantHoursDayPicker .filter-chip').forEach(btn => {
-      btn.classList.toggle('active', Number(btn.dataset.hoursDay) === restaurantHoursSelectedDay);
+      btn.classList.toggle('active', restaurantHoursSelectedDays.has(Number(btn.dataset.hoursDay)));
     });
+    document.getElementById('restaurantHoursAllWeek').checked = restaurantHoursSelectedDays.size === 7;
+    /* поля открытия/закрытия показывают время первого выбранного дня (по
+       порядку недели, а не выбора) — редактирование применяется сразу ко
+       всем выбранным дням */
+    const firstDay = [1, 2, 3, 4, 5, 6, 0].find(d => restaurantHoursSelectedDays.has(d));
+    const h = firstDay === undefined ? { open: '', close: '' } : hoursForDay(firstDay);
     document.getElementById('restaurantHoursOpen').value = h.open;
     document.getElementById('restaurantHoursClose').value = h.close;
     /* переход через полночь — явно показываем, что учли, а не просто
        молча считаем: закрытие раньше открытия для этого же дня значит
        «на следующие сутки» */
     document.getElementById('restaurantHoursCrossNote').textContent =
-      parseHM(h.close) <= parseHM(h.open) ? 'Закрытие — уже на следующий день' : '';
+      h.open && h.close && parseHM(h.close) <= parseHM(h.open) ? 'Закрытие — уже на следующий день' : '';
   }
-  function renderRestaurantHoursMode() {
-    document.querySelectorAll('#restaurantHoursModeSwitch .segmented-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.hoursMode === venueProfile.hours.mode);
-    });
-    document.getElementById('restaurantHoursTimesBlock').hidden = venueProfile.hours.mode === '24-7';
+  function renderRestaurantHours247() {
+    const on = venueProfile.hours.mode === '24-7';
+    document.getElementById('restaurantHours247Switch').setAttribute('aria-checked', String(on));
+    document.querySelectorAll('#restaurantHoursDayPicker .filter-chip').forEach(b => { b.disabled = on; });
+    document.getElementById('restaurantHoursAllWeek').disabled = on;
+    document.getElementById('restaurantHoursAllWeek').closest('label').classList.toggle('is-disabled', on);
+    document.getElementById('restaurantHoursOpen').disabled = on;
+    document.getElementById('restaurantHoursClose').disabled = on;
   }
   renderRestaurantHoursNote();
   document.getElementById('restaurantHoursOpenBtn').addEventListener('click', () => {
-    restaurantHoursSelectedDay = new Date().getDay();
-    renderRestaurantHoursDay();
-    renderRestaurantHoursMode();
+    renderRestaurantHoursDays();
+    renderRestaurantHours247();
     showProfileDetail('profile-settings-restaurant-hours');
   });
-  document.querySelectorAll('#restaurantHoursModeSwitch .segmented-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      venueProfile.hours.mode = btn.dataset.hoursMode;
-      renderRestaurantHoursMode();
-      renderRestaurantHoursNote();
-      nrUpdate();
-    });
+  document.getElementById('restaurantHours247Switch').addEventListener('click', () => {
+    venueProfile.hours.mode = venueProfile.hours.mode === '24-7' ? 'scheduled' : '24-7';
+    renderRestaurantHours247();
+    renderRestaurantHoursNote();
+    nrUpdate();
+  });
+  document.getElementById('restaurantHoursAllWeek').addEventListener('change', e => {
+    restaurantHoursSelectedDays = e.target.checked ? new Set([0, 1, 2, 3, 4, 5, 6]) : new Set();
+    renderRestaurantHoursDays();
   });
   document.getElementById('restaurantHoursDayPicker').addEventListener('click', e => {
     const btn = e.target.closest('[data-hours-day]');
     if (!btn) return;
-    restaurantHoursSelectedDay = Number(btn.dataset.hoursDay);
-    renderRestaurantHoursDay();
+    const day = Number(btn.dataset.hoursDay);
+    /* «Вся неделя» отражает состояние набора — снимается сама, как только
+       хотя бы один день выключен, независимо от того, как её включали */
+    if (restaurantHoursSelectedDays.has(day)) restaurantHoursSelectedDays.delete(day);
+    else restaurantHoursSelectedDays.add(day);
+    renderRestaurantHoursDays();
   });
   document.getElementById('restaurantHoursOpen').addEventListener('change', e => {
     if (!e.target.value) return;
-    hoursForDay(restaurantHoursSelectedDay).open = e.target.value;
-    renderRestaurantHoursDay();
+    restaurantHoursSelectedDays.forEach(day => { hoursForDay(day).open = e.target.value; });
+    renderRestaurantHoursDays();
     renderRestaurantHoursNote();
     nrUpdate();
   });
   document.getElementById('restaurantHoursClose').addEventListener('change', e => {
     if (!e.target.value) return;
-    hoursForDay(restaurantHoursSelectedDay).close = e.target.value;
-    renderRestaurantHoursDay();
+    restaurantHoursSelectedDays.forEach(day => { hoursForDay(day).close = e.target.value; });
+    renderRestaurantHoursDays();
     renderRestaurantHoursNote();
     nrUpdate();
   });
