@@ -5558,6 +5558,25 @@
   .reserve-card.is-overdue{ animation:reservePulseRed .85s ease-in-out infinite; }
   .reserve-card.is-overdue .reserve-card-time{color:var(--dot-red);}
 
+  /* ---------- Строка чипов столов — общий компонент МН-13/МН-30/МН-31:
+     один стол — как раньше, простым номером; несколько — чипами через
+     золотой «+», flex-wrap, выравнивание вправо ---------- */
+  .table-chips-row{display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; gap:4px;}
+  .table-chip{
+    display:inline-flex; align-items:center; justify-content:center;
+    padding:2px 7px;
+    border-radius:8px;
+    border:1.5px solid var(--gold);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px; font-weight:800;
+    color:var(--text-primary);
+    white-space:nowrap;
+  }
+  .table-chip-plus{width:12px; height:12px; stroke:var(--gold); stroke-width:3; fill:none; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0;}
+  .table-chip.is-waiting-hard{border-color:var(--dot-red);}
+  .table-chip.is-waiting-soon{border-color:var(--dot-red); animation:reservePulseRed .85s ease-in-out infinite;}
+  .table-chip.is-released{border-style:dashed; border-color:var(--card-border); color:var(--text-muted); text-decoration:line-through;}
+
   /* ---------- Схема зала ---------- */
   .reserve-scheme-zone{
     position:relative;
@@ -5643,6 +5662,36 @@
   .reserve-card-picker{margin:-6px 0 14px;}
   .reserve-card-picker[hidden]{display:none;}
   .reserve-card-picker .reserve-occasion-chips{margin-top:2px;}
+
+  /* ---------- МН-30: список столов объединённого резерва (tables.length > 1),
+     у каждого своя кнопка «Освободить» — см. reserveReleaseTable ---------- */
+  .reserve-table-group{display:flex; flex-direction:column; gap:8px; margin:-6px 0 14px;}
+  .reserve-table-group[hidden]{display:none;}
+  .reserve-table-group-row{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:10px 12px;
+    background:var(--surface);
+    border:1px solid var(--card-border);
+    border-radius:14px;
+  }
+  .reserve-table-group-row.is-waiting{border-color:var(--dot-red);}
+  .reserve-table-group-info{display:flex; flex-direction:column; gap:2px;}
+  .reserve-table-group-num{font-family:'Manrope', sans-serif; font-size:13px; font-weight:800; color:var(--text-primary);}
+  .reserve-table-group-note{font-size:11px; color:var(--text-muted);}
+  .reserve-table-group-release{
+    flex-shrink:0;
+    background:none;
+    border:1.5px solid var(--gold);
+    border-radius:11px;
+    padding:8px 14px;
+    font-family:'Manrope', sans-serif;
+    font-size:12px; font-weight:800;
+    color:var(--gold);
+    cursor:pointer;
+  }
+  .reserve-table-group-release:active{transform:scale(.96);}
+  .reserve-table-group-released{font-size:11.5px; font-weight:700; color:var(--text-muted); text-decoration:line-through;}
+
   .reserve-btn-outline{
     display:flex; align-items:center; justify-content:center; gap:7px;
     width:100%;
@@ -7326,6 +7375,12 @@
 
           <div class="finance-rows" id="reserveCardFields"></div>
           <div class="reserve-card-picker" id="reserveCardPicker" hidden></div>
+
+          <!-- объединённый резерв (tables.length > 1) — список столов группы
+               под строкой чипов, у каждого своя кнопка «Освободить» (см.
+               reserveReleaseTable); при одном столе список скрыт, действует
+               обычная «Стол освободился» ниже -->
+          <div class="reserve-table-group" id="reserveTableGroup" hidden></div>
 
           <div class="detail-section-title">Лента событий</div>
           <div class="history-log" id="reserveCardLog"></div>
@@ -17397,6 +17452,12 @@
      у столов новых залов (см. createReserveZone) номер задаётся отдельно —
      то, что ввели в «Первый номер стола», не обязано совпадать с id */
   function tableNum(t) { return t.num != null ? t.num : parseInt(t.id.replace('rt', ''), 10); }
+  /* «главный» стол резерва — первый в массиве r.tables: для одиночного
+     резерва это единственный стол, для объединённого — тот, что показывают
+     там, где места на несколько чипов нет (не используется, если места на
+     чипы есть — см. tableChipsHtml) */
+  function reservePrimaryTable(r) { return reserveTable(r.tables[0].id); }
+  function reserveHasTable(r, tableId) { return r.tables.some(x => x.id === tableId); }
 
   /* залы «Резервов» и «Заказов» — разные списки с независимой нумерацией
      (совпадений номеров между ними нет и не предполагается), поэтому
@@ -17475,20 +17536,29 @@
   document.getElementById('calOverlay').addEventListener('click', e => { if (e.target.id === 'calOverlay') closeMonthCalendar(); });
 
   const reserveNow0 = Date.now();
+  /* каждый резерв держит МАССИВ столов ({id, state}), а не один tableId:
+     обычный резерв — массив из 1 стола (state всегда 'ready'); объединённый
+     резерв (см. «Объединить в один резерв» на МН-31) может занимать
+     несколько столов сразу, каждый со своим состоянием —
+     'ready' (свободен под этот резерв), 'waiting' (стол ещё занят другим
+     резервом, ждём, пока освободится) или 'released' (гости с этого стола
+     уже ушли, стол сдан) — см. tableChipsHtml/renderReserveTableGroup */
   const reservations = [
-    { id:'r1', tableId:'rt3', time:reserveNow0 + 8 * 60000,   persons:4, name:'Игорь Петров',    phone:'+7 916 000-01-01', tg:'',          occasion:'bday',     comment:'Просили торт со свечками', confirmed:true,  deposit:true,  arrived:false, tableFreed:false,
+    { id:'r1', tables:[{id:'rt3', state:'ready'}], time:reserveNow0 + 8 * 60000,   persons:4, name:'Игорь Петров',    phone:'+7 916 000-01-01', tg:'',          occasion:'bday',     comment:'Просили торт со свечками', confirmed:true,  deposit:true,  arrived:false, tableFreed:false,
       log:[ reserveEvent('Создан', 'Хостес Аня', reserveNow0 - 3 * 3600000) ] },
-    { id:'r2', tableId:'rt2', time:reserveNow0 + 40 * 60000,  persons:2, name:'Елена Ким',       phone:'+7 916 000-01-02', tg:'',          occasion:'date',     comment:'', confirmed:true,  deposit:false, arrived:false, tableFreed:false,
+    { id:'r2', tables:[{id:'rt2', state:'ready'}], time:reserveNow0 + 40 * 60000,  persons:2, name:'Елена Ким',       phone:'+7 916 000-01-02', tg:'',          occasion:'date',     comment:'', confirmed:true,  deposit:false, arrived:false, tableFreed:false,
       log:[ reserveEvent('Создан', 'Хостес Аня', reserveNow0 - 5 * 3600000) ] },
-    { id:'r5', tableId:'rt10', time:reserveNow0 + 12 * 60000, persons:2, name:'Сергей Литвинов', phone:'+7 916 000-01-05', tg:'@litvinov', occasion:'date',     comment:'', confirmed:true,  deposit:false, arrived:false, tableFreed:false,
+    { id:'r5', tables:[{id:'rt10', state:'ready'}], time:reserveNow0 + 12 * 60000, persons:2, name:'Сергей Литвинов', phone:'+7 916 000-01-05', tg:'@litvinov', occasion:'date',     comment:'', confirmed:true,  deposit:false, arrived:false, tableFreed:false,
       log:[ reserveEvent('Создан', 'Менеджер Игорь', reserveNow0 - 40 * 60000) ] },
-    { id:'r6', tableId:'rt1', time:reserveNow0 - 50 * 60000,  persons:2, name:'Татьяна Орлова',  phone:'+7 916 000-01-06', tg:'',          occasion:'date',     comment:'', confirmed:true,  deposit:true,  arrived:true,  tableFreed:false,
+    { id:'r6', tables:[{id:'rt1', state:'ready'}], time:reserveNow0 - 50 * 60000,  persons:2, name:'Татьяна Орлова',  phone:'+7 916 000-01-06', tg:'',          occasion:'date',     comment:'', confirmed:true,  deposit:true,  arrived:true,  tableFreed:false,
       orderZone:'hall', orderNum:1,
       log:[ reserveEvent('Создан', 'Хостес Аня', reserveNow0 - 5 * 3600000), reserveEvent('Гость пришёл', 'Хостес Аня', reserveNow0 - 46 * 60000) ] },
-    { id:'r7', tableId:'rt9', time:reserveNow0 - 90 * 60000,  persons:4, name:'Виктор Дьяченко', phone:'+7 916 000-01-07', tg:'',          occasion:'business', comment:'', confirmed:true,  deposit:false, arrived:true,  tableFreed:false,
+    /* демо объединённого резерва — два стола, второй ещё «ждёт» (занят
+       другой компанией) — показывает чипы и список освобождения на МН-30 */
+    { id:'r7', tables:[{id:'rt9', state:'ready'}, {id:'rt16', state:'waiting'}], time:reserveNow0 - 90 * 60000,  persons:4, name:'Виктор Дьяченко', phone:'+7 916 000-01-07', tg:'',          occasion:'business', comment:'', confirmed:true,  deposit:false, arrived:true,  tableFreed:false,
       orderZone:'veranda', orderNum:13,
       log:[ reserveEvent('Создан', 'Менеджер Игорь', reserveNow0 - 8 * 3600000), reserveEvent('Гость пришёл', 'Хостес Аня', reserveNow0 - 85 * 60000) ] },
-    { id:'r9', tableId:'rt3', time:reserveNow0 + 170 * 60000, persons:3, name:'Дмитрий Крылов',  phone:'+7 916 000-01-09', tg:'',          occasion:'business', comment:'', confirmed:true,  deposit:false, arrived:false, tableFreed:false,
+    { id:'r9', tables:[{id:'rt3', state:'ready'}], time:reserveNow0 + 170 * 60000, persons:3, name:'Дмитрий Крылов',  phone:'+7 916 000-01-09', tg:'',          occasion:'business', comment:'', confirmed:true,  deposit:false, arrived:false, tableFreed:false,
       log:[ reserveEvent('Создан', 'Менеджер Игорь', reserveNow0 - 20 * 60000) ] }
   ];
   let reserveSeq = 9;
@@ -17519,8 +17589,15 @@
     if (reserveIsSoon(r)) return 'is-soon';
     return '';
   }
+  /* «waiting»-чип на строке столов пульсирует красным в последние 30 минут
+     до резерва (включая просрочку) — свой порог, отдельный от 15-минутной
+     золотой пульсации всей плитки (reserveIsSoon) */
+  function reserveWaitingPulses(r) { return r.time - Date.now() <= 30 * 60000; }
+  /* состояние физического стола на схеме зала — считает столы только тех
+     резервов, где этот стол ещё не 'released' (освобождённый в рамках
+     объединённого резерва стол больше не держит место) */
   function reserveTableState(tableId) {
-    const rs = reservations.filter(r => r.tableId === tableId && !r.tableFreed);
+    const rs = reservations.filter(r => !r.tableFreed && r.tables.some(x => x.id === tableId && x.state !== 'released'));
     if (!rs.length) return 'free';
     if (rs.some(r => r.arrived)) return 'inhall';
     if (rs.some(r => reserveIsLate(r))) return 'late';
@@ -17565,13 +17642,35 @@
       '<span class="reserve-card-badge" title="' + b.title + '"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + b.icon + '</svg></span>'
     ).join('') + '</span>';
   }
+  /* ---------- Строка чипов столов — общий компонент МН-13/МН-30/МН-31 ----------
+     Один стол показывается как раньше, простым номером без чипа — чипы
+     появляются только при tables.length > 1. Состояние чипа: ready —
+     обычный; waiting — красная обводка (статичная, если до резерва больше
+     получаса, иначе пульсирует, см. reserveWaitingPulses); released —
+     пунктирная, приглушённый текст, зачёркнут, из строки не убирается */
+  const TABLE_CHIP_PLUS = '<svg class="table-chip-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>';
+  function tableChipClass(entry, pulses) {
+    if (entry.state === 'released') return ' is-released';
+    if (entry.state === 'waiting') return pulses ? ' is-waiting-soon' : ' is-waiting-hard';
+    return '';
+  }
+  function tableChipsHtml(tableRefs, pulses) {
+    return tableRefs.map((entry, i) => {
+      const t = reserveTable(entry.id);
+      return (i > 0 ? TABLE_CHIP_PLUS : '') +
+        '<span class="table-chip' + tableChipClass(entry, pulses) + '">№' + (t ? tableNum(t) : '?') + '</span>';
+    }).join('');
+  }
+
   function reserveCardHtml(r, showDate) {
-    const t = reserveTable(r.tableId);
+    const tableCell = r.tables.length > 1
+      ? '<span class="table-chips-row">' + tableChipsHtml(r.tables, reserveWaitingPulses(r)) + '</span>'
+      : '<span class="reserve-card-table">№ ' + (reservePrimaryTable(r) ? tableNum(reservePrimaryTable(r)) : '—') + '</span>';
     return '<button class="reserve-card ' + reserveBorderClass(r) + '" data-reserve-open="' + r.id + '">' +
       reserveCardBadges(r) +
       '<span class="reserve-card-name">' + reserveShortName(r.name) + '</span>' +
       (showDate ? '<span class="reserve-card-date">' + fmtDDMMYY(new Date(r.time)) + '</span>' : '') +
-      '<span class="reserve-card-row2"><span class="reserve-card-table">№ ' + (t ? tableNum(t) : '—') + '</span></span>' +
+      '<span class="reserve-card-row2">' + tableCell + '</span>' +
       '<span class="reserve-card-persons"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c1-4 4-6 7-6s6 2 7 6"/></svg>' + r.persons + '</span>' +
       '<span class="reserve-card-time">' + stampText(r.time) + '</span>' +
       '<span class="reserve-card-phone">' + r.phone + '</span>' +
@@ -17584,8 +17683,7 @@
     const showDate = !sameDay(viewDate, today);
     const active = reservations.filter(r => {
       if (r.tableFreed) return false;
-      const t = reserveTable(r.tableId);
-      if (!t || !reserveZoneMatch(t.zone)) return false;
+      if (!r.tables.some(x => { const t = reserveTable(x.id); return t && reserveZoneMatch(t.zone); })) return false;
       return sameDay(new Date(r.time), viewDate);
     });
     const cardHtml = r => reserveCardHtml(r, showDate);
@@ -17769,7 +17867,7 @@
     if (!btn) return;
     const tableId = btn.dataset.reserveTable;
     if (reserveTableState(tableId) === 'free') { openNewReserve(tableId); setRoute('мн-31'); return; }
-    const r = reservations.find(x => x.tableId === tableId && !x.tableFreed);
+    const r = reservations.find(x => !x.tableFreed && x.tables.some(tb => tb.id === tableId && tb.state !== 'released'));
     if (r) { openReserveCard(r.id); setRoute('мн-30'); }
   });
 
@@ -17791,21 +17889,37 @@
   const RESERVE_KEY_EVENTS = new Set(['Создан', 'Гость пришёл', 'Стол освободился']);
   let reserveCardEditField = null;   // null | 'table' | 'waiter'
 
+  /* залы всех столов группы, без повторов — используется, когда столов
+     больше одного и у одного поля «Зал» одного значения уже не хватает */
+  function reserveZonesLabel(r) {
+    const names = [];
+    r.tables.forEach(x => {
+      const t = reserveTable(x.id);
+      if (t && !names.includes(reserveZoneName(t.zone))) names.push(reserveZoneName(t.zone));
+    });
+    return names.length ? names.join(', ') : '—';
+  }
+
   function renderReserveCard() {
     const r = findReserve(currentReserveId);
     if (!r) return;
-    const t = reserveTable(r.tableId);
+    const single = r.tables.length === 1;
+    const t = reservePrimaryTable(r);
     /* менять стол и официанта можно только у уже занятого (гость на месте
        и стол ещё не освобождён) резерва — до этого «официант» ещё не
-       назначен и понятие «сменить стол» не имеет смысла */
+       назначен и понятие «сменить стол» не имеет смысла; смена стола через
+       эту строку — только у обычного, одностолового резерва (объединённый
+       ведётся списком ниже, см. renderReserveTableGroup) */
     const occupied = r.arrived && !r.tableFreed;
+    const canEditTable = occupied && single;
+    const tableValue = single ? (t ? '№' + tableNum(t) : '—') : '<span class="table-chips-row">' + tableChipsHtml(r.tables, reserveWaitingPulses(r)) + '</span>';
     document.getElementById('reserveCardFields').innerHTML =
       reserveFieldRow('Время', stampText(r.time)) +
       reserveFieldRow('Персоны', r.persons + ' гост' + guestWord(r.persons)) +
-      (occupied
-        ? reserveFieldRowEditable('Стол', t ? '№' + tableNum(t) : '—', 'table')
-        : reserveFieldRow('Стол', t ? '№' + tableNum(t) : '—')) +
-      reserveFieldRow('Зал', t ? reserveZoneName(t.zone) : '—') +
+      (canEditTable
+        ? reserveFieldRowEditable('Стол', tableValue, 'table')
+        : reserveFieldRow('Стол', tableValue)) +
+      reserveFieldRow('Зал', single ? (t ? reserveZoneName(t.zone) : '—') : reserveZonesLabel(r)) +
       (occupied
         ? reserveFieldRowEditable('Официант', reserveWaiterName(r), 'waiter')
         : reserveFieldRow('Официант', reserveWaiterName(r))) +
@@ -17815,8 +17929,9 @@
       reserveFieldRow('Повод', r.occasion ? RESERVE_OCCASION_NAME[r.occasion] : '—') +
       reserveFieldRow('Комментарий', r.comment || '—', true);
 
-    if (!occupied) reserveCardEditField = null;
+    if (!canEditTable && !occupied) reserveCardEditField = null;
     renderReserveCardPicker();
+    renderReserveTableGroup();
 
     const log = r.log.slice().sort((a, b) => b.at - a.at);
     document.getElementById('reserveCardLog').innerHTML = log.map(e =>
@@ -17830,10 +17945,68 @@
     ).join('');
 
     document.getElementById('reserveArrivedBtn').hidden = r.arrived;
-    document.getElementById('reserveFreedBtn').hidden = !r.arrived || r.tableFreed;
+    /* у объединённого резерва «Стол освободился» целиком заменяет список
+       столов ниже — своя кнопка «Освободить» есть у каждого стола там */
+    document.getElementById('reserveFreedBtn').hidden = !single || !r.arrived || r.tableFreed;
     document.getElementById('reserveNoteComposer').hidden = true;
     document.getElementById('reserveNoteInput').value = '';
   }
+
+  /* ---------- МН-30: список столов объединённого резерва ----------
+     'waiting' → «Освободить» переводит в 'ready' (гости с чужого резерва
+     пересажены, стол теперь наш); 'ready' → «Освободить» переводит в
+     'released' (наши гости ушли, стол сдан); все 'released' → резерв
+     закрывается автоматически (r.tableFreed), как единая «Стол
+     освободился» у обычного резерва */
+  function renderReserveTableGroup() {
+    const box = document.getElementById('reserveTableGroup');
+    const r = findReserve(currentReserveId);
+    if (!r || r.tables.length <= 1) { box.hidden = true; box.innerHTML = ''; return; }
+    box.hidden = false;
+    box.innerHTML = r.tables.map(entry => {
+      const t = reserveTable(entry.id);
+      const num = t ? tableNum(t) : '?';
+      const meta = t ? (t.seats + ' мест · ' + reserveZoneName(t.zone)) : '';
+      if (entry.state === 'released') {
+        return '<div class="reserve-table-group-row">' +
+          '<div class="reserve-table-group-info"><span class="reserve-table-group-num">Стол №' + num + '</span><span class="reserve-table-group-note">' + meta + '</span></div>' +
+          '<span class="reserve-table-group-released">Освобождён</span>' +
+        '</div>';
+      }
+      return '<div class="reserve-table-group-row' + (entry.state === 'waiting' ? ' is-waiting' : '') + '">' +
+        '<div class="reserve-table-group-info"><span class="reserve-table-group-num">Стол №' + num + '</span><span class="reserve-table-group-note">' +
+          (entry.state === 'waiting' ? 'Ждём, пока освободится · ' : '') + meta + '</span></div>' +
+        '<button class="reserve-table-group-release" type="button" data-release-table="' + entry.id + '">Освободить</button>' +
+      '</div>';
+    }).join('');
+  }
+
+  function reserveReleaseTable(tableId) {
+    const r = findReserve(currentReserveId);
+    if (!r) return;
+    const entry = r.tables.find(x => x.id === tableId);
+    if (!entry || entry.state === 'released') return;
+    const t = reserveTable(tableId);
+    const num = t ? tableNum(t) : tableId;
+    if (entry.state === 'waiting') {
+      entry.state = 'ready';
+      r.log.push(reserveEvent('Стол освободился', reserveStaffName(), Date.now(), '№' + num + ' — гости пересажены, стол наш'));
+    } else {
+      entry.state = 'released';
+      r.log.push(reserveEvent('Стол освободился', reserveStaffName(), Date.now(), '№' + num));
+      if (r.tables.every(x => x.state === 'released')) {
+        r.tableFreed = true;
+        r.log.push(reserveEvent('Стол освободился', reserveStaffName(), Date.now(), 'Все столы сданы — резерв закрыт'));
+      }
+    }
+    renderReserveCard();
+    renderReserveTiles();
+  }
+  document.getElementById('reserveTableGroup').addEventListener('click', e => {
+    const btn = e.target.closest('[data-release-table]');
+    if (!btn) return;
+    reserveReleaseTable(btn.dataset.releaseTable);
+  });
 
   function renderReserveCardPicker() {
     const picker = document.getElementById('reserveCardPicker');
@@ -17841,11 +18014,11 @@
     if (!r || !reserveCardEditField) { picker.hidden = true; picker.innerHTML = ''; return; }
     picker.hidden = false;
     if (reserveCardEditField === 'table') {
-      const t = reserveTable(r.tableId);
+      const t = reservePrimaryTable(r);
       const zoneTables = reserveTables.filter(x => x.zone === (t ? t.zone : null));
       picker.innerHTML = '<div class="reserve-table-pick">' + zoneTables.map(x => {
         const state = reserveTableState(x.id);
-        const isCurrent = x.id === r.tableId;
+        const isCurrent = x.id === r.tables[0].id;
         const isDisabled = !isCurrent && state === 'inhall';
         return '<button class="reserve-table-pick-tile' + (isCurrent ? ' active' : '') + '"' +
           (isDisabled ? ' disabled' : '') +
@@ -17880,12 +18053,12 @@
 
   function reserveChangeTable(newTableId) {
     const r = findReserve(currentReserveId);
-    const oldT = reserveTable(r.tableId);
+    const oldT = r ? reservePrimaryTable(r) : null;
     const newT = reserveTable(newTableId);
-    if (!r || !newT || newTableId === r.tableId) { reserveCardEditField = null; renderReserveCard(); return; }
+    if (!r || !newT || newTableId === r.tables[0].id) { reserveCardEditField = null; renderReserveCard(); return; }
     const oldNum = oldT ? tableNum(oldT) : null;
     const newNum = tableNum(newT);
-    r.tableId = newTableId;
+    r.tables[0] = { id: newTableId, state: 'ready' };
     const order = linkedOrderTable(r);
     if (order) {
       const targetZone = RESERVE_ZONE_TO_ORDER_ZONE[newT.zone];
@@ -18362,7 +18535,7 @@
   /* резервы этого стола на ту же календарную дату, что и выбранный слот */
   function tableReservesOnDate(tableId, dateStr) {
     return reservations.filter(r => {
-      if (r.tableId !== tableId || r.tableFreed) return false;
+      if (r.tableFreed || !r.tables.some(tb => tb.id === tableId && tb.state !== 'released')) return false;
       const d = new Date(r.time);
       const rd = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
       return rd === dateStr;
