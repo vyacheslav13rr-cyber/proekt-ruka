@@ -1977,15 +1977,20 @@
   }
   .table-card-bill-icon svg{width:100%; height:100%; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
   .table-card.is-bill-tile{border-style:solid; border-color:var(--gold);}
-  /* значок повода, унаследованный от резерва (см. reserveArrivedBtn) — то
-     же место, что у .reserve-card-badges на карточке резерва, только
-     слева (справа уже занято чеком, см. .table-card-bill-icon), живёт до
-     закрытия стола (releaseTable) */
+  /* значок повода, унаследованный от резерва (см. reserveArrivedBtn) — тот
+     же правый верхний угол, что у .reserve-card-badges на карточке резерва
+     и у .table-card-bill-icon здесь же; размер плитки не меняется — значок
+     просто накладывается сверху (position:absolute). Живёт до закрытия
+     стола (releaseTable). Счёт (.table-card-bill-icon) на том же месте
+     бывает редко, но одновременно с поводом — возможно: тогда сдвигаем
+     повод левее чека на его ширину + небольшой зазор (класс has-bill),
+     чтобы значки не наезжали друг на друга */
   .table-card-occasion-icon{
-    position:absolute; top:8px; left:8px;
+    position:absolute; top:8px; right:8px;
     width:14px; height:14px;
     color:var(--gold);
   }
+  .table-card-occasion-icon.has-bill{right:30px;}
   .table-card-occasion-icon svg{width:100%; height:100%; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
 
   /* ---------- Свободные столы: свёрнуты до двух рядов ---------- */
@@ -10953,14 +10958,16 @@
     if (t.pendingEmptyKept && (t.items || []).length) { delete t.pendingEmptyKept; delete t.emptyMissCount; }
     const waiting = !!t.pendingUnsent || !!t.pendingEmptyKept;
     /* счёт этого стола целиком выбит и ждёт кассира — иконка чека в углу */
-    const billIcon = tableActiveBill(t)
+    const hasActiveBill = !!tableActiveBill(t);
+    const billIcon = hasActiveBill
       ? '<span class="table-card-bill-icon">' + ICON_BILL + '</span>'
       : '';
     /* повод унаследован от резерва, из которого пришёл гость (см.
        reserveArrivedBtn) — тот же значок, что на карточке резерва, живёт
-       до закрытия стола (releaseTable) */
+       до закрытия стола (releaseTable); has-bill сдвигает его левее, если
+       на той же плитке одновременно есть чек, ждущий кассира */
     const occasionIcon = t.reserveOccasion
-      ? '<span class="table-card-occasion-icon"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+      ? '<span class="table-card-occasion-icon' + (hasActiveBill ? ' has-bill' : '') + '"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
           (RESERVE_OCCASION_ICON[t.reserveOccasion] || RESERVE_OCCASION_ICON.custom) + '</svg></span>'
       : '';
     return '<div class="table-card is-open' + (t.calling ? ' is-calling' : '') +
