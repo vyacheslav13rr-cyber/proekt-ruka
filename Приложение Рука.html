@@ -5515,7 +5515,7 @@
   .reserve-card-row2{margin-top:5px;}
   .reserve-card-table{
     font-family:'IBM Plex Mono', monospace;
-    font-size:10.5px; font-weight:700;
+    font-size:13px; font-weight:700;
     color:var(--text-primary);
   }
   .reserve-card-persons{
@@ -5562,18 +5562,23 @@
      один стол — как раньше, простым номером; несколько — чипами через
      золотой «+», flex-wrap, выравнивание вправо ---------- */
   .table-chips-row{display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; gap:4px;}
-  .table-chips-hash{font-family:'IBM Plex Mono', monospace; font-size:10.5px; font-weight:800; color:var(--gold);}
+  /* на плитках резервов (МН-13) номер стола крупнее и от левого края —
+     та же строка, что имя/время/телефон, а не прижат к правому краю
+     карточки, как в поле «Стол» на МН-30 (там .table-chips-row остаётся
+     как есть, справа от подписи) */
+  .reserve-card-row2 .table-chips-row{justify-content:flex-start;}
+  .table-chips-hash{font-family:'IBM Plex Mono', monospace; font-size:13px; font-weight:800; color:var(--gold);}
   .table-chip{
     display:inline-flex; align-items:center; justify-content:center;
-    padding:2px 7px;
+    padding:2px 8px;
     border-radius:8px;
     border:1.5px solid var(--gold);
     font-family:'IBM Plex Mono', monospace;
-    font-size:10.5px; font-weight:800;
+    font-size:13px; font-weight:800;
     color:var(--text-primary);
     white-space:nowrap;
   }
-  .table-chip-plus{width:12px; height:12px; stroke:var(--gold); stroke-width:3; fill:none; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0;}
+  .table-chip-plus{width:13px; height:13px; stroke:var(--gold); stroke-width:3; fill:none; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0;}
   .table-chip.is-waiting-hard{border-color:var(--dot-red);}
   .table-chip.is-waiting-soon{border-color:var(--dot-red); animation:reservePulseRed .85s ease-in-out infinite;}
   .table-chip.is-released{border-style:dashed; border-color:var(--card-border); color:var(--text-muted); text-decoration:line-through;}
