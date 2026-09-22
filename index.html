@@ -136,6 +136,10 @@
     padding:40px 16px;
     background:radial-gradient(circle at 28% 18%, #f1e7d0 0%, #ddd0ac 55%, #c9b98e 100%);
     font-family:'Manrope', sans-serif;
+    /* без этого на телефоне оттягивание экрана за верхнюю/нижнюю границу
+       раскачивает всю страницу целиком (а не только .content), и в момент
+       растяжения снизу/сверху видна пустая подложка body */
+    overscroll-behavior:none;
   }
 
   /* ---------- Device frame ---------- */
@@ -226,17 +230,18 @@
     /* макетные вырез и поддельную строку статуса не показываем —
        сверху остаётся настоящая системная строка телефона */
     .notch, .statusbar{display:none;}
-    .app-header{padding-top:calc(14px + env(safe-area-inset-top));}
-    .bottom-nav{bottom:calc(14px + env(safe-area-inset-bottom));}
-    .nav-handle{bottom:calc(14px + env(safe-area-inset-bottom));}
-    .content{padding-bottom:calc(130px + env(safe-area-inset-bottom));}
-    .map-side-btn{padding-top:calc(10px + env(safe-area-inset-top));}
+    /* отступы под системную вырезку/жестовую полосу — заданы прямо в базовых
+       правилах ниже через env(), а не здесь: одноимённые правила без media
+       объявлены в файле ПОЗЖЕ и при равной специфичности перебивали бы эти
+       (каскад решает по порядку в исходнике, а не по вложенности в @media) */
   }
 
   /* ---------- App header ---------- */
   .app-header{
     background:linear-gradient(155deg, var(--navy), var(--navy-deep));
-    padding:14px 24px 18px;
+    /* env() — под системную вырезку/чёлку сверху в установленном приложении;
+       в обычном браузере (макет телефона) равен 0, ничего не меняет */
+    padding:calc(14px + env(safe-area-inset-top, 0px)) 24px 18px;
     position:relative;
   }
   .app-header::after{
@@ -469,7 +474,14 @@
   .content{
     flex:1;
     overflow-y:auto;
-    padding:0 20px 130px;
+    /* env() — запас над жестовой полосой/системной вставкой снизу в
+       установленном приложении, чтобы нижнее меню не перекрывало последний
+       блок при прокрутке до конца; в обычном браузере равен 0 */
+    padding:0 20px calc(130px + env(safe-area-inset-bottom, 0px));
+    /* не даём прокрутке уйти в родителя (body) на конце списка — иначе на
+       телефоне при дотягивании до конца/начала раскачивается вся страница
+       и снизу/сверху на миг видна пустая подложка вместо содержимого */
+    overscroll-behavior-y:contain;
   }
   .content::-webkit-scrollbar{display:none;}
 
@@ -553,7 +565,7 @@
     border:none;
     border-left:none;
     border-radius:0 16px 16px 0;
-    padding:10px 7px;
+    padding:calc(10px + env(safe-area-inset-top, 0px)) 7px 10px;
     font-family:'IBM Plex Mono', monospace;
     font-size:11px;
     font-weight:500;
@@ -1227,6 +1239,25 @@
   /* ---------- Смена: блоки показателей ---------- */
   .shift-list{margin-top:14px;}
   .shift-list[hidden], .shift-detail[hidden]{display:none;}
+  /* запас снизу — на самих экранах, а не только на .content: у
+     .panel[data-panel="shift"] задана фиксированная height:100% (нужна для
+     процентных высот на паре под-экранов, см. комментарий у этого правила),
+     и когда содержимое .shift-list/.shift-detail выше этой высоты, оно
+     переполняет рамку панели через обычный overflow:visible и прокручивается
+     через .content — но padding-bottom самого .content при этом считается
+     относительно короткой рамки панели, а не относительно реально видимого
+     конца переполнившегося содержимого, и на длинных экранах «съедается»
+     целиком — нижнее меню перекрывает последний блок вплотную. Свой
+     padding-bottom прямо на переполняющемся элементе не зависит от рамки
+     панели и всегда добавляется по-настоящему. На коротких экранах, где
+     переполнения нет, эта отдельная задержка складывается с уже имеющимся
+     запасом у .content — это просто чуть больше пустого места в конце
+     прокрутки, а не ошибка. Отдельные под-экраны с уже подобранным своим
+     отступом (#orderView, #orderPicker, [data-detail="newReserve"],
+     [data-detail="profile-settings-account"]) величину не теряют — то же
+     правило, применённое ещё раз, просто складывается с их собственным. */
+  .shift-list,
+  .shift-detail{padding-bottom:calc(130px + env(safe-area-inset-bottom, 0px));}
 
   .stat-block{
     border-radius:18px;
@@ -4195,7 +4226,10 @@
   /* ---------- Bottom nav ---------- */
   .bottom-nav{
     position:absolute;
-    left:14px; right:14px; bottom:14px;
+    left:14px; right:14px;
+    /* env() — приподнимает меню над жестовой полосой/системной вставкой
+       снизу в установленном приложении; в обычном браузере равен 0 */
+    bottom:calc(14px + env(safe-area-inset-bottom, 0px));
     background:var(--nav-bg);
     border:1px solid var(--nav-border);
     border-radius:26px;
@@ -4225,7 +4259,7 @@
   }
   .nav-handle{
     position:absolute;
-    right:-6px; bottom:calc(14px + 74px - 15px);
+    right:-6px; bottom:calc(14px + env(safe-area-inset-bottom, 0px) + 74px - 15px);
     width:30px; height:30px;
     display:flex; align-items:center; justify-content:center;
     background:var(--nav-bg);
@@ -5764,7 +5798,7 @@
      область равна полной высоте .content, как и везде; своим же
      padding-bottom:130px (тот же приём, что у .content) кнопка «Создать
      резерв» на прокрутке всё равно не залезает под нижнее меню */
-  .shift-detail[data-detail="newReserve"]{height:calc(100% + 130px); overflow-y:auto; padding-bottom:130px; scrollbar-width:none; -ms-overflow-style:none;}
+  .shift-detail[data-detail="newReserve"]{height:calc(100% + 130px + env(safe-area-inset-bottom, 0px)); overflow-y:auto; padding-bottom:calc(130px + env(safe-area-inset-bottom, 0px)); scrollbar-width:none; -ms-overflow-style:none;}
   .shift-detail[data-detail="newReserve"]::-webkit-scrollbar{display:none; width:0; height:0;}
   .reserve-form-row{margin-bottom:14px;}
   .reserve-form-row-split{display:flex; gap:8px;}
