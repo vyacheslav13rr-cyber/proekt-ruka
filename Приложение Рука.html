@@ -5747,11 +5747,21 @@
      списка по одному столу в строке */
   .reserve-table-pick-group{margin-bottom:12px;}
   .reserve-table-pick-group:last-child{margin-bottom:0;}
+  /* название зала и золотая нитка (1px) в одной строке — нитка тянется
+     остатком ширины через ::after, плитки зала идут ниже */
   .reserve-table-pick-group-title{
+    display:flex; align-items:center; gap:8px;
     font-size:11px; font-weight:800;
     color:var(--text-muted);
     text-transform:uppercase; letter-spacing:.02em;
-    margin-bottom:6px;
+    margin-bottom:8px;
+    white-space:nowrap;
+  }
+  .reserve-table-pick-group-title::after{
+    content:'';
+    flex:1;
+    height:1px;
+    background:var(--gold);
   }
   .reserve-table-pick{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:7px;}
   .reserve-table-pick-tile{
@@ -5978,18 +5988,16 @@
   .cal-cell.is-selected{background:var(--navy); color:var(--cream);}
 
   /* ---------- МН-31: компонент-барабан — общий для времени и персон,
-     компактное окно снизу (не на весь экран) ---------- */
-  .drum-overlay{align-items:flex-end; padding:0;}
-  .drum-overlay .modal-box{border-radius:20px 20px 0 0; padding:18px 18px calc(16px + env(safe-area-inset-bottom));}
-  .drum-box{padding:20px 18px 14px;}
+     компактная карточка по центру экрана (не бантик снизу) ---------- */
+  .drum-box{max-width:280px; padding:20px 18px 14px;}
   .drum-row{
     position:relative;
     display:flex; align-items:center; justify-content:center; gap:10px;
-    height:220px;
+    height:190px;
     margin-top:14px;
   }
   .drum-col{
-    flex:0 0 74px;
+    flex:0 0 64px;
     height:100%;
     overflow-y:auto;
     scroll-snap-type:y mandatory;
@@ -6000,7 +6008,7 @@
   /* паддинг сверху/снизу — половина высоты видимой области минус
      половина строки: только так первая/последняя строка может
      доскроллить до центра (см. scrollWheelTo в скрипте) */
-  .drum-col-inner{padding:88px 0;}
+  .drum-col-inner{padding:73px 0;}
   .drum-item{
     height:44px;
     display:flex; align-items:center; justify-content:center;
@@ -7489,7 +7497,7 @@
           <div class="reserve-form-row">
             <span class="reserve-form-label" id="newReserveTablePickLabel">Свободные столы на это время</span>
             <div class="reserve-table-pick-summary" id="newReserveTablePickSummary" hidden></div>
-            <div class="reserve-table-pick" id="newReserveTablePick"></div>
+            <div id="newReserveTablePick"></div>
             <!-- объединённый выбор столов (долгое удержание плитки, см.
                  nrTablePressTimer) — свёрнут в строку чипов, удержание по
                  ней открывает плашку «Изменить»/«Отменить» ниже -->
@@ -8490,9 +8498,9 @@
           <div class="drum-selection" aria-hidden="true"></div>
           <div class="drum-col" id="personsWheelCol"><div class="drum-col-inner"></div></div>
         </div>
-        <button class="drum-more-btn" id="personsWheelMoreBtn" type="button">
+        <button class="drum-more-btn" id="personsWheelMoreBtn" type="button" aria-label="+1 гость">
           <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c1-4 4-6 7-6s6 2 7 6"/></svg>
-          <span>+1 гость</span>
+          <span>+</span>
         </button>
         <div class="modal-actions-single">
           <button class="modal-btn modal-btn-gold" id="personsWheelDoneBtn" type="button">Готово</button>
