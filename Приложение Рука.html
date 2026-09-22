@@ -284,13 +284,6 @@
   }
   .header-logo-btn:active{transform:scale(.92);}
   .header-logo{width:100%; height:100%; border-radius:11px; display:block;}
-  .header-logo-ping{
-    position:absolute; top:-2px; right:-2px;
-    width:9px; height:9px;
-    border-radius:50%;
-    background:var(--dot-green);
-    box-shadow:0 0 0 2px var(--navy-deep);
-  }
 
   /* уведомления: вариант «в шапке» — золотой значок слева от «РУКА» */
   .notif-header-btn{
@@ -1757,7 +1750,7 @@
     transition:transform .15s ease;
   }
   .table-card:active{transform:scale(.97);}
-  /* название зоны и номер — одна строка, размер подобран так, чтобы влезало целиком */
+  /* просто «№N» — зона понятна по заголовку группы/вкладке наверху, см. renderTables */
   .table-card-num{
     display:flex; align-items:baseline; min-width:0;
     font-family:'Fraunces', serif;
@@ -1766,11 +1759,7 @@
     color:var(--text-primary);
     line-height:1.15;
   }
-  .table-card-name-text{
-    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-    min-width:0;
-  }
-  .table-card-num-digit{flex-shrink:0; margin-left:4px;}
+  .table-card-num-digit{overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0;}
   .table-card-meta{
     display:flex; align-items:center; gap:5px;
     font-size:10.5px;
@@ -1808,7 +1797,6 @@
     justify-content:center; align-items:center;
   }
   .table-card.is-free .table-card-num{color:var(--text-muted); opacity:.75;}
-  .table-card.is-free .table-card-free{font-size:10.5px; color:var(--text-muted); margin-top:4px; opacity:.75;}
   .table-card-seats{
     display:flex; align-items:center; gap:4px;
     margin-top:6px;
@@ -6200,7 +6188,6 @@
     <div class="app-header" id="appHeader">
       <button class="header-logo-btn" id="assistantHeaderBtn" aria-label="Открыть ассистента РУКА">
         <svg class="header-logo" viewBox="0 0 512 512" role="img" aria-label="РУКА"><defs><linearGradient id="rukaBg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b3050"/><stop offset="1" stop-color="#0e1c2e"/></linearGradient><clipPath id="rukaCard"><rect x="16" y="16" width="480" height="480" rx="112"/></clipPath></defs><rect x="16" y="16" width="480" height="480" rx="112" fill="url(#rukaBg)"/><g clip-path="url(#rukaCard)"><rect x="92" y="206" width="46" height="194" rx="12" fill="#5b7ba6"/><rect x="156" y="158" width="46" height="242" rx="12" fill="#7c9bc2"/><rect x="220" y="116" width="46" height="284" rx="12" fill="#e6dabf"/><rect x="284" y="62" width="46" height="338" rx="12" fill="#efe6d2"/><path d="M 84,300 A 186,186 0 1 0 438,222 Z" fill="#c9a227"/><polyline points="105,378 222,252 278,306 392,200" fill="none" stroke="#12233a" stroke-width="56" stroke-linecap="round" stroke-linejoin="round"/><polyline points="105,378 222,252 278,306 392,200" fill="none" stroke="#f7efe1" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/></g><rect x="42" y="42" width="428" height="428" rx="92" fill="none" stroke="#c9a227" stroke-width="3" opacity="0.85"/></svg>
-        <span class="header-logo-ping"></span>
       </button>
       <!-- уведомления: вариант «в шапке» — рядом со значком ассистента -->
       <button class="notif-header-btn" id="notifHeaderBtn" hidden aria-label="Уведомления">
@@ -10865,11 +10852,13 @@
   });
 
   /* ----- сетка столов ----- */
-  /* название зоны может обрезаться, номер стола — никогда; всё в одну строку */
+  /* на плитке — просто «№N» (зона понятна по заголовку группы среди
+     свободных, см. renderTables, и по фильтру вкладок наверху); слово
+     «Стол»/«Веранда»/«Бар» остаётся в заголовках/логах — там оно даёт
+     контекст без сетки рядом, см. tableLabel */
   const tableNumHtml = t =>
     '<span class="table-card-num">' +
-      '<span class="table-card-name-text">' + ZONE_LABEL[t.zone] + '</span>' +
-      '<span class="table-card-num-digit">' + t.zoneNum + '</span>' +
+      '<span class="table-card-num-digit">№' + t.zoneNum + '</span>' +
     '</span>';
 
   const ICON_BILL = '<svg viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6"/><path d="M9 12h6"/></svg>';
@@ -10882,7 +10871,6 @@
       const k = t.seats || 2;
       return '<button class="table-card is-free" data-free="' + t.num + '">' +
         tableNumHtml(t) +
-        '<span class="table-card-free">свободен</span>' +
         '<span class="table-card-seats">' + ICON_GUEST + '1–' + k + '</span>' +
       '</button>';
     }
@@ -10915,8 +10903,7 @@
   function billCardTemplate(bill, parent) {
     return '<div class="table-card is-open is-bill-tile" data-bill="' + bill.tag + '" role="button" tabindex="0">' +
       '<span class="table-card-bill-icon">' + ICON_BILL + '</span>' +
-      '<span class="table-card-num"><span class="table-card-name-text">' + ZONE_LABEL[parent.zone] + '</span>' +
-        '<span class="table-card-num-digit">' + bill.tag + '</span></span>' +
+      '<span class="table-card-num"><span class="table-card-num-digit">№' + bill.tag + '</span></span>' +
       '<span class="table-card-waiter">' + guestLabel(parent, bill.guest) + '</span>' +
       '<span class="table-card-sum">' + money(bill.total) + '</span>' +
     '</div>';
@@ -10972,7 +10959,20 @@
       if (busyList.length || billEntries.length) html += '<div class="table-divider">Свободные</div>';
       const collapse = freeList.length > FREE_COLLAPSE_LIMIT && !freeExpanded;
       const shownFree = collapse ? freeList.slice(0, FREE_COLLAPSE_LIMIT) : freeList;
-      html += shownFree.map(tableCardTemplate).join('');
+      /* зал не выбран сверху (currentZone === 'all') — свободные столы
+         группируем по залам заголовками, как на «Новом резерве» (см.
+         reserveTablePickGroupsHtml); при выбранном зале group не нужен —
+         list уже отфильтрован до одного зала */
+      if (currentZone === 'all') {
+        Object.keys(ZONE_NAMES).forEach(z => {
+          const zoneFree = shownFree.filter(t => t.zone === z);
+          if (!zoneFree.length) return;
+          html += '<div class="table-divider table-divider-zone">' + ZONE_NAMES[z] + '</div>';
+          html += zoneFree.map(tableCardTemplate).join('');
+        });
+      } else {
+        html += shownFree.map(tableCardTemplate).join('');
+      }
       if (freeList.length > FREE_COLLAPSE_LIMIT) {
         html += '<button class="free-expand-btn" id="freeExpandBtn">' +
           (freeExpanded ? 'Свернуть' : 'Развернуть') + '</button>';
