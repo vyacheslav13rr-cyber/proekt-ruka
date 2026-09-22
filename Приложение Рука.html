@@ -1921,6 +1921,16 @@
   }
   .table-card-bill-icon svg{width:100%; height:100%; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
   .table-card.is-bill-tile{border-style:solid; border-color:var(--gold);}
+  /* значок повода, унаследованный от резерва (см. reserveArrivedBtn) — то
+     же место, что у .reserve-card-badges на карточке резерва, только
+     слева (справа уже занято чеком, см. .table-card-bill-icon), живёт до
+     закрытия стола (releaseTable) */
+  .table-card-occasion-icon{
+    position:absolute; top:8px; left:8px;
+    width:14px; height:14px;
+    color:var(--gold);
+  }
+  .table-card-occasion-icon svg{width:100%; height:100%; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
 
   /* ---------- Свободные столы: свёрнуты до двух рядов ---------- */
   .free-expand-btn{
@@ -10885,12 +10895,20 @@
     const billIcon = tableActiveBill(t)
       ? '<span class="table-card-bill-icon">' + ICON_BILL + '</span>'
       : '';
+    /* повод унаследован от резерва, из которого пришёл гость (см.
+       reserveArrivedBtn) — тот же значок, что на карточке резерва, живёт
+       до закрытия стола (releaseTable) */
+    const occasionIcon = t.reserveOccasion
+      ? '<span class="table-card-occasion-icon"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+          (RESERVE_OCCASION_ICON[t.reserveOccasion] || RESERVE_OCCASION_ICON.custom) + '</svg></span>'
+      : '';
     return '<div class="table-card is-open' + (t.calling ? ' is-calling' : '') +
         (isSource ? ' is-move-source' : '') +
         (waiting ? ' is-unsent' : '') +
         (t.pendingEmptyKept ? ' is-empty-kept' : '') +
         '" data-table="' + t.num + '" role="button" tabindex="0">' +
       billIcon +
+      occasionIcon +
       tableNumHtml(t) +
       '<span class="table-card-waiter">' + t.waiter + '</span>' +
       '<span class="table-card-sum">' + money(tableSum(t)) + '</span>' +
@@ -12548,9 +12566,12 @@
             status:'open', calling:false, precheck:t.precheck, locked:t.locked,
             guests:t.guests, mins:t.mins, openedAt:t.openedAt, waiter:t.waiter, items:t.items
           });
+          /* значок повода едет вместе с гостями на новый стол, а не гаснет */
+          if (t.reserveOccasion) dest.reserveOccasion = t.reserveOccasion; else delete dest.reserveOccasion;
           bills.forEach(b => { if (b.table === t.num) b.table = dest.num; });
           t.status = 'free';
           delete t.guests; delete t.mins; delete t.openedAt; delete t.waiter;
+          delete t.reserveOccasion;
           t.items = []; t.calling = false; t.precheck = false; t.locked = false;
           logAction(dest, 'move', 'Стол перенесён · ' + tableLabel(dest), 'Был ' + tableLabel(t));
           currentTable = dest;
@@ -13498,6 +13519,9 @@
     delete t.guestNames;
     delete t.pendingUnsent; delete t.pendingEmptyKept;
     delete t.unsentMissCount; delete t.emptyMissCount;
+    /* значок повода, унаследованный от резерва (см. reserveArrivedBtn) —
+       живёт только до закрытия стола */
+    delete t.reserveOccasion;
   }
 
   /* ---------- Выход из заказа: неотправленные позиции и пустой стол ----------
@@ -18328,6 +18352,18 @@
     if (!r || r.arrived) return;
     r.arrived = true;
     r.log.push(reserveEvent('Гость пришёл', reserveStaffName(), Date.now()));
+    /* значок повода переезжает на стол в «Заказах» с тем же номером —
+       отдельного моста между id резервов и столов Зала в прототипе нет
+       (это два независимых демо-набора), поэтому сопоставляем по номеру
+       стола; живёт до закрытия стола, см. releaseTable */
+    if (r.occasion) {
+      r.tables.forEach(ref => {
+        const rt = reserveTable(ref.id);
+        const hallTable = rt && tables.find(x => x.num === tableNum(rt));
+        if (hallTable) hallTable.reserveOccasion = r.occasion;
+      });
+      renderTables();
+    }
     renderReserveCard();
   });
 
