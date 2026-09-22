@@ -1859,16 +1859,23 @@
     height:1px;
     background:var(--card-border);
   }
-  /* «Свободные столы» — плоский заголовок без нити, отступ снизу убран:
-     сразу под ним идёт первый заголовок зала */
-  .table-divider-plain{margin-bottom:0;}
+  /* «Свободные столы» — плоский заголовок без нити, по центру (текст сам —
+     единственный ребёнок flex-контейнера, без ::before/::after некому его
+     толкать от края, поэтому центрируем явно); отступ снизу убран — сразу
+     под ним идёт первый заголовок зала */
+  .table-divider-plain{justify-content:center; margin-bottom:0;}
   .table-divider-plain::before,
   .table-divider-plain::after{display:none;}
-  /* заголовок зала над свободными столами — та же нить слева-направо, что
-     у .reserve-table-pick-group-title на «Новом резерве»: короткая золотая
-     нить перед текстом, текст у левого края, длинная нить остатком ширины
-     (а не по центру, как у общего .table-divider) */
-  .table-divider-zone{margin-top:0;}
+  /* заголовок зала над свободными столами — тот же рисунок и та же
+     типографика, что у .reserve-table-pick-group-title на «Новом резерве»:
+     короткая золотая нить перед текстом, текст у левого края, длинная нить
+     остатком ширины (а не по центру и не 10.5px/700, как у общего
+     .table-divider) */
+  .table-divider-zone{
+    gap:7px;
+    margin-top:0;
+    font-size:9.5px; font-weight:800; letter-spacing:.02em;
+  }
   .table-divider-zone::before{
     flex:0 0 20px;
     background:linear-gradient(90deg, transparent, rgba(198,153,47,0.6));
@@ -5859,7 +5866,9 @@
   .reserve-table-pick-tile.is-picked{ animation:reservePulseGold 1.7s ease-in-out infinite; }
   .reserve-table-pick-tile.is-occupied{ opacity:.55; }
   .reserve-table-pick-tile.is-occupied.is-picked{ opacity:.85; }
-  .reserve-table-pick-num{font-size:13px; font-weight:800;}
+  /* тот же шрифт/размер/начертание, что у номера стола на «Заказах»
+     (.table-card-num) — единый вид значка номера на обоих экранах */
+  .reserve-table-pick-num{font-family:'Fraunces', serif; font-size:13.5px; font-weight:600;}
   .reserve-table-pick-seats{
     display:flex; align-items:center; gap:3px;
     font-size:11px; font-weight:700;
@@ -10920,7 +10929,7 @@
      контекст без сетки рядом, см. tableLabel */
   const tableNumHtml = t =>
     '<span class="table-card-num">' +
-      '<span class="table-card-num-digit">№' + t.zoneNum + '</span>' +
+      '<span class="table-card-num-digit">№ ' + t.zoneNum + '</span>' +
     '</span>';
 
   const ICON_BILL = '<svg viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6"/><path d="M9 12h6"/></svg>';
@@ -10973,7 +10982,7 @@
   function billCardTemplate(bill, parent) {
     return '<div class="table-card is-open is-bill-tile" data-bill="' + bill.tag + '" role="button" tabindex="0">' +
       '<span class="table-card-bill-icon">' + ICON_BILL + '</span>' +
-      '<span class="table-card-num"><span class="table-card-num-digit">№' + bill.tag + '</span></span>' +
+      '<span class="table-card-num"><span class="table-card-num-digit">№ ' + bill.tag + '</span></span>' +
       '<span class="table-card-waiter">' + guestLabel(parent, bill.guest) + '</span>' +
       '<span class="table-card-sum">' + money(bill.total) + '</span>' +
     '</div>';
@@ -17987,7 +17996,7 @@
     const state = reserveTableState(t.id);
     return '<button class="reserve-table shape-' + t.shape + ' state-' + state + '" data-reserve-table="' + t.id + '" ' +
       'style="left:' + t.x + '%; top:' + t.y + '%; width:' + t.w + '%; height:' + t.h + '%;">' +
-      '№' + tableNum(t) + '</button>';
+      '№ ' + tableNum(t) + '</button>';
   }
   function renderReserveScheme() {
     const zones = reserveZoneFilter === 'all' ? reserveZones.map(z => z.id) : [reserveZoneFilter];
@@ -18186,7 +18195,7 @@
        ведётся списком ниже, см. renderReserveTableGroup) */
     const occupied = r.arrived && !r.tableFreed;
     const canEditTable = occupied && single;
-    const tableValue = single ? (t ? '№' + tableNum(t) : '—') : '<span class="table-chips-row">' + tableChipsHtml(r.tables, reserveWaitingPulses(r)) + '</span>';
+    const tableValue = single ? (t ? '№ ' + tableNum(t) : '—') : '<span class="table-chips-row">' + tableChipsHtml(r.tables, reserveWaitingPulses(r)) + '</span>';
     document.getElementById('reserveCardFields').innerHTML =
       reserveFieldRow('Время', stampText(r.time)) +
       reserveFieldRow('Персоны', r.persons + ' гост' + guestWord(r.persons)) +
@@ -18243,12 +18252,12 @@
       const meta = t ? (t.seats + ' мест · ' + reserveZoneName(t.zone)) : '';
       if (entry.state === 'released') {
         return '<div class="reserve-table-group-row">' +
-          '<div class="reserve-table-group-info"><span class="reserve-table-group-num">Стол №' + num + '</span><span class="reserve-table-group-note">' + meta + '</span></div>' +
+          '<div class="reserve-table-group-info"><span class="reserve-table-group-num">Стол № ' + num + '</span><span class="reserve-table-group-note">' + meta + '</span></div>' +
           '<span class="reserve-table-group-released">Освобождён</span>' +
         '</div>';
       }
       return '<div class="reserve-table-group-row' + (entry.state === 'waiting' ? ' is-waiting' : '') + '">' +
-        '<div class="reserve-table-group-info"><span class="reserve-table-group-num">Стол №' + num + '</span><span class="reserve-table-group-note">' +
+        '<div class="reserve-table-group-info"><span class="reserve-table-group-num">Стол № ' + num + '</span><span class="reserve-table-group-note">' +
           (entry.state === 'waiting' ? 'Ждём, пока освободится · ' : '') + meta + '</span></div>' +
         '<button class="reserve-table-group-release" type="button" data-release-table="' + entry.id + '">Освободить</button>' +
       '</div>';
@@ -18297,7 +18306,7 @@
         return '<button class="reserve-table-pick-tile' + (isCurrent ? ' active' : '') + '"' +
           (isDisabled ? ' disabled' : '') +
           ' data-pick-reserve-table="' + x.id + '">' +
-          '<span class="reserve-table-pick-num">№' + tableNum(x) + '</span>' +
+          '<span class="reserve-table-pick-num">№ ' + tableNum(x) + '</span>' +
           '<span class="reserve-table-pick-seats"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c1-4 4-6 7-6s6 2 7 6"/></svg>' + x.seats + '</span>' +
         '</button>';
       }).join('') + '</div>';
@@ -18883,7 +18892,7 @@
   }
   function reserveTablePickTileHtml(t, extraClass) {
     return '<button class="reserve-table-pick-tile' + extraClass + '" data-pick-table="' + t.id + '">' +
-      '<span class="reserve-table-pick-num">№' + tableNum(t) + '</span>' +
+      '<span class="reserve-table-pick-num">№ ' + tableNum(t) + '</span>' +
       '<span class="reserve-table-pick-seats"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c1-4 4-6 7-6s6 2 7 6"/></svg>' + t.seats + '</span>' +
     '</button>';
   }
