@@ -5562,6 +5562,7 @@
      один стол — как раньше, простым номером; несколько — чипами через
      золотой «+», flex-wrap, выравнивание вправо ---------- */
   .table-chips-row{display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; gap:4px;}
+  .table-chips-hash{font-family:'IBM Plex Mono', monospace; font-size:10.5px; font-weight:800; color:var(--gold);}
   .table-chip{
     display:inline-flex; align-items:center; justify-content:center;
     padding:2px 7px;
@@ -5744,6 +5745,14 @@
   .reserve-persons-stepper .step-count-input{width:2ch; cursor:pointer;}
   /* плитки 4 в ряд: номер стола, вместимость (иконка) и зал — вместо
      списка по одному столу в строке */
+  .reserve-table-pick-group{margin-bottom:12px;}
+  .reserve-table-pick-group:last-child{margin-bottom:0;}
+  .reserve-table-pick-group-title{
+    font-size:11px; font-weight:800;
+    color:var(--text-muted);
+    text-transform:uppercase; letter-spacing:.02em;
+    margin-bottom:6px;
+  }
   .reserve-table-pick{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:7px;}
   .reserve-table-pick-tile{
     display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
@@ -5778,6 +5787,41 @@
   .reserve-table-pick-tile.is-occupied .reserve-table-pick-zone{color:var(--text-muted);}
   .reserve-table-pick-summary{font-size:11.5px; font-weight:700; color:var(--text-muted); text-align:right; margin-bottom:6px;}
   .reserve-table-pick-chips{margin-bottom:2px;}
+  /* плашка «Объединить в один резерв»/«Изменить» | «Отменить» — тот же
+     стиль (хаки-фон, золотая рамка), что у .transfer-bar в МН-16 */
+  .reserve-action-bar{
+    display:flex; align-items:center; gap:8px;
+    background:var(--khaki-block-bg);
+    border:1px solid var(--gold);
+    border-radius:14px;
+    padding:8px;
+    margin-top:10px;
+    box-shadow:0 12px 26px -14px var(--card-shadow);
+  }
+  .reserve-action-bar[hidden]{display:none;}
+  .reserve-action-primary{
+    flex:2;
+    background:linear-gradient(160deg, var(--gold-light), var(--gold));
+    border:none;
+    border-radius:12px;
+    padding:11px;
+    font-family:'Manrope', sans-serif;
+    font-size:13px; font-weight:700;
+    color:var(--navy-deep);
+    cursor:pointer;
+  }
+  .reserve-action-primary:disabled{opacity:.45; cursor:not-allowed;}
+  .reserve-action-cancel{
+    flex:1;
+    background:var(--segment-track);
+    border:1px solid var(--card-border);
+    border-radius:12px;
+    padding:11px;
+    font-family:'Manrope', sans-serif;
+    font-size:13px; font-weight:700;
+    color:var(--text-muted);
+    cursor:pointer;
+  }
   .reserve-buffer-warn{
     display:flex; align-items:flex-start; gap:8px;
     background:rgba(178,72,58,0.12);
@@ -7448,9 +7492,12 @@
             <div class="reserve-table-pick" id="newReserveTablePick"></div>
             <!-- объединённый выбор столов (долгое удержание плитки, см.
                  nrTablePressTimer) — свёрнут в строку чипов, удержание по
-                 ней возвращает развёрнутый мультивыбор -->
+                 ней открывает плашку «Изменить»/«Отменить» ниже -->
             <div class="table-chips-row reserve-table-pick-chips" id="newReserveTableChips" hidden></div>
-            <button class="reserve-btn-outline" id="newReserveMergeBtn" type="button" hidden>Объединить в один резерв</button>
+            <div class="reserve-action-bar" id="newReserveActionBar" hidden>
+              <button class="reserve-action-primary" id="newReserveActionPrimaryBtn" type="button">Объединить в один резерв</button>
+              <button class="reserve-action-cancel" id="newReserveActionCancelBtn" type="button">Отменить</button>
+            </div>
             <div class="reserve-buffer-warn" id="newReserveBufferWarn" hidden>
               <svg viewBox="0 0 24 24"><path d="M12 9v4"/><path d="M12 16.5h.01"/><path d="M10.3 3.9L2.6 18a1.8 1.8 0 0 0 1.6 2.6h15.6a1.8 1.8 0 0 0 1.6-2.6L13.7 3.9a1.8 1.8 0 0 0-3.4 0z"/></svg>
               <span class="reserve-buffer-warn-text">
@@ -8312,6 +8359,10 @@
         <span class="icon-wrap"><svg viewBox="0 0 24 24"><path d="M4 11.5L12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h3v-5h4v5h3a1 1 0 0 0 1-1v-9"/></svg><span class="nav-lock-badge"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span></span>
         Главная
       </button>
+      <button class="nav-btn nav-btn-lockable" data-tab="planner">
+        <span class="icon-wrap"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="3" height="3" rx="0.6"/><path d="M9 6.5h12"/><rect x="3" y="11" width="3" height="3" rx="0.6"/><path d="M9 12.5h12"/><rect x="3" y="17" width="3" height="3" rx="0.6"/><path d="M9 18.5h12"/></svg><span class="nav-lock-badge"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span></span>
+        Планировщик
+      </button>
       <button class="nav-btn nav-btn-lockable" data-tab="shift">
         <span class="icon-wrap"><svg viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.4"/><path d="M10.3 5.2h3.4"/><circle cx="12" cy="18.3" r="0.9"/></svg><span class="nav-lock-badge"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span></span>
         Смена
@@ -8319,10 +8370,6 @@
       <button class="nav-btn" data-tab="messenger">
         <span class="icon-wrap"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 6l9 7 9-7"/></svg></span>
         Мессенджер
-      </button>
-      <button class="nav-btn nav-btn-lockable" data-tab="planner">
-        <span class="icon-wrap"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="3" height="3" rx="0.6"/><path d="M9 6.5h12"/><rect x="3" y="11" width="3" height="3" rx="0.6"/><path d="M9 12.5h12"/><rect x="3" y="17" width="3" height="3" rx="0.6"/><path d="M9 18.5h12"/></svg><span class="nav-lock-badge"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span></span>
-        Планировщик
       </button>
       <button class="nav-btn nav-btn-lockable" data-tab="profile">
         <span class="icon-wrap"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg><span class="nav-lock-badge"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span></span>
@@ -17670,10 +17717,10 @@
     return '';
   }
   function tableChipsHtml(tableRefs, pulses) {
-    return tableRefs.map((entry, i) => {
+    return '<span class="table-chips-hash">№</span>' + tableRefs.map((entry, i) => {
       const t = reserveTable(entry.id);
       return (i > 0 ? TABLE_CHIP_PLUS : '') +
-        '<span class="table-chip' + tableChipClass(entry, pulses) + '">№' + (t ? tableNum(t) : '?') + '</span>';
+        '<span class="table-chip' + tableChipClass(entry, pulses) + '">' + (t ? tableNum(t) : '?') + '</span>';
     }).join('');
   }
 
@@ -18179,14 +18226,20 @@
   let newReserveOccasion = '';
   /* мультивыбор столов: массив {id, state} — обычный резерв всегда 1
      элемент state:'ready' (выбор только из свободных, как раньше). Долгое
-     удержание любой плитки (nrTablePressTimer) включает newReserveMultiMode,
-     где видны ВСЕ столы, включая занятые — занятый попадает со state
-     'waiting', свободный — 'ready'. «Объединить в один резерв»
-     (newReserveMerged) сворачивает выбор в строку чипов; удержание по ней
-     возвращает развёрнутый мультивыбор */
+     удержание выбранной плитки (nrTablePressTimer) включает
+     newReserveMultiMode, где видны ВСЕ столы, включая занятые — занятый
+     попадает со state 'waiting', свободный — 'ready'. «Объединить в один
+     резерв» (newReserveMerged) сворачивает выбор в строку чипов; долгое
+     удержание по ней не переключает режим сразу, а открывает плашку
+     «Изменить»/«Отменить» (newReserveMergedActionOpen) — «Изменить»
+     переводит в мультивыбор (сохранив снимок newReserveEditSnapshot, чтобы
+     «Отменить» в мультивыборе откатывал именно к этой группе, а не сбрасывал
+     всё); «Отменить» на самой плашке — полный сброс до пустой сетки */
   let newReserveSelectedTables = [];
   let newReserveMultiMode = false;
   let newReserveMerged = false;
+  let newReserveMergedActionOpen = false;
+  let newReserveEditSnapshot = null;
   let newReservePrefillTable = null;
   let newReserveBufferAcked = false;
 
@@ -18594,12 +18647,28 @@
       return !others.some(r => slot.start < r.time + RESERVE_DURATION_MIN * 60000 && r.time < slot.end);
     }).map(t => t.id);
   }
-  function reserveTablePickTileHtml(t, extraClass, zoneLabel) {
+  function reserveTablePickTileHtml(t, extraClass, statusLabel) {
     return '<button class="reserve-table-pick-tile' + extraClass + '" data-pick-table="' + t.id + '">' +
       '<span class="reserve-table-pick-num">№' + tableNum(t) + '</span>' +
       '<span class="reserve-table-pick-seats"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c1-4 4-6 7-6s6 2 7 6"/></svg>' + t.seats + '</span>' +
-      '<span class="reserve-table-pick-zone">' + zoneLabel + '</span>' +
+      (statusLabel ? '<span class="reserve-table-pick-zone">' + statusLabel + '</span>' : '') +
     '</button>';
+  }
+
+  /* группировка плиток по залам с заголовками слева («Основной зал» —
+     всегда первым, остальные — в порядке reserveZones); метка зала на
+     самой плитке убрана (см. reserveTablePickTileHtml) — её роль теперь
+     у заголовка группы */
+  function reserveTablePickGroupsHtml(tables, tileHtmlFn) {
+    return reserveZones.map(z => {
+      const zoneTables = tables.filter(t => t.zone === z.id).sort((a, b) => tableNum(a) - tableNum(b));
+      if (!zoneTables.length) return '';
+      const title = z.id === 'main' ? 'Основной зал' : z.name;
+      return '<div class="reserve-table-pick-group">' +
+        '<div class="reserve-table-pick-group-title">' + title + '</div>' +
+        '<div class="reserve-table-pick">' + zoneTables.map(tileHtmlFn).join('') + '</div>' +
+      '</div>';
+    }).join('');
   }
 
   function renderNewReserveTables() {
@@ -18608,15 +18677,17 @@
     const pick = document.getElementById('newReserveTablePick');
     const summary = document.getElementById('newReserveTablePickSummary');
     const chipsBox = document.getElementById('newReserveTableChips');
-    const mergeBtn = document.getElementById('newReserveMergeBtn');
+    const actionBar = document.getElementById('newReserveActionBar');
+    const actionPrimary = document.getElementById('newReserveActionPrimaryBtn');
     const label = document.getElementById('newReserveTablePickLabel');
     const warn = document.getElementById('newReserveBufferWarn');
 
     if (!slot) {
-      pick.hidden = false; summary.hidden = true; chipsBox.hidden = true; mergeBtn.hidden = true;
+      pick.hidden = false; summary.hidden = true; chipsBox.hidden = true; actionBar.hidden = true;
       label.textContent = 'Свободные столы на это время';
       pick.innerHTML = '<div class="reserve-empty">Выберите дату и время</div>';
       newReserveSelectedTables = []; newReserveMultiMode = false; newReserveMerged = false;
+      newReserveMergedActionOpen = false; newReserveEditSnapshot = null;
       warn.hidden = true;
       updateNewReserveSubmit();
       return;
@@ -18624,12 +18695,19 @@
 
     /* объединено (см. «Объединить в один резерв») — плитки скрыты,
        показана строка чипов; долгое удержание по ней (nrChipsPressTimer)
-       возвращает развёрнутый мультивыбор */
+       открывает плашку «Изменить»/«Отменить» (newReserveMergedActionOpen) */
     if (newReserveMerged) {
-      pick.hidden = true; summary.hidden = true; mergeBtn.hidden = true;
+      pick.hidden = true; summary.hidden = true;
       label.textContent = 'Столы резерва';
       chipsBox.hidden = false;
       chipsBox.innerHTML = tableChipsHtml(newReserveSelectedTables, false);
+      if (newReserveMergedActionOpen) {
+        actionBar.hidden = false;
+        actionPrimary.textContent = 'Изменить';
+        actionPrimary.disabled = false;
+      } else {
+        actionBar.hidden = true;
+      }
       updateNewReserveBuffer(dateStr, slot);
       updateNewReserveSubmit();
       return;
@@ -18639,32 +18717,32 @@
     const freeIds = nrFreeTableIds(dateStr, slot);
 
     if (newReserveMultiMode) {
-      /* мультивыбор — единым потоком ВСЕ столы (и занятые), по залу и
-         номеру, без фильтров и отдельных блоков; состояние выбранных
-         пересчитываем каждый раз — занятый на новое время стол «ждёт»,
-         освободившийся снова просто «готов» */
+      /* мультивыбор — свободные и занятые столы вместе, та же группировка
+         по залам; состояние выбранных пересчитываем каждый раз — занятый
+         на новое время стол «ждёт», освободившийся снова просто «готов» */
       label.textContent = 'Выбор столов';
       newReserveSelectedTables.forEach(sel => { sel.state = freeIds.includes(sel.id) ? 'ready' : 'waiting'; });
-      const all = reserveTables.slice().sort((a, b) =>
-        a.zone === b.zone ? tableNum(a) - tableNum(b) : reserveZoneName(a.zone).localeCompare(reserveZoneName(b.zone), 'ru'));
       pick.hidden = false;
-      pick.innerHTML = all.map(t => {
+      pick.innerHTML = reserveTablePickGroupsHtml(reserveTables, t => {
         const occupied = !freeIds.includes(t.id);
         const cls = (nrSelectedIds().includes(t.id) ? ' is-picked' : '') + (occupied ? ' is-occupied' : '');
-        return reserveTablePickTileHtml(t, cls, occupied ? 'Занят' : reserveZoneName(t.zone));
-      }).join('');
+        return reserveTablePickTileHtml(t, cls, occupied ? 'Занят' : '');
+      });
       summary.hidden = false;
       summary.textContent = 'Мест выбрано: ' + nrSelectedSeats() + ' из ' + newReservePersons;
-      mergeBtn.hidden = !newReserveSelectedTables.length;
+      actionBar.hidden = false;
+      actionPrimary.textContent = 'Объединить в один резерв';
+      actionPrimary.disabled = newReserveSelectedTables.length < 2;
       newReservePrefillTable = null;
       updateNewReserveBuffer(dateStr, slot);
       updateNewReserveSubmit();
       return;
     }
 
-    /* обычный режим — как раньше: только свободные столы, одиночный выбор */
+    /* обычный режим — только свободные столы; после выбора остальные
+       скрываются, остаётся только выбранная плитка (см. клик-обработчик) */
     label.textContent = 'Свободные столы на это время';
-    summary.hidden = true; mergeBtn.hidden = true;
+    summary.hidden = true; actionBar.hidden = true;
     const free = reserveTables.filter(t => freeIds.includes(t.id));
     if (!free.length) {
       pick.hidden = false;
@@ -18681,7 +18759,8 @@
     }
     newReserveSelectedTables = selectedId ? [{ id: selectedId, state: 'ready' }] : [];
     pick.hidden = false;
-    pick.innerHTML = free.map(t => reserveTablePickTileHtml(t, t.id === selectedId ? ' active' : '', reserveZoneName(t.zone))).join('');
+    const shown = selectedId ? free.filter(t => t.id === selectedId) : free;
+    pick.innerHTML = reserveTablePickGroupsHtml(shown, t => reserveTablePickTileHtml(t, selectedId === t.id ? ' active' : '', ''));
     newReservePrefillTable = null;
     updateNewReserveBuffer(dateStr, slot);
     updateNewReserveSubmit();
@@ -18701,6 +18780,8 @@
     newReserveSelectedTables = [];
     newReserveMultiMode = false;
     newReserveMerged = false;
+    newReserveMergedActionOpen = false;
+    newReserveEditSnapshot = null;
     newReservePrefillTable = prefillTableId || null;
     newReserveBufferAcked = false;
     nrPickedDay = dateOnly(new Date());
@@ -18749,11 +18830,9 @@
       renderNewReserveTables();
       return;
     }
-    newReserveSelectedTables = [{ id: id, state: 'ready' }];
-    document.querySelectorAll('#newReserveTablePick .reserve-table-pick-tile').forEach(b => b.classList.toggle('active', b === btn));
-    const slot = newReserveSlot();
-    if (slot) updateNewReserveBuffer(document.getElementById('newReserveDate').value, slot);
-    updateNewReserveSubmit();
+    const already = newReserveSelectedTables[0] && newReserveSelectedTables[0].id === id;
+    newReserveSelectedTables = already ? [] : [{ id: id, state: 'ready' }];
+    renderNewReserveTables();
   });
   document.getElementById('newReserveTablePick').addEventListener('contextmenu', e => e.preventDefault());
 
@@ -18786,27 +18865,72 @@
       nrTablePressMoved = true;
       suppressNextClickGlobally();
       newReserveMultiMode = true;
+      newReserveEditSnapshot = null;
       if (!nrSelectedIds().includes(id)) newReserveSelectedTables.push({ id: id, state: 'ready' });
       renderNewReserveTables();
     }, 700);
   });
 
-  /* объединение выбора в один резерв — сворачивает плитки в строку чипов */
-  document.getElementById('newReserveMergeBtn').addEventListener('click', () => {
-    if (!newReserveSelectedTables.length) return;
+  /* плашка «Объединить в один резерв»/«Изменить» — основное действие */
+  document.getElementById('newReserveActionPrimaryBtn').addEventListener('click', () => {
+    const btn = document.getElementById('newReserveActionPrimaryBtn');
+    if (btn.disabled) return;
+    if (newReserveMerged && newReserveMergedActionOpen) {
+      /* «Изменить» — снимок текущей группы нужен, чтобы «Отменить» в
+         развернувшемся мультивыборе откатывал именно к ней, а не сбрасывал
+         выбор целиком (см. newReserveActionCancelBtn) */
+      newReserveEditSnapshot = newReserveSelectedTables.map(x => ({ id: x.id, state: x.state }));
+      newReserveMergedActionOpen = false;
+      newReserveMerged = false;
+      newReserveMultiMode = true;
+      renderNewReserveTables();
+      return;
+    }
+    if (newReserveSelectedTables.length < 2) return;
     newReserveMerged = true;
+    newReserveMultiMode = false;
+    newReserveEditSnapshot = null;
     renderNewReserveTables();
   });
 
-  /* удержание по свёрнутой строке чипов возвращает развёрнутый мультивыбор
-     с сохранённым выбором — тот же порог, что и у плиток (nrTablePressTimer) */
+  /* «Отменить» на той же плашке — три разных отката в зависимости от того,
+     откуда пришли (см. renderNewReserveTables) */
+  document.getElementById('newReserveActionCancelBtn').addEventListener('click', () => {
+    if (newReserveMerged && newReserveMergedActionOpen) {
+      /* плашка «Изменить»/«Отменить» над уже объединённой группой — полный сброс */
+      newReserveMergedActionOpen = false;
+      newReserveMerged = false;
+      newReserveMultiMode = false;
+      newReserveSelectedTables = [];
+      newReserveEditSnapshot = null;
+      renderNewReserveTables();
+      return;
+    }
+    if (newReserveMultiMode && newReserveEditSnapshot) {
+      /* редактирование существующей группы («Изменить») — откат к ней же */
+      newReserveSelectedTables = newReserveEditSnapshot;
+      newReserveEditSnapshot = null;
+      newReserveMultiMode = false;
+      newReserveMerged = true;
+      renderNewReserveTables();
+      return;
+    }
+    /* свежий мультивыбор, группы ещё не было — полный сброс */
+    newReserveMultiMode = false;
+    newReserveMerged = false;
+    newReserveSelectedTables = [];
+    renderNewReserveTables();
+  });
+
+  /* долгое удержание по свёрнутой строке чипов открывает плашку
+     «Изменить»/«Отменить» — тот же порог, что и у плиток (nrTablePressTimer) */
   let nrChipsPressTimer = null;
   const newReserveTableChipsEl = document.getElementById('newReserveTableChips');
   newReserveTableChipsEl.addEventListener('pointerdown', () => {
     clearTimeout(nrChipsPressTimer);
     nrChipsPressTimer = setTimeout(() => {
       nrChipsPressTimer = null;
-      newReserveMerged = false;
+      newReserveMergedActionOpen = true;
       renderNewReserveTables();
     }, 700);
   });
