@@ -5822,28 +5822,12 @@
      строкой над сеткой столов */
   .reserve-table-pick-summary{font-size:11.5px; font-weight:700; color:var(--text-muted); white-space:nowrap;}
   .reserve-table-pick-summary[hidden]{display:none;}
-  .reserve-table-pick-chips{margin-bottom:2px;}
-  /* «Столы резерва» после «Объединить» — своя версия чипов: у левого края
-     (а не у правого, как в карточках резерва на МН-13/МН-30 — там это
-     общий .table-chips-row), кружки с золотой заливкой явно читаются как
-     подтверждённый выбор, а не как обычная приглушённая метка */
-  #newReserveTableChips{justify-content:flex-start;}
-  #newReserveTableChips .table-chip{
-    border-color:transparent;
-    background:linear-gradient(160deg, var(--gold-light), var(--gold));
-    color:var(--navy-deep);
-  }
-  #newReserveTableChips .table-chip.is-waiting-hard,
-  #newReserveTableChips .table-chip.is-waiting-soon{
-    background:none;
-    color:var(--text-primary);
-    border-color:var(--dot-red);
-  }
-  #newReserveTableChips .table-chip.is-released{
-    background:none;
-    color:var(--text-muted);
-    border-color:var(--card-border);
-  }
+  /* «Столы резерва» после «Объединить» — те же плитки, что и при выборе
+     (не кружки-чипы), у левого края, через золотой «+» (.table-chip-plus,
+     общий значок с МН-13/МН-30); сами плитки инертны — только показ */
+  .reserve-merged-tiles{display:flex; flex-wrap:wrap; align-items:center; gap:7px;}
+  .reserve-merged-tiles .reserve-table-pick-tile{flex:0 0 84px;}
+  .reserve-table-pick-tile.is-merged{cursor:default;}
   /* плашка «Объединить»/«Изменить» | «Отменить» — тот же стиль (хаки-фон,
      золотая рамка), что у .transfer-bar в МН-16; висит над нижним меню и
      опускается вместе с ним ровно по тем же правилам, что и
@@ -7552,11 +7536,11 @@
 
           <div class="reserve-form-row">
             <span class="reserve-form-label" id="newReserveTablePickLabel">Свободные столы на это время</span>
+            <!-- объединённый резерв (долгое удержание плитки, см.
+                 nrTablePressTimer) показывает те же плитки через «+» вместо
+                 сетки (см. reserveMergedTilesHtml) — удержание по ним
+                 открывает плашку «Изменить»/«Отменить» ниже -->
             <div id="newReserveTablePick"></div>
-            <!-- объединённый выбор столов (долгое удержание плитки, см.
-                 nrTablePressTimer) — свёрнут в строку чипов, удержание по
-                 ней открывает плашку «Изменить»/«Отменить» ниже -->
-            <div class="table-chips-row reserve-table-pick-chips" id="newReserveTableChips" hidden></div>
             <div class="reserve-action-bar" id="newReserveActionBar" hidden>
               <button class="reserve-action-primary" id="newReserveActionPrimaryBtn" type="button">Объединить</button>
               <button class="reserve-action-cancel" id="newReserveActionCancelBtn" type="button">Отменить</button>
@@ -18739,19 +18723,37 @@
     }).join('');
   }
 
+  /* объединённый резерв («Столы резерва») — те же плитки, что и при
+     выборе (не кружки-чипы), через золотой «+», в том же месте, где
+     раньше была сетка; объединять можно только столы одного зала (см.
+     nrSelectedSameZone), поэтому у всей группы один заголовок */
+  function reserveMergedTilesHtml(tableRefs) {
+    const first = reserveTable(tableRefs[0].id);
+    const zoneId = first ? first.zone : null;
+    const title = zoneId === 'main' ? 'Основной зал' : reserveZoneName(zoneId);
+    const tilesHtml = tableRefs.map((ref, i) => {
+      const t = reserveTable(ref.id);
+      if (!t) return '';
+      return (i > 0 ? TABLE_CHIP_PLUS : '') + reserveTablePickTileHtml(t, ' active is-merged');
+    }).join('');
+    return '<div class="reserve-table-pick-group">' +
+      '<div class="reserve-table-pick-group-title">' + title + '</div>' +
+      '<div class="reserve-merged-tiles">' + tilesHtml + '</div>' +
+    '</div>';
+  }
+
   function renderNewReserveTables() {
     const dateStr = document.getElementById('newReserveDate').value;
     const slot = newReserveSlot();
     const pick = document.getElementById('newReserveTablePick');
     const summary = document.getElementById('newReserveTablePickSummary');
-    const chipsBox = document.getElementById('newReserveTableChips');
     const actionBar = document.getElementById('newReserveActionBar');
     const actionPrimary = document.getElementById('newReserveActionPrimaryBtn');
     const label = document.getElementById('newReserveTablePickLabel');
     const warn = document.getElementById('newReserveBufferWarn');
 
     if (!slot) {
-      pick.hidden = false; summary.hidden = true; chipsBox.hidden = true; actionBar.hidden = true;
+      pick.hidden = false; summary.hidden = true; actionBar.hidden = true;
       label.textContent = 'Свободные столы на это время';
       pick.innerHTML = '<div class="reserve-empty">Выберите дату и время</div>';
       newReserveSelectedTables = []; newReserveMultiMode = false; newReserveMerged = false;
@@ -18761,14 +18763,14 @@
       return;
     }
 
-    /* объединено (см. «Объединить») — плитки скрыты,
-       показана строка чипов; долгое удержание по ней (nrChipsPressTimer)
+    /* объединено (см. «Объединить») — вместо сетки та же плитка(и) выбранных
+       столов через «+» (см. reserveMergedTilesHtml), тапы по ним не
+       работают; долгое удержание по плиткам (nrTablePressTimer, см. ниже)
        открывает плашку «Изменить»/«Отменить» (newReserveMergedActionOpen) */
     if (newReserveMerged) {
-      pick.hidden = true; summary.hidden = true;
+      pick.hidden = false; summary.hidden = true;
       label.textContent = 'Столы резерва';
-      chipsBox.hidden = false;
-      chipsBox.innerHTML = tableChipsHtml(newReserveSelectedTables, false);
+      pick.innerHTML = reserveMergedTilesHtml(newReserveSelectedTables);
       if (newReserveMergedActionOpen) {
         actionBar.hidden = false;
         actionPrimary.textContent = 'Изменить';
@@ -18780,7 +18782,6 @@
       updateNewReserveSubmit();
       return;
     }
-    chipsBox.hidden = true;
 
     const freeIds = nrFreeTableIds(dateStr, slot);
 
@@ -18886,12 +18887,16 @@
   });
 
   /* тап по плитке стола: в обычном режиме — одиночный выбор (как раньше);
-     в мультивыборе — переключает стол во/из выбора. Долгое удержание любой
-     плитки (порог 700 мс — тот же, что у удержания позиции заказа для
-     переноса/удаления, см. orderPositionsEl pointerdown выше) включает
-     мультивыбор — см. nrTablePress* ниже */
+     в мультивыборе — переключает стол во/из выбора; в объединённом резерве
+     плитки только для показа — тап по ним ничего не делает (см.
+     reserveMergedTilesHtml). Долгое удержание любой плитки (порог 700 мс —
+     тот же, что у удержания позиции заказа для переноса/удаления, см.
+     orderPositionsEl pointerdown выше) включает мультивыбор либо, если
+     резерв уже объединён, открывает плашку «Изменить»/«Отменить» — см.
+     nrTablePress* ниже */
   document.getElementById('newReserveTablePick').addEventListener('click', e => {
     if (nrTablePressMoved) { nrTablePressMoved = false; return; }
+    if (newReserveMerged) return;
     const btn = e.target.closest('[data-pick-table]');
     if (!btn) return;
     const id = btn.dataset.pickTable;
@@ -18937,6 +18942,11 @@
       nrTablePressReset();
       nrTablePressMoved = true;
       suppressNextClickGlobally();
+      if (newReserveMerged) {
+        newReserveMergedActionOpen = true;
+        renderNewReserveTables();
+        return;
+      }
       newReserveMultiMode = true;
       newReserveEditSnapshot = null;
       if (!nrSelectedIds().includes(id)) newReserveSelectedTables.push({ id: id, state: 'ready' });
@@ -18994,22 +19004,6 @@
     newReserveSelectedTables = [];
     renderNewReserveTables();
   });
-
-  /* долгое удержание по свёрнутой строке чипов открывает плашку
-     «Изменить»/«Отменить» — тот же порог, что и у плиток (nrTablePressTimer) */
-  let nrChipsPressTimer = null;
-  const newReserveTableChipsEl = document.getElementById('newReserveTableChips');
-  newReserveTableChipsEl.addEventListener('pointerdown', () => {
-    clearTimeout(nrChipsPressTimer);
-    nrChipsPressTimer = setTimeout(() => {
-      nrChipsPressTimer = null;
-      newReserveMergedActionOpen = true;
-      renderNewReserveTables();
-    }, 700);
-  });
-  ['pointerup', 'pointercancel', 'pointerleave'].forEach(evt =>
-    newReserveTableChipsEl.addEventListener(evt, () => clearTimeout(nrChipsPressTimer)));
-  newReserveTableChipsEl.addEventListener('contextmenu', e => e.preventDefault());
 
   document.getElementById('newReserveBufferAck').addEventListener('click', () => {
     newReserveBufferAcked = true;
