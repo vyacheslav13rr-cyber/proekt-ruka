@@ -5570,28 +5570,29 @@
 
   /* ---------- Строка чипов столов — общий компонент МН-13/МН-30/МН-31:
      один стол — как раньше, простым номером; несколько — чипами через
-     «+», flex-wrap, выравнивание вправо. Не золотой — тот же нейтральный
-     цвет текста, что и у одиночного номера (.reserve-card-table), просто
-     подстроенный под тему (--text-primary/--text-muted), одинаково что
-     для одного стола, что для объединения ---------- */
+     «+», flex-wrap, выравнивание вправо. Рамка, «№», «+» и сама цифра —
+     все одним цветом --text-primary (тем же, что и у одиночного номера
+     .reserve-card-table), чтобы объединённый резерв выглядел точно так
+     же, как обычный, просто подстроенным под тему — никакого второго
+     (мутного/золотого) оттенка в этом же значке ---------- */
   .table-chips-row{display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; gap:4px;}
   /* на плитках резервов (МН-13) номер стола крупнее и от левого края —
      та же строка, что имя/время/телефон, а не прижат к правому краю
      карточки, как в поле «Стол» на МН-30 (там .table-chips-row остаётся
      как есть, справа от подписи) */
   .reserve-card-row2 .table-chips-row{justify-content:flex-start;}
-  .table-chips-hash{font-family:'IBM Plex Mono', monospace; font-size:13px; font-weight:800; color:var(--text-muted);}
+  .table-chips-hash{font-family:'IBM Plex Mono', monospace; font-size:13px; font-weight:800; color:var(--text-primary);}
   .table-chip{
     display:inline-flex; align-items:center; justify-content:center;
     padding:3px 11px;
     border-radius:8px;
-    border:1.5px solid var(--text-muted);
+    border:1.5px solid var(--text-primary);
     font-family:'IBM Plex Mono', monospace;
     font-size:13px; font-weight:800;
     color:var(--text-primary);
     white-space:nowrap;
   }
-  .table-chip-plus{width:13px; height:13px; stroke:var(--text-muted); stroke-width:3; fill:none; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0;}
+  .table-chip-plus{width:13px; height:13px; stroke:var(--text-primary); stroke-width:3; fill:none; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0;}
   .table-chip.is-waiting-hard{border-color:var(--dot-red);}
   .table-chip.is-waiting-soon{border-color:var(--dot-red); animation:reservePulseRed .85s ease-in-out infinite;}
   .table-chip.is-released{border-style:dashed; border-color:var(--card-border); color:var(--text-muted); text-decoration:line-through;}
