@@ -1828,6 +1828,24 @@
     height:1px;
     background:var(--card-border);
   }
+  /* «Свободные столы» — плоский заголовок без нити, отступ снизу убран:
+     сразу под ним идёт первый заголовок зала */
+  .table-divider-plain{margin-bottom:0;}
+  .table-divider-plain::before,
+  .table-divider-plain::after{display:none;}
+  /* заголовок зала над свободными столами — та же нить слева-направо, что
+     у .reserve-table-pick-group-title на «Новом резерве»: короткая золотая
+     нить перед текстом, текст у левого края, длинная нить остатком ширины
+     (а не по центру, как у общего .table-divider) */
+  .table-divider-zone{margin-top:0;}
+  .table-divider-zone::before{
+    flex:0 0 20px;
+    background:linear-gradient(90deg, transparent, rgba(198,153,47,0.6));
+  }
+  .table-divider-zone::after{
+    flex:1;
+    background:linear-gradient(90deg, rgba(198,153,47,0.6), transparent);
+  }
 
   /* ---------- Общие элементы действий ---------- */
   .primary-btn{
@@ -10974,7 +10992,7 @@
     /* по официантам свободные столы не показываем — они ничьи, свайп вправо
        возвращает общий список и их обратно */
     if (freeList.length && !ordersByWaiter) {
-      if (busyList.length || billEntries.length) html += '<div class="table-divider">Свободные</div>';
+      if (busyList.length || billEntries.length) html += '<div class="table-divider table-divider-plain">Свободные столы</div>';
       const collapse = freeList.length > FREE_COLLAPSE_LIMIT && !freeExpanded;
       const shownFree = collapse ? freeList.slice(0, FREE_COLLAPSE_LIMIT) : freeList;
       /* зал не выбран сверху (currentZone === 'all') — свободные столы
@@ -10985,7 +11003,8 @@
         Object.keys(ZONE_NAMES).forEach(z => {
           const zoneFree = shownFree.filter(t => t.zone === z);
           if (!zoneFree.length) return;
-          html += '<div class="table-divider table-divider-zone">' + ZONE_NAMES[z] + '</div>';
+          const zoneTitle = z === 'hall' ? 'Основной зал' : ZONE_NAMES[z];
+          html += '<div class="table-divider table-divider-zone">' + zoneTitle + '</div>';
           html += zoneFree.map(tableCardTemplate).join('');
         });
       } else {
