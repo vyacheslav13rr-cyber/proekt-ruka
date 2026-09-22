@@ -5747,7 +5747,7 @@
     text-align:center;
     font-size:14px;
   }
-  .reserve-persons-stepper{display:flex; align-items:center; gap:12px;}
+  .reserve-persons-stepper{display:flex; align-items:center; flex-wrap:wrap; gap:12px;}
   .reserve-persons-stepper .step-count{font-size:16px; min-width:22px;}
   .reserve-persons-stepper .step-count-input{width:2ch; cursor:pointer;}
   /* плитки 4 в ряд: номер стола, вместимость (иконка) и зал — вместо
@@ -5807,25 +5807,31 @@
     color:var(--text-muted);
   }
   .reserve-table-pick-seats svg{width:11px; height:11px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
-  .reserve-table-pick-zone{font-size:9.5px; font-weight:800; color:var(--gold); text-transform:uppercase; letter-spacing:.02em;}
-  .reserve-table-pick-tile.is-occupied .reserve-table-pick-zone{color:var(--text-muted);}
-  .reserve-table-pick-summary{font-size:11.5px; font-weight:700; color:var(--text-muted); text-align:right; margin-bottom:6px;}
+  /* «Мест выбрано… из…» — в мультивыборе живёт прямо в строке «Персоны»,
+     сразу за кнопкой «+» (см. .reserve-persons-stepper), а не отдельной
+     строкой над сеткой столов */
+  .reserve-table-pick-summary{font-size:11.5px; font-weight:700; color:var(--text-muted); white-space:nowrap;}
+  .reserve-table-pick-summary[hidden]{display:none;}
   .reserve-table-pick-chips{margin-bottom:2px;}
   /* плашка «Объединить»/«Изменить» | «Отменить» — тот же стиль (хаки-фон,
-     золотая рамка), что у .transfer-bar в МН-16; держится поверх контента
-     над нижним меню тем же приёмом, что .hall-transfer-bar в «Зале»
-     (position:sticky + тот же bottom:14px) — если меню свёрнуто, область
-     прокрутки становится выше и плашка вместе с ней опускается ниже */
+     золотая рамка), что у .transfer-bar в МН-16; висит над нижним меню и
+     опускается вместе с ним ровно по тем же правилам, что и
+     .profile-save-bar/.order-fixed-bar (position:absolute от #screen,
+     bottom:14px+высота меню+8px, а при .screen.nav-hidden — те же 14px,
+     что и у самого меню, то есть плашка садится на его место) */
   .reserve-action-bar{
-    position:sticky; bottom:14px; z-index:6;
+    position:absolute;
+    left:20px; right:20px;
+    bottom:calc(14px + 74px + 8px);
+    z-index:18;
     display:flex; align-items:center; gap:6px;
     background:var(--khaki-block-bg);
     border:1px solid var(--gold);
     border-radius:12px;
     padding:6px;
-    margin-top:10px;
     box-shadow:0 12px 26px -14px var(--card-shadow);
   }
+  .screen.nav-hidden .reserve-action-bar{bottom:14px;}
   .reserve-action-bar[hidden]{display:none;}
   .reserve-action-primary{
     flex:2;
@@ -7509,12 +7515,12 @@
               <button class="step-btn" id="newReservePersonsMinus" type="button">−</button>
               <input class="step-count step-count-input" id="newReservePersonsCount" type="text" inputmode="none" readonly min="1" value="2">
               <button class="step-btn" id="newReservePersonsPlus" type="button">+</button>
+              <span class="reserve-table-pick-summary" id="newReserveTablePickSummary" hidden></span>
             </div>
           </div>
 
           <div class="reserve-form-row">
             <span class="reserve-form-label" id="newReserveTablePickLabel">Свободные столы на это время</span>
-            <div class="reserve-table-pick-summary" id="newReserveTablePickSummary" hidden></div>
             <div id="newReserveTablePick"></div>
             <!-- объединённый выбор столов (долгое удержание плитки, см.
                  nrTablePressTimer) — свёрнут в строку чипов, удержание по
@@ -18673,11 +18679,10 @@
       return !others.some(r => slot.start < r.time + RESERVE_DURATION_MIN * 60000 && r.time < slot.end);
     }).map(t => t.id);
   }
-  function reserveTablePickTileHtml(t, extraClass, statusLabel) {
+  function reserveTablePickTileHtml(t, extraClass) {
     return '<button class="reserve-table-pick-tile' + extraClass + '" data-pick-table="' + t.id + '">' +
       '<span class="reserve-table-pick-num">№' + tableNum(t) + '</span>' +
       '<span class="reserve-table-pick-seats"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c1-4 4-6 7-6s6 2 7 6"/></svg>' + t.seats + '</span>' +
-      (statusLabel ? '<span class="reserve-table-pick-zone">' + statusLabel + '</span>' : '') +
     '</button>';
   }
 
@@ -18752,7 +18757,7 @@
       pick.innerHTML = reserveTablePickGroupsHtml(reserveTables, t => {
         const occupied = !freeIds.includes(t.id);
         const cls = (nrSelectedIds().includes(t.id) ? ' is-picked' : '') + (occupied ? ' is-occupied' : '');
-        return reserveTablePickTileHtml(t, cls, occupied ? 'Занят' : '');
+        return reserveTablePickTileHtml(t, cls);
       });
       summary.hidden = false;
       summary.textContent = 'Мест выбрано: ' + nrSelectedSeats() + ' из ' + newReservePersons;
@@ -18786,7 +18791,7 @@
     newReserveSelectedTables = selectedId ? [{ id: selectedId, state: 'ready' }] : [];
     pick.hidden = false;
     const shown = selectedId ? free.filter(t => t.id === selectedId) : free;
-    pick.innerHTML = reserveTablePickGroupsHtml(shown, t => reserveTablePickTileHtml(t, selectedId === t.id ? ' active' : '', ''));
+    pick.innerHTML = reserveTablePickGroupsHtml(shown, t => reserveTablePickTileHtml(t, selectedId === t.id ? ' active' : ''));
     newReservePrefillTable = null;
     updateNewReserveBuffer(dateStr, slot);
     updateNewReserveSubmit();
