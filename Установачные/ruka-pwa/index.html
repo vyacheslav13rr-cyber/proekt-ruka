@@ -925,7 +925,7 @@
   .screen.font-sm{zoom:0.92;}
   .screen.font-lg{zoom:1.08;}
 
-  /* ---------- Профиль: варианты кнопки «Доп меню» ---------- */
+  /* ---------- Профиль: варианты кнопки «Уведомления» ---------- */
   .mv-intro{font-size:12px; color:var(--text-soft); line-height:1.5; margin-bottom:14px;}
   .mv-list{display:flex; flex-direction:column; gap:10px;}
   .mv-card{
@@ -4381,31 +4381,7 @@
   }
 
   /* ---------- Боковое меню отделов (правый край) ---------- */
-  .dept-side-btn{
-    position:absolute;
-    right:0; top:300px;                 /* чуть ниже стыка «Финансы» и «Старт/Стоп лист» */
-    display:flex; align-items:center; justify-content:center;
-    width:22px; height:84px;
-    /* золотой фон — фиксированные токены, не зависят от темы, поэтому кнопка
-       одинаково заметна и на бежевом (светлая), и на синем (тёмная) фоне */
-    background:linear-gradient(160deg, var(--gold-light), var(--gold));
-    border:1px solid rgba(110,74,52,0.28);
-    border-right:none;
-    border-radius:14px 0 0 14px;
-    cursor:pointer;
-    box-shadow:-6px 0 20px -10px var(--card-shadow);
-    z-index:40;
-  }
-  .dept-side-btn svg{width:14px; height:14px; stroke:var(--navy-deep); fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round;}
-  .dept-side-btn[hidden]{display:none;}
   /* сторона меняется в настройках профиля */
-  .screen.dept-left .dept-side-btn{
-    right:auto; left:0;
-    border-radius:0 14px 14px 0;
-    border-right:1px solid rgba(110,74,52,0.28);
-    border-left:none;
-    box-shadow:6px 0 20px -10px var(--card-shadow);
-  }
   .screen.dept-left .dept-panel{
     right:auto; left:0;
     border-left:none;
@@ -4413,41 +4389,7 @@
     box-shadow:18px 0 40px -16px rgba(18,35,58,0.5);
   }
 
-  /* ---------- Кнопка «Доп меню»: альтернативные варианты размещения ---------- */
-  /* Вариант «Плавающая кнопка снизу» — круглая, у нижнего меню, с противоположной
-     от уведомлений стороны (уведомления всегда слева-снизу). */
-  .screen.menu-variant-fab .dept-side-btn{
-    right:20px; left:auto; top:auto; bottom:100px;
-    width:52px; height:52px;
-    border-radius:50%;
-    border:1px solid rgba(110,74,52,0.28);
-    box-shadow:0 10px 24px -8px var(--card-shadow);
-  }
-  .screen.menu-variant-fab.dept-left .dept-side-btn{ left:20px; right:auto; }
-  .screen.menu-variant-fab .dept-side-btn svg{width:20px; height:20px;}
-
-  /* Вариант «Перетаскиваемая вкладка» — тот же боковой таб, но его можно
-     потянуть по вертикали и оставить там, где удобнее всего под руку. */
-  .screen.menu-variant-drag .dept-side-btn{cursor:grab; touch-action:none;}
-  .screen.menu-variant-drag .dept-side-btn.is-dragging{cursor:grabbing; opacity:.88;}
-
-  /* Вариант «Свайп от края» — от вкладки остаётся едва заметная полоска,
-     открытие происходит свайпом от края экрана внутрь. */
-  .screen.menu-variant-swipe .dept-side-btn{
-    width:6px; height:56px;
-    padding:0;
-    opacity:.5;
-  }
-  .screen.menu-variant-swipe .dept-side-btn svg{display:none;}
-
-  /* Вариант «В нижнем меню» — боковая вкладка скрыта JS-ом (deptSideBtnEl.hidden),
-     кнопка живёт в .bottom-nav как #navDeptBtn. */
-  .nav-btn-extra{color:var(--gold);}   /* золотой — одинаково заметен в обеих темах */
-  .nav-btn-extra[hidden]{display:none;}
-
-  /* ---------- Кнопка «Уведомления»: альтернативные варианты размещения ----------
-     Левый край, выше «Доп меню» (top:170px против top:300px), чтобы вкладки
-     не пересекались, даже если обе — боковые. */
+  /* ---------- Кнопка «Уведомления»: альтернативные варианты размещения ---------- */
   .notif-edge-btn{
     position:absolute;
     left:0; top:170px;
@@ -6275,10 +6217,10 @@
     </div>
 
     <div class="app-header" id="appHeader">
-      <button class="header-logo-btn" id="assistantHeaderBtn" aria-label="Открыть ассистента РУКА">
+      <button class="header-logo-btn" id="headerMenuBtn" aria-label="Дополнительное меню">
         <svg class="header-logo" viewBox="0 0 512 512" role="img" aria-label="РУКА"><defs><linearGradient id="rukaBg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b3050"/><stop offset="1" stop-color="#0e1c2e"/></linearGradient><clipPath id="rukaCard"><rect x="16" y="16" width="480" height="480" rx="112"/></clipPath></defs><rect x="16" y="16" width="480" height="480" rx="112" fill="url(#rukaBg)"/><g clip-path="url(#rukaCard)"><rect x="92" y="206" width="46" height="194" rx="12" fill="#5b7ba6"/><rect x="156" y="158" width="46" height="242" rx="12" fill="#7c9bc2"/><rect x="220" y="116" width="46" height="284" rx="12" fill="#e6dabf"/><rect x="284" y="62" width="46" height="338" rx="12" fill="#efe6d2"/><path d="M 84,300 A 186,186 0 1 0 438,222 Z" fill="#c9a227"/><polyline points="105,378 222,252 278,306 392,200" fill="none" stroke="#12233a" stroke-width="56" stroke-linecap="round" stroke-linejoin="round"/><polyline points="105,378 222,252 278,306 392,200" fill="none" stroke="#f7efe1" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/></g><rect x="42" y="42" width="428" height="428" rx="92" fill="none" stroke="#c9a227" stroke-width="3" opacity="0.85"/></svg>
       </button>
-      <!-- уведомления: вариант «в шапке» — рядом со значком ассистента -->
+      <!-- уведомления: вариант «в шапке» — рядом с логотипом -->
       <button class="notif-header-btn" id="notifHeaderBtn" hidden aria-label="Уведомления">
         <svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M9.5 19a2.5 2.5 0 0 0 5 0"/></svg>
         <span class="notif-header-count" id="notifHeaderCount" hidden>0</span>
@@ -8483,14 +8425,6 @@
               </button>
             </div>
             <div class="settings-divider"></div>
-            <button class="settings-row settings-row-link" id="menuVariantsOpenBtn">
-              <div class="settings-row-text">
-                <span class="settings-row-title">Кнопка «Доп меню»</span>
-                <span class="settings-row-note" id="menuVariantsCurrentNote">Расположение — боковая вкладка</span>
-              </div>
-              <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
-            </button>
-            <div class="settings-divider"></div>
             <button class="settings-row settings-row-link" id="profileInterfaceOpenBtn">
               <div class="settings-row-text">
                 <span class="settings-row-title">Настройки интерфейса</span>
@@ -8556,8 +8490,7 @@
       <span class="notif-fab-count" id="notifFabCount" hidden>0</span>
     </button>
 
-    <!-- уведомления: варианты «боковая вкладка» и «свайп от края» — левый край,
-         выше вкладки «Доп меню», чтобы не пересекались -->
+    <!-- уведомления: варианты «боковая вкладка» и «свайп от края» — левый край -->
     <button class="notif-edge-btn" id="notifEdgeBtn" hidden aria-label="Уведомления">
       <svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M9.5 19a2.5 2.5 0 0 0 5 0"/></svg>
     </button>
@@ -8582,10 +8515,6 @@
       <button class="nav-btn nav-btn-lockable" data-tab="profile">
         <span class="icon-wrap"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg><span class="nav-lock-badge"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span></span>
         Профиль
-      </button>
-      <button class="nav-btn nav-btn-extra" id="navDeptBtn" hidden>
-        <span class="icon-wrap"><svg viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg></span>
-        Доп меню
       </button>
     </nav>
     <button class="nav-handle" id="navHandle" aria-label="Свернуть меню">
@@ -9089,11 +9018,6 @@
       <button class="notify-btn" id="notifyOpen">Ознакомиться</button>
     </div>
 
-    <!-- боковое меню отделов: правый край, на уровне третьего ряда столов -->
-    <button class="dept-side-btn" id="deptSideBtn" aria-label="Отделы">
-      <svg viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
-    </button>
-
     <div class="dept-overlay" id="deptOverlay" hidden></div>
 
     <aside class="dept-panel" id="deptPanel" hidden>
@@ -9103,6 +9027,10 @@
           <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
         </button>
       </div>
+      <button class="dept-item" id="deptItemAssistant">
+        <svg viewBox="0 0 24 24"><path d="M4 5h16v10H9l-4 4v-4H4z"/><path d="M9 9h6"/><path d="M9 12h4"/></svg>
+        <span class="dept-item-text"><span class="dept-item-name">Ассистент</span><span class="dept-item-note">Вопросы по работе и составу блюд</span></span>
+      </button>
       <button class="dept-item">
         <svg viewBox="0 0 24 24"><path d="M3 7h13v10H3z"/><path d="M16 10h3.5l1.5 3v4h-5"/><circle cx="7" cy="18.5" r="1.8"/><circle cx="17.5" cy="18.5" r="1.8"/></svg>
         <span class="dept-item-text"><span class="dept-item-name">Поставщики</span><span class="dept-item-note">Заявки и накладные</span></span>
@@ -9124,6 +9052,11 @@
         <span class="dept-item-text"><span class="dept-item-name">Техслужба</span><span class="dept-item-note">Заявки на ремонт</span></span>
       </button>
       <div class="dept-note">Разделы соберём в отдельных файлах</div>
+      <div class="settings-divider"></div>
+      <button class="dept-item" id="deptItemMap">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="7" height="7" rx="1.4"/><rect x="14" y="4" width="7" height="7" rx="1.4"/><rect x="3" y="14" width="7" height="7" rx="1.4"/><rect x="14" y="14" width="7" height="7" rx="1.4"/></svg>
+        <span class="dept-item-text"><span class="dept-item-name">Карта экранов</span><span class="dept-item-note">Служебный экран прототипа</span></span>
+      </button>
     </aside>
 
     <!-- уведомления, которые не успели смахнуть: копятся тут, открывается поверх экрана -->
@@ -9138,20 +9071,6 @@
         </button>
       </div>
       <div id="notifPanelBody"></div>
-    </aside>
-
-    <!-- варианты размещения кнопки «Доп меню» — открывается из Профиль → Настройки интерфейса -->
-    <div class="dept-overlay" id="menuVariantsOverlay" hidden></div>
-
-    <aside class="dept-panel" id="menuVariantsPanel" hidden>
-      <div class="dept-panel-head">
-        <span class="dept-panel-title">Кнопка «Доп меню»</span>
-        <button class="dept-close" id="menuVariantsClose" aria-label="Закрыть">
-          <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
-        </button>
-      </div>
-      <div class="mv-intro">Чтобы кнопка всегда была под рукой и не мешала работе. Выберите вариант — он сразу применится в прототипе.</div>
-      <div class="mv-list" id="mvList"></div>
     </aside>
 
     <!-- варианты размещения кнопки «Уведомления» — открывается из Профиль → Настройки интерфейса -->
@@ -9462,7 +9381,7 @@
 </div>
 
 <script>
-  const buttons = document.querySelectorAll('.nav-btn:not(.nav-btn-extra)');
+  const buttons = document.querySelectorAll('.nav-btn');
   const panels = document.querySelectorAll('.panel');
   const titleEl = document.getElementById('screenTitle');
   const subEl = document.getElementById('screenSub');
@@ -9511,7 +9430,7 @@
     });
   });
 
-  const assistantHeaderBtn = document.getElementById('assistantHeaderBtn');
+  const headerMenuBtn = document.getElementById('headerMenuBtn');
   const newChatFab = document.getElementById('newChatFab');
   const newReserveFab = document.getElementById('newReserveFab');
 
@@ -9989,188 +9908,24 @@
   applySideSwitch(navSideSwitch, 'nav-left', 'navLeft');
   applySideSwitch(deptSideSwitch, 'dept-left', 'deptLeft');
 
-  /* ---------- Боковое меню отделов ---------- */
+  /* ---------- Боковое меню отделов (дополнительное меню) ----------
+     Открывается кликом по логотипу в шапке (headerMenuBtn). */
   const deptPanelEl = document.getElementById('deptPanel');
   const deptOverlayEl = document.getElementById('deptOverlay');
-  const deptSideBtnEl = document.getElementById('deptSideBtn');
 
   function toggleDept(open) {
     deptPanelEl.hidden = !open;
     deptOverlayEl.hidden = !open;
   }
 
-  let deptBtnJustDragged = false;
-  deptSideBtnEl.addEventListener('click', () => {
-    if (deptBtnJustDragged) return;
-    toggleDept(deptPanelEl.hidden);
-  });
+  headerMenuBtn.addEventListener('click', () => toggleDept(deptPanelEl.hidden));
   document.getElementById('deptClose').addEventListener('click', () => toggleDept(false));
   deptOverlayEl.addEventListener('click', () => toggleDept(false));
 
-  /* ---------- Кнопка «Доп меню»: варианты расположения ----------
-     Выбор в Профиль → Настройки интерфейса → «Кнопка «Доп меню»».
-     Каждый вариант — свой класс на .screen, который управляет
-     положением/поведением реальной кнопки бокового меню отделов
-     (deptSideBtnEl) плюс, для варианта «в нижнем меню», отдельная
-     кнопка #navDeptBtn в .bottom-nav. */
-  const navDeptBtnEl = document.getElementById('navDeptBtn');
-  const MENU_VARIANTS = [
-    {
-      key: 'edge', cls: '',
-      title: 'Боковая вкладка (текущий)',
-      note: 'Узкая вкладка у края экрана, всегда видна поверх любого экрана.',
-      mockup: '<span class="mv-tab"></span>'
-    },
-    {
-      key: 'fab', cls: 'menu-variant-fab',
-      title: 'Плавающая кнопка снизу',
-      note: 'Круглая кнопка над нижним меню, с противоположной от уведомлений стороны.',
-      mockup: '<span class="mv-dot" style="right:6px; bottom:15px;"></span>'
-    },
-    {
-      key: 'drag', cls: 'menu-variant-drag',
-      title: 'Перетаскиваемая вкладка',
-      note: 'Та же боковая вкладка, но её можно перетянуть по высоте и оставить там, где удобно.',
-      mockup: '<span class="mv-tab mv-drag"></span>'
-    },
-    {
-      key: 'swipe', cls: 'menu-variant-swipe',
-      title: 'Свайп от края',
-      note: 'От вкладки остаётся едва заметная полоска, открытие — свайпом от края экрана внутрь.',
-      mockup: '<span class="mv-tab mv-thin"></span>'
-    },
-    {
-      key: 'navbar', cls: 'menu-variant-navbar',
-      title: 'В нижнем меню, после «Профиль»',
-      note: 'Вариант от менеджера. Шестая кнопка нижнего меню — сама заметная и привычная по расположению, но меню становится 6-кнопочным.',
-      warn: 'Меняет утверждённую структуру нижнего меню (сейчас — 5 кнопок).',
-      mockup: '<span class="mv-nav" style="position:static; margin-top:78px;"><i></i><i></i><i></i><i></i><i></i><i class="mv-nav-extra"></i></span>'
-    }
-  ];
-
-  function loadMenuVariant() {
-    try { return localStorage.getItem('ruka:menuVariant') || 'edge'; } catch (e) { return 'edge'; }
-  }
-
-  let currentMenuVariant = loadMenuVariant();
-  const menuVariantsCurrentNote = document.getElementById('menuVariantsCurrentNote');
-
-  function applyMenuVariant(key) {
-    const known = MENU_VARIANTS.some(v => v.key === key);
-    if (!known) key = 'edge';
-    MENU_VARIANTS.forEach(v => { if (v.cls) screenEl.classList.remove(v.cls); });
-    const v = MENU_VARIANTS.find(v => v.key === key);
-    if (v.cls) screenEl.classList.add(v.cls);
-    navDeptBtnEl.hidden = key !== 'navbar';
-    deptSideBtnEl.hidden = key === 'navbar';
-    currentMenuVariant = key;
-    try { localStorage.setItem('ruka:menuVariant', key); } catch (e) {}
-    if (menuVariantsCurrentNote) menuVariantsCurrentNote.textContent = 'Расположение — ' + v.title.replace(' (текущий)', '').toLowerCase();
-    renderMenuVariantList();
-  }
-
-  function renderMenuVariantList() {
-    const list = document.getElementById('mvList');
-    if (!list) return;
-    list.innerHTML = MENU_VARIANTS.map(v =>
-      '<button class="mv-card' + (v.key === currentMenuVariant ? ' is-selected' : '') + '" data-mv-select="' + v.key + '">' +
-        '<span class="mv-phone"><span class="mv-bar"></span>' + v.mockup + '<span class="mv-nav"><i></i><i></i><i></i><i></i><i></i></span></span>' +
-        '<span class="mv-card-text">' +
-          '<span class="mv-card-title">' + v.title + '</span>' +
-          '<span class="mv-card-note">' + v.note + '</span>' +
-          (v.warn ? '<span class="mv-card-warn">' + v.warn + '</span>' : '') +
-        '</span>' +
-        '<span class="mv-radio"></span>' +
-      '</button>'
-    ).join('');
-  }
-  renderMenuVariantList();
-
-  document.getElementById('mvList').addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-mv-select]');
-    if (!btn) return;
-    applyMenuVariant(btn.dataset.mvSelect);
+  document.getElementById('deptItemMap').addEventListener('click', () => {
+    toggleDept(false);
+    location.hash = 'мн-00';
   });
-
-  applyMenuVariant(currentMenuVariant);
-
-  const menuVariantsPanelEl = document.getElementById('menuVariantsPanel');
-  const menuVariantsOverlayEl = document.getElementById('menuVariantsOverlay');
-  function toggleMenuVariants(open) {
-    menuVariantsPanelEl.hidden = !open;
-    menuVariantsOverlayEl.hidden = !open;
-  }
-  document.getElementById('menuVariantsOpenBtn').addEventListener('click', () => toggleMenuVariants(true));
-  document.getElementById('menuVariantsClose').addEventListener('click', () => toggleMenuVariants(false));
-  menuVariantsOverlayEl.addEventListener('click', () => toggleMenuVariants(false));
-
-  /* «В нижнем меню» — доп. кнопка открывает то же меню отделов */
-  navDeptBtnEl.addEventListener('click', () => toggleDept(deptPanelEl.hidden));
-
-  /* «Перетаскиваемая вкладка» — тянем боковой таб по вертикали и запоминаем позицию */
-  (function enableDragVariant() {
-    let dragging = false, startY = 0, startTop = 0;
-    function currentTop() {
-      const t = parseFloat(deptSideBtnEl.style.top || getComputedStyle(deptSideBtnEl).top);
-      return isNaN(t) ? 300 : t;
-    }
-    try {
-      const saved = localStorage.getItem('ruka:menuDragTop');
-      if (saved) deptSideBtnEl.style.top = saved;
-    } catch (e) {}
-    deptSideBtnEl.addEventListener('pointerdown', (e) => {
-      if (currentMenuVariant !== 'drag') return;
-      dragging = true;
-      startY = e.clientY;
-      startTop = currentTop();
-      try { deptSideBtnEl.setPointerCapture(e.pointerId); } catch (err) {}
-    });
-    deptSideBtnEl.addEventListener('pointermove', (e) => {
-      if (!dragging) return;
-      const screenH = screenEl.clientHeight || 700;
-      let top = startTop + (e.clientY - startY);
-      top = Math.max(80, Math.min(screenH - 160, top));
-      deptSideBtnEl.style.top = top + 'px';
-      deptSideBtnEl.classList.add('is-dragging');
-    });
-    function endDrag() {
-      if (!dragging) return;
-      dragging = false;
-      deptSideBtnEl.classList.remove('is-dragging');
-      const moved = Math.abs(currentTop() - startTop) > 4;
-      if (moved) {
-        deptBtnJustDragged = true;
-        setTimeout(() => { deptBtnJustDragged = false; }, 0);
-      }
-      try { localStorage.setItem('ruka:menuDragTop', deptSideBtnEl.style.top); } catch (e) {}
-    }
-    deptSideBtnEl.addEventListener('pointerup', endDrag);
-    deptSideBtnEl.addEventListener('pointercancel', endDrag);
-  })();
-
-  /* «Свайп от края» — тянем от края экрана внутрь, чтобы открыть меню отделов */
-  (function enableSwipeVariant() {
-    let active = false, startX = 0, startY = 0;
-    screenEl.addEventListener('pointerdown', (e) => {
-      if (currentMenuVariant !== 'swipe') return;
-      const rect = screenEl.getBoundingClientRect();
-      const fromRight = !screenEl.classList.contains('dept-left');
-      const edgeX = fromRight ? rect.right : rect.left;
-      if (Math.abs(e.clientX - edgeX) > 24) return;
-      active = true;
-      startX = e.clientX;
-      startY = e.clientY;
-    });
-    screenEl.addEventListener('pointerup', (e) => {
-      if (!active) return;
-      active = false;
-      const dx = e.clientX - startX;
-      const dy = Math.abs(e.clientY - startY);
-      const fromRight = !screenEl.classList.contains('dept-left');
-      const passed = fromRight ? dx < -30 : dx > 30;
-      if (passed && dy < 60) toggleDept(true);
-    });
-  })();
 
   /* ---------- Нижнее меню: сворачивание вправо + закрепление из профиля ---------- */
   const bottomNavEl = document.getElementById('bottomNav');
@@ -13917,7 +13672,7 @@
     {
       key: 'edge', cls: '',
       title: 'Боковая вкладка',
-      note: 'Такая же вкладка, как у «Доп меню», только с левого края и выше — не пересекаются.',
+      note: 'Узкая вкладка у левого края экрана, всегда видна поверх любого экрана.',
       mockup: '<span class="mv-tab" style="left:0; right:auto; border-radius:0 3px 3px 0; top:14px;"></span>'
     },
     {
@@ -19856,7 +19611,8 @@
 
   /* ассистент открывается с любого экрана — «Назад» должен вернуть именно туда */
   let assistantReturnRoute = null;
-  assistantHeaderBtn.addEventListener('click', () => {
+  document.getElementById('deptItemAssistant').addEventListener('click', () => {
+    toggleDept(false);
     if (currentRoute() !== 'мн-07') assistantReturnRoute = currentRoute();
     goRoute('мн-07');
   });
