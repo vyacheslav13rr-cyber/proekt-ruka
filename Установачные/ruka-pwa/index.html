@@ -4520,6 +4520,7 @@
     font-family:'Manrope', sans-serif;
   }
   .notif-row.is-escalated{border-color:var(--gold);}
+  .notif-row.is-read{opacity:.62;}
   .notif-row-main{
     display:flex; flex-direction:column; gap:2px;
     width:100%; text-align:left;
@@ -9771,10 +9772,16 @@
   }
 
   /* pushToInbox — не ознакомились (таймаут или смахнули), кладём в копилку;
-     dismissAnimated — тост уже улетел сам (свайпом), обычное затухание вверх не нужно */
+     dismissAnimated — тост уже улетел сам (свайпом), обычное затухание вверх не нужно.
+     Смахнули пальцем — сотрудник его точно увидел, просто убрал с глаз: в копилке
+     остаётся, но не в счётчике непрочитанных (в отличие от таймаута — тот
+     означает, что уведомление пропустили). */
   function hideListNotify(pushToInbox, dismissAnimated) {
     clearTimeout(notifyTimer);
-    if (pushToInbox && listNotifyPending) pushNotif(listNotifyPending);
+    if (pushToInbox && listNotifyPending) {
+      if (dismissAnimated) listNotifyPending.read = true;
+      pushNotif(listNotifyPending);
+    }
     listNotifyPending = null;
     if (!dismissAnimated) listNotifyEl.classList.add('leaving');
     setTimeout(() => {
@@ -13683,23 +13690,27 @@
   }
 
   function updateNotifBell() {
-    const n = notifInbox.length;
-    const active = n > 0;
-    const countText = n > 99 ? '99+' : String(n);
+    /* кнопка видна, пока в копилке вообще что-то есть (прочитанное и нет);
+       счётчик и «активный» цвет — только по непрочитанным: смахнутые
+       уведомления лежат в копилке, но не считаются непрочитанными */
+    const total = notifInbox.length;
+    const unread = notifInbox.filter(x => !x.read).length;
+    const active = total > 0;
+    const countText = unread > 99 ? '99+' : String(unread);
 
     notifFabBtn.hidden = !(currentNotifPlacement === 'fab' && active);
-    notifFabBtn.classList.toggle('is-active', active);
-    notifFabCount.hidden = !active;
+    notifFabBtn.classList.toggle('is-active', unread > 0);
+    notifFabCount.hidden = unread === 0;
     notifFabCount.textContent = countText;
 
     notifHeaderBtn.hidden = !(currentNotifPlacement === 'header' && active);
-    notifHeaderBtn.classList.toggle('is-active', active);
-    notifHeaderCount.hidden = !active;
+    notifHeaderBtn.classList.toggle('is-active', unread > 0);
+    notifHeaderCount.hidden = unread === 0;
     notifHeaderCount.textContent = countText;
 
     const edgeShown = (currentNotifPlacement === 'edge' || currentNotifPlacement === 'swipe') && active;
     notifEdgeBtn.hidden = !edgeShown;
-    notifEdgeBtn.classList.toggle('is-active', active);
+    notifEdgeBtn.classList.toggle('is-active', unread > 0);
   }
 
   function pushNotif(entry) {
@@ -13743,11 +13754,11 @@
           '<div class="notif-topic-title">' + (NOTIF_TOPIC_LABELS[topic] || topic) +
             '<span class="notif-topic-count">' + rows.length + '</span></div>' +
           rows.map(n =>
-            '<div class="notif-row' + (n.escalated ? ' is-escalated' : '') + '">' +
+            '<div class="notif-row' + (n.escalated ? ' is-escalated' : '') + (n.read ? ' is-read' : '') + '">' +
               '<button class="notif-row-main" data-notif-open="' + n.id + '">' +
                 '<span class="notif-row-title">' + n.title + '</span>' +
                 '<span class="notif-row-note">' + n.note + '</span>' +
-                '<span class="notif-row-time">' + stampText(n.at) + '</span>' +
+                '<span class="notif-row-time">' + stampText(n.at) + (n.read ? ' · смахнули' : '') + '</span>' +
               '</button>' +
               (canCloseFromNotif(n)
                 ? '<button class="notif-row-close" data-notif-close="' + n.id + '">Закрыть стол</button>'
