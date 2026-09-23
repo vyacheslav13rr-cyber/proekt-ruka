@@ -20491,13 +20491,28 @@
       voicePulseTimer = setTimeout(() => setVoiceGlowLevel(VOICE_GLOW_FLOOR), 240);
     }
 
-    /* ---------- Распознавание речи ---------- */
+    /* ---------- Распознавание речи ----------
+       Замер громкости (getUserMedia) не запускаем одновременно со стартом
+       распознавания: на части мобильных браузеров параллельный доступ к
+       микрофону молча ломает сам захват речи распознаванием (recognition
+       остаётся «слушающим», но ни разу не получает onresult). Поэтому
+       сначала ждём подтверждения, что распознавание само поймало звук
+       (onspeechstart), и только тогда один раз пробуем добавить точный
+       замер громкости — до этого момента светится пульсом по событиям речи. */
+    let voiceLevelMeterAttempted = false;
+    function attemptVoiceLevelMeterUpgrade() {
+      if (voiceLevelMeterAttempted) return;
+      voiceLevelMeterAttempted = true;
+      startVoiceLevelMeter();
+    }
+
     function createVoiceRecognition() {
       const rec = new VoiceSpeechRecognitionCtor();
       rec.lang = 'ru-RU';
       rec.interimResults = true;
       rec.continuous = false;
       rec.maxAlternatives = 1;
+      let noSpeechErrored = false;
       rec.onresult = e => {
         let interim = '', final = '';
         for (let i = e.resultIndex; i < e.results.length; i++) {
@@ -20508,19 +20523,32 @@
         voiceCardTextEl.textContent = (voiceFinalTranscript + interim).trim() || 'Слушаю…';
         pulseVoiceGlow();
       };
-      rec.onspeechstart = () => { if (voiceLevelMode === 'pulse') setVoiceGlowLevel(1); };
+      rec.onspeechstart = () => {
+        if (voiceLevelMode === 'pulse') setVoiceGlowLevel(1);
+        attemptVoiceLevelMeterUpgrade();
+      };
       rec.onspeechend = () => { if (voiceLevelMode === 'pulse') setVoiceGlowLevel(VOICE_GLOW_FLOOR); };
       rec.onerror = e => {
         if (e.error === 'not-allowed' || e.error === 'service-not-allowed' || e.error === 'network') {
           closeVoicePanel();
           showVoiceUnavailable();
+          return;
         }
-        /* no-speech и прочие мелкие ошибки — просто дожидаемся onend */
+        /* «тишина» в самом начале — частая ситуация: сотрудник ещё не
+           успел заговорить, пока смотрел, что панель открылась; такие
+           попытки не проваливаем сразу, а перезапускаем (см. onend) */
+        if (e.error === 'no-speech') noSpeechErrored = true;
       };
       rec.onend = () => {
         if (voiceRecognition !== rec) return;   // уже отменили/заменили извне
         voiceRecognition = null;
         clearTimeout(voiceListenSafetyTimer);
+        if (noSpeechErrored && voiceState === 'listening' && voiceNoSpeechRetries < VOICE_NO_SPEECH_MAX_RETRIES) {
+          voiceNoSpeechRetries++;
+          voiceCardTextEl.textContent = 'Слушаю…';
+          beginVoiceRecognitionSession();
+          return;
+        }
         finishVoiceListening();
       };
       return rec;
@@ -20529,25 +20557,33 @@
     /* если распознавание вообще не прислало ни onresult, ни onend (движок
        завис) — не оставляем ассистента «слушающим» навсегда */
     let voiceListenSafetyTimer = null;
+    let voiceNoSpeechRetries = 0;
+    const VOICE_NO_SPEECH_MAX_RETRIES = 2;
+
+    function beginVoiceRecognitionSession() {
+      voiceRecognition = createVoiceRecognition();
+      try { voiceRecognition.start(); }
+      catch (err) { voiceRecognition = null; closeVoicePanel(); showVoiceUnavailable(); return; }
+      clearTimeout(voiceListenSafetyTimer);
+      voiceListenSafetyTimer = setTimeout(() => {
+        if (!voiceRecognition) return;
+        try { voiceRecognition.stop(); } catch (err) {}
+      }, 12000);
+    }
 
     function openVoiceListening() {
       if (voiceState !== 'idle') return;
       if (!VoiceSpeechRecognitionCtor || !navigator.onLine) { showVoiceUnavailable(); return; }
       voiceState = 'listening';
       voiceFinalTranscript = '';
+      voiceNoSpeechRetries = 0;
+      voiceLevelMeterAttempted = false;
+      voiceLevelMode = 'pulse';
       voiceCardTextEl.textContent = 'Слушаю…';
       positionAboveNav(voiceCardEl);
       voiceOverlayEl.hidden = false;
       setVoiceGlowLevel(VOICE_GLOW_FLOOR);
-      voiceRecognition = createVoiceRecognition();
-      try { voiceRecognition.start(); }
-      catch (err) { voiceRecognition = null; closeVoicePanel(); showVoiceUnavailable(); return; }
-      startVoiceLevelMeter();
-      clearTimeout(voiceListenSafetyTimer);
-      voiceListenSafetyTimer = setTimeout(() => {
-        if (!voiceRecognition) return;
-        try { voiceRecognition.stop(); } catch (err) {}
-      }, 12000);
+      beginVoiceRecognitionSession();
     }
 
     function finishVoiceListening() {
