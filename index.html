@@ -4448,6 +4448,11 @@
   .voice-sheet-row-label{font-size:11.5px; color:var(--text-muted); font-weight:700;}
   .voice-sheet-row-value{font-size:13px; color:var(--text-primary); font-weight:700; text-align:right;}
   .voice-sheet-row-value.is-missing{color:var(--accent);}
+  /* до пяти блюд за одну команду — список строкой вниз, а не в один ряд */
+  .voice-sheet-row-stack{flex-direction:column; align-items:flex-start; gap:4px;}
+  .voice-sheet-dishes{display:flex; flex-direction:column; gap:3px; width:100%;}
+  .voice-sheet-dish{font-size:13px; color:var(--text-primary); font-weight:700;}
+  .voice-sheet-dish.is-missing{color:var(--accent); font-weight:600;}
   .voice-sheet-actions{display:flex; gap:9px; position:relative;}
   .voice-sheet-btn{
     flex:1;
@@ -8648,8 +8653,10 @@
       </div>
       <div class="voice-sheet-rows">
         <div class="voice-sheet-row"><span class="voice-sheet-row-label">Действие</span><span class="voice-sheet-row-value" id="voiceRowAction">—</span></div>
-        <div class="voice-sheet-row"><span class="voice-sheet-row-label">Блюдо</span><span class="voice-sheet-row-value" id="voiceRowDish">—</span></div>
-        <div class="voice-sheet-row"><span class="voice-sheet-row-label">Точка</span><span class="voice-sheet-row-value" id="voiceRowPoint">—</span></div>
+        <div class="voice-sheet-row voice-sheet-row-stack" id="voiceDishRow">
+          <span class="voice-sheet-row-label" id="voiceRowDishLabel">Блюдо</span>
+          <div class="voice-sheet-dishes" id="voiceDishList"></div>
+        </div>
       </div>
       <div class="voice-sheet-actions">
         <button class="voice-sheet-btn voice-sheet-btn-ghost" id="voiceSheetChangeBtn">Изменить</button>
@@ -20401,8 +20408,9 @@
     const voiceSheetEl = document.getElementById('voiceSheet');
     const voiceSheetGlowEl = document.getElementById('voiceSheetGlow');
     const voiceRowActionEl = document.getElementById('voiceRowAction');
-    const voiceRowDishEl = document.getElementById('voiceRowDish');
-    const voiceRowPointEl = document.getElementById('voiceRowPoint');
+    const voiceDishRowEl = document.getElementById('voiceDishRow');
+    const voiceRowDishLabelEl = document.getElementById('voiceRowDishLabel');
+    const voiceDishListEl = document.getElementById('voiceDishList');
     const voiceSheetChangeBtnEl = document.getElementById('voiceSheetChangeBtn');
     const voiceSheetConfirmBtnEl = document.getElementById('voiceSheetConfirmBtn');
     const voiceUnavailableEl = document.getElementById('voiceUnavailableToast');
@@ -20474,25 +20482,18 @@
         clearTimeout(silenceTimer);
         silenceTimer = setTimeout(() => { try { rec.stop(); } catch (err) {} }, 1600);
       }
-      /* при continuous:true движок на части браузеров повторно присылает
-         уже готовый (isFinal) фрагмент в одном из следующих событий —
-         без этой защиты он приплюсовывался бы к фразе заново на каждом
-         повторе, отсюда «Цезарьсалат Цезарьсалат Цезарь…»; индекс уже
-         зачтённого финального результата не даёт добавить один и тот же
-         фрагмент дважды */
-      let lastFinalIndex = -1;
+      /* e.results — персистентный, растущий список за всю сессию; вместо
+         того чтобы плюсовать «новые» финальные куски по resultIndex (на
+         части браузеров при continuous:true один и тот же isFinal-кусок
+         иногда прилетает повторно — отсюда было «Цезарьсалат Цезарьсалат
+         Цезарь…»), просто пересобираем текст целиком с нуля на каждом
+         событии — так повтор в принципе невозможен, кусок либо есть в
+         results, либо нет */
       rec.onresult = e => {
-        let interim = '';
-        for (let i = e.resultIndex; i < e.results.length; i++) {
-          const result = e.results[i];
-          const chunk = result[0].transcript;
-          if (result.isFinal) {
-            if (i > lastFinalIndex) { voiceFinalTranscript += chunk; lastFinalIndex = i; }
-          } else {
-            interim += chunk;
-          }
-        }
-        voiceCardTextEl.textContent = (voiceFinalTranscript + interim).trim() || 'Слушаю…';
+        let transcript = '';
+        for (let i = 0; i < e.results.length; i++) transcript += e.results[i][0].transcript;
+        voiceFinalTranscript = transcript;
+        voiceCardTextEl.textContent = transcript.trim() || 'Слушаю…';
         pulseVoiceGlow();
         scheduleSilenceStop();   // пришёл фрагмент — ждём, вдруг фраза продолжится
       };
@@ -20606,22 +20607,63 @@
       });
     })();
 
-    /* ---------- Разбор фразы: действие / блюдо / точка ----------
-       Первая (и пока единственная) команда: «поставь/убери [блюдо] в стоп».
-       Блюдо ищем нечётко по всему меню Старт/Стоп (menuItems), точка по
-       умолчанию — текущая (venueDisplayName), выбора точки в прототипе нет. */
+    /* ---------- Разбор фразы: действие / блюдо(-а) ----------
+       Две команды:
+       1. «поставь/убери [блюдо, блюдо и блюдо…] в стоп» — до пяти блюд за
+          раз, через «и»/запятую. Блюдо ищем нечётко по всему меню
+          Старт/Стоп (menuItems).
+       2. «обнули/сбрось/очисти старт[-лист] и/или стоп[-лист]» — без
+          блюда, действует на весь список разом (обе кухни/бар).
+       Запятую в normalizeText не трогаем — она (вместе с «и») разделяет
+       блюда в списке; для сравнения с названием блюда она всё равно не
+       нужна, т.к. к этому моменту фраза уже разбита на отдельные блюда. */
     function voiceNormalizeText(s) {
       return (s || '')
         .toLowerCase()
         .replace(/ё/g, 'е')
-        .replace(/[«»"'.,!?()]/g, '')
+        .replace(/[«»"'.!?()]/g, '')
         .replace(/-/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
     }
 
+    function voiceSplitDishPhrases(phrase) {
+      return phrase
+        .split(/\s*,\s*|\s+и\s+/)
+        .map(s => s.replace(/,/g, ' ').replace(/\s+/g, ' ').trim())
+        .filter(Boolean)
+        .slice(0, 5);   // до пяти блюд за одну команду
+    }
+
+    /* нечёткое сравнение слов через редакторское расстояние — допускает
+       мелкие огрехи распознавания речи (одна-две буквы), не только
+       точное совпадение начала слова */
+    function voiceLevenshtein(a, b) {
+      const m = a.length, n = b.length;
+      if (!m) return n;
+      if (!n) return m;
+      const dp = new Array(n + 1);
+      for (let j = 0; j <= n; j++) dp[j] = j;
+      for (let i = 1; i <= m; i++) {
+        let prev = dp[0];
+        dp[0] = i;
+        for (let j = 1; j <= n; j++) {
+          const tmp = dp[j];
+          dp[j] = a[i - 1] === b[j - 1] ? prev : 1 + Math.min(prev, dp[j], dp[j - 1]);
+          prev = tmp;
+        }
+      }
+      return dp[n];
+    }
+    function voiceWordSimilarity(a, b) {
+      if (!a || !b) return 0;
+      if (a === b) return 1;
+      return 1 - voiceLevenshtein(a, b) / Math.max(a.length, b.length);
+    }
+
     const VOICE_STOP_ADD_VERBS = ['постав', 'добав'];
     const VOICE_STOP_REMOVE_VERBS = ['убер', 'убра', 'сним', 'верн'];
+    const VOICE_RESET_VERBS = ['обнул', 'сброс', 'очист'];
 
     function voiceFuzzyFindMenuItem(phrase) {
       const q = voiceNormalizeText(phrase);
@@ -20632,37 +20674,68 @@
         const name = voiceNormalizeText(item.name);
         let score = 0;
         if (name === q) score = 100;
-        else if (name.includes(q) || q.includes(name)) score = 80;
+        else if (name.includes(q) || q.includes(name)) score = 85;
         else {
           const nameWords = name.split(' ').filter(Boolean);
-          const matched = qWords.filter(w => nameWords.some(nw => nw.startsWith(w) || w.startsWith(nw)));
-          score = matched.length ? Math.round(matched.length / qWords.length * 60) : 0;
+          let weight = 0;
+          qWords.forEach(w => {
+            let bestWordSim = 0;
+            nameWords.forEach(nw => {
+              const sim = (nw.startsWith(w) || w.startsWith(nw)) ? 1 : voiceWordSimilarity(w, nw);
+              if (sim > bestWordSim) bestWordSim = sim;
+            });
+            weight += bestWordSim;
+          });
+          score = Math.max(
+            Math.round(weight / qWords.length * 65),
+            Math.round(voiceWordSimilarity(q, name) * 70)
+          );
         }
         if (score > bestScore) { bestScore = score; best = item; }
       });
-      return bestScore >= 30 ? best : null;
+      return bestScore >= 32 ? best : null;
+    }
+
+    /* «обнули/сбрось/очисти старт[-лист] и/или стоп[-лист]» — без блюда,
+       сразу по всему меню (не только по выбранному сейчас на экране цеху) */
+    function parseVoiceResetCommand(norm) {
+      const hasVerb = VOICE_RESET_VERBS.some(v => norm.includes(v));
+      if (!hasVerb) return null;
+      const hasStop = /(^|\s)стоп/.test(norm);
+      const hasStart = /(^|\s)старт/.test(norm);
+      if (!hasStop && !hasStart) return null;
+      const scope = hasStop && hasStart ? 'both' : hasStop ? 'stop' : 'start';
+      const actionLabel = scope === 'both' ? 'Обнулить старт- и стоп-лист'
+        : scope === 'stop' ? 'Обнулить стоп-лист' : 'Обнулить старт-лист';
+      return { type: 'resetList', scope: scope, actionLabel: actionLabel, changesData: true };
     }
 
     function parseVoiceCommand(rawText) {
       const norm = voiceNormalizeText(rawText);
       if (!norm) return null;
+      const reset = parseVoiceResetCommand(norm);
+      if (reset) return reset;
       /* не привязываемся к концу фразы — «...в стоп лист пожалуйста» и
          подобные хвосты не должны ронять разбор, «стоп» после предлога
          достаточно поймать где угодно в фразе */
       const m = norm.match(/^(\S+)\s+(.+?)\s+(?:в|на|из|со|с)\s+стоп/);
       if (!m) return null;
       const verb = m[1];
-      const dishPhrase = m[2].trim();
-      if (!dishPhrase) return null;
+      const dishListPhrase = m[2].trim();
+      if (!dishListPhrase) return null;
       const isAdd = VOICE_STOP_ADD_VERBS.some(v => verb.startsWith(v));
       const isRemove = !isAdd && VOICE_STOP_REMOVE_VERBS.some(v => verb.startsWith(v));
       if (!isAdd && !isRemove) return null;
+      const dishes = voiceSplitDishPhrases(dishListPhrase).map(p => ({
+        phrase: p,
+        item: voiceFuzzyFindMenuItem(p)
+      }));
+      if (!dishes.length) return null;
       return {
+        type: 'stopDish',
         kind: isAdd ? 'add' : 'remove',
         actionLabel: isAdd ? 'Добавить в стоп-лист' : 'Убрать из стоп-листа',
-        dishPhrase: dishPhrase,
-        dishItem: voiceFuzzyFindMenuItem(dishPhrase),
-        point: venueDisplayName(),
+        dishes: dishes,
         changesData: true   // информационные команды (когда появятся) — false, без шторки и без «Отменить»
       };
     }
@@ -20693,10 +20766,19 @@
       voiceState = 'sheet';
       voiceCurrentCommand = cmd;
       voiceRowActionEl.textContent = cmd.actionLabel;
-      voiceRowDishEl.textContent = cmd.dishItem ? cmd.dishItem.name : 'Не найдено';
-      voiceRowDishEl.classList.toggle('is-missing', !cmd.dishItem);
-      voiceRowPointEl.textContent = cmd.point;
-      voiceSheetConfirmBtnEl.disabled = !cmd.dishItem;
+      if (cmd.type === 'resetList') {
+        voiceDishRowEl.hidden = true;
+        voiceSheetConfirmBtnEl.disabled = false;
+      } else {
+        voiceDishRowEl.hidden = false;
+        voiceRowDishLabelEl.textContent = cmd.dishes.length > 1 ? 'Блюда' : 'Блюдо';
+        voiceDishListEl.innerHTML = cmd.dishes.map(d =>
+          '<div class="voice-sheet-dish' + (d.item ? '' : ' is-missing') + '">' +
+            (d.item ? d.item.name : 'Не найдено: «' + d.phrase + '»') +
+          '</div>'
+        ).join('');
+        voiceSheetConfirmBtnEl.disabled = cmd.dishes.some(d => !d.item);
+      }
       positionAboveNav(voiceSheetEl);
       voiceSheetEl.hidden = false;
       voiceSheetEl.classList.remove('is-open');
@@ -20723,12 +20805,12 @@
     });
 
     voiceSheetConfirmBtnEl.addEventListener('click', () => {
-      if (voiceSheetConfirmBtnEl.disabled || !voiceCurrentCommand || !voiceCurrentCommand.dishItem) return;
+      if (voiceSheetConfirmBtnEl.disabled || !voiceCurrentCommand) return;
       const cmd = voiceCurrentCommand;
       closeVoiceSheet(() => {
         voiceState = 'idle';
         voiceCurrentCommand = null;
-        applyVoiceStopCommand(cmd);
+        applyVoiceCommand(cmd);
       });
     });
 
@@ -20738,27 +20820,59 @@
        установка, потому что голосовая команда — это намерение, а не клик по
        уже видимой кнопке. markListChanged/listChanges используем только на
        время одного вызова showListNotify, чтобы не тянуть в неё несохранённые
-       ручные правки, если они где-то параллельно копятся. */
-    function applyVoiceStopCommand(cmd) {
-      const item = cmd.dishItem;
-      if (!item) return;
-      const prevStatus = item.status;
-      item.status = cmd.kind === 'add' ? 'stop' : (item.status === 'stop' ? null : item.status);
+       ручные правки, если они где-то параллельно копятся. Обе команды
+       сводятся к одному и тому же: списку {itemId, prevStatus} для отката —
+       поэтому у них общий showListNotify/undoVoiceStopCommand. */
+    function applyVoiceCommand(cmd) {
+      if (cmd.type === 'resetList') applyVoiceResetCommand(cmd);
+      else applyVoiceStopDishCommand(cmd);
+    }
+
+    function applyVoiceStopDishCommand(cmd) {
+      const items = cmd.dishes.map(d => d.item).filter(Boolean);
+      if (!items.length) return;
+      const changes = items.map(item => {
+        const prevStatus = item.status;
+        item.status = cmd.kind === 'add' ? 'stop' : (item.status === 'stop' ? null : item.status);
+        return { itemId: item.id, prevStatus: prevStatus };
+      });
       renderStartStop();
       renderDishList();
       const hadStopFlag = listChanges.has('stop');
       listChanges.add('stop');
-      showListNotify({ itemId: item.id, prevStatus: prevStatus });
+      showListNotify({ items: changes });
       if (!hadStopFlag) listChanges.delete('stop');
+    }
+
+    function applyVoiceResetCommand(cmd) {
+      const touchesStart = cmd.scope === 'start' || cmd.scope === 'both';
+      const touchesStop = cmd.scope === 'stop' || cmd.scope === 'both';
+      const changes = [];
+      menuItems.forEach(item => {
+        if ((touchesStart && item.status === 'start') || (touchesStop && item.status === 'stop')) {
+          changes.push({ itemId: item.id, prevStatus: item.status });
+          item.status = null;
+        }
+      });
+      renderStartStop();
+      renderDishList();
+      if (!changes.length) return;   // обнулять было нечего — уведомление ни к чему
+      const hadStart = listChanges.has('start'), hadStop = listChanges.has('stop');
+      if (touchesStart) listChanges.add('start');
+      if (touchesStop) listChanges.add('stop');
+      showListNotify({ items: changes });
+      if (touchesStart && !hadStart) listChanges.delete('start');
+      if (touchesStop && !hadStop) listChanges.delete('stop');
     }
 
     /* «Отменить» — из живой плашки или прямо из копилки; остальным сотрудникам
        это уходит как обычное изменение стоп-листа, отдельного уведомления
        об откате не делаем (никакого showListNotify здесь) */
     window.undoVoiceStopCommand = function (info) {
-      const item = menuItems.find(i => i.id === info.itemId);
-      if (!item) return;
-      item.status = info.prevStatus;
+      (info.items || []).forEach(entry => {
+        const item = menuItems.find(i => i.id === entry.itemId);
+        if (item) item.status = entry.prevStatus;
+      });
       renderStartStop();
       renderDishList();
     };
