@@ -4336,6 +4336,10 @@
     box-shadow:0 18px 34px -14px rgba(18,35,58,0.7);
     padding:11px 12px;
     z-index:70;
+    /* без этого браузер на реальном тач-устройстве иногда забирает жест
+       себе (как решил бы, что это скролл экрана) раньше, чем дойдёт до
+       pointerup — свайп смахивания тогда просто не засчитывается */
+    touch-action:none;
     transition:transform .28s ease, opacity .28s ease;
   }
   .notify-toast[hidden]{display:none;}
@@ -9987,26 +9991,30 @@
 
   /* смахнуть тост стоп-листа пальцем — не ознакомился, уходит в копилку */
   (function enableListNotifySwipe() {
-    let dragging = false, startX = 0, startY = 0, dx = 0;
+    let dragging = false, startX = 0, startY = 0, dx = 0, activePointerId = null;
     listNotifyEl.addEventListener('pointerdown', e => {
       if (e.target.closest('#notifyOpen')) return;
       dragging = true; startX = e.clientX; startY = e.clientY; dx = 0;
+      activePointerId = e.pointerId;
       listNotifyEl.style.transition = 'none';
       try { listNotifyEl.setPointerCapture(e.pointerId); } catch (err) {}
     });
     listNotifyEl.addEventListener('pointermove', e => {
-      if (!dragging) return;
+      if (!dragging || e.pointerId !== activePointerId) return;
       dx = e.clientX - startX;
       const dy = e.clientY - startY;
       if (Math.abs(dy) > Math.abs(dx) * 1.2) return;
       listNotifyEl.style.transform = 'translateX(' + dx + 'px)';
       listNotifyEl.style.opacity = String(Math.max(0.15, 1 - Math.abs(dx) / 160));
     });
-    function endDrag() {
-      if (!dragging) return;
+    /* commit=false — обрыв жеста браузером (pointercancel), а не осознанное
+       отпускание пальца; такое всегда возвращаем на место, а не засчитываем
+       как смахивание, даже если к этому моменту dx уже за порогом */
+    function endDrag(e, commit) {
+      if (!dragging || (e && e.pointerId !== activePointerId)) return;
       dragging = false;
       listNotifyEl.style.transition = 'transform .2s ease, opacity .2s ease';
-      if (Math.abs(dx) > 70) {
+      if (commit && Math.abs(dx) > 70) {
         const dir = dx > 0 ? 1 : -1;
         listNotifyEl.style.transform = 'translateX(' + dir * 400 + 'px)';
         listNotifyEl.style.opacity = '0';
@@ -10017,8 +10025,8 @@
       }
       dx = 0;
     }
-    listNotifyEl.addEventListener('pointerup', endDrag);
-    listNotifyEl.addEventListener('pointercancel', endDrag);
+    listNotifyEl.addEventListener('pointerup', e => endDrag(e, true));
+    listNotifyEl.addEventListener('pointercancel', e => endDrag(e, false));
   })();
 
   /* «Назад» из Старт/Стоп листа спрашивает про сохранение */
