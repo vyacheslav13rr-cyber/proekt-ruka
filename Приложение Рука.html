@@ -4339,6 +4339,139 @@
     cursor:pointer;
   }
 
+  /* ---------- Голосовой ассистент ----------
+     Вызывается свайпом по нижнему меню (только роль руководителя). Экран
+     не затемняется — весь эффект держится на золотом свечении по контуру
+     .screen (оно и так clip'ится overflow:hidden родителя) плюс плавающей
+     карточке над нижним меню. */
+  .voice-overlay{
+    position:absolute; inset:0;
+    z-index:90;
+    background:transparent;
+  }
+  .voice-overlay[hidden]{display:none;}
+
+  /* глубина (blur/spread) — фиксированная ~30px, «дышит» только opacity —
+     его двигает JS (громкость голоса либо пульс по событиям речи) */
+  .voice-glow{
+    position:absolute; inset:0;
+    pointer-events:none;
+    box-shadow:
+      inset 0 0 14px 2px rgba(239,159,39,0.85),
+      inset 0 0 30px 16px rgba(250,199,117,0.5);
+    opacity:.28;
+    transition:opacity .12s linear;
+  }
+
+  .voice-card{
+    position:absolute; left:14px; right:14px;
+    background:linear-gradient(160deg, #24405f, var(--navy-deep));
+    border:1px solid rgba(239,159,39,0.4);
+    border-radius:16px;
+    padding:13px 16px;
+    box-shadow:0 18px 34px -14px rgba(18,35,58,0.7);
+  }
+  .voice-card-text{
+    display:block;
+    font-family:'Manrope', sans-serif;
+    font-size:13px; font-weight:600;
+    color:var(--cream);
+    text-align:center;
+    word-break:break-word;
+  }
+
+  /* «Понял так» — выезжает снизу над нижним меню, ~280мс, фон не темним */
+  .voice-sheet{
+    position:absolute; left:14px; right:14px;
+    background:var(--content-bg);
+    border:1px solid var(--card-border);
+    border-radius:20px;
+    padding:16px 16px 14px;
+    box-shadow:0 -18px 40px -16px rgba(18,35,58,0.35);
+    z-index:90;
+    overflow:hidden;
+    transform:translateY(120%);
+    transition:transform .28s cubic-bezier(.32,.72,0,1);
+  }
+  .voice-sheet[hidden]{display:none;}
+  .voice-sheet.is-open{transform:translateY(0);}
+  /* кромка 3px сверху шторки + свечение вглубь — высоту/прозрачность
+     «дыхания» (цикл 5с, cos) считает JS кадр за кадром */
+  .voice-sheet-rim{
+    position:absolute; left:0; right:0; top:0; height:3px;
+    background:linear-gradient(90deg, transparent, #EF9F27, transparent);
+    pointer-events:none;
+  }
+  .voice-sheet-glow{
+    position:absolute; left:0; right:0; top:3px; height:40px;
+    background:linear-gradient(180deg, #FAC775, transparent);
+    opacity:.28;
+    pointer-events:none;
+  }
+  .voice-sheet-head{
+    display:flex; align-items:center; gap:8px;
+    position:relative;
+    margin-bottom:12px;
+  }
+  .voice-sheet-icon{width:18px; height:18px; color:#EF9F27; flex-shrink:0;}
+  .voice-sheet-title{font-family:'Manrope', sans-serif; font-size:14px; font-weight:800; color:var(--text-primary);}
+  .voice-sheet-rows{
+    display:flex; flex-direction:column; gap:8px;
+    position:relative;
+    margin-bottom:14px;
+  }
+  .voice-sheet-row{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:10px;
+    font-family:'Manrope', sans-serif;
+  }
+  .voice-sheet-row-label{font-size:11.5px; color:var(--text-muted); font-weight:700;}
+  .voice-sheet-row-value{font-size:13px; color:var(--text-primary); font-weight:700; text-align:right;}
+  .voice-sheet-row-value.is-missing{color:var(--accent);}
+  .voice-sheet-actions{display:flex; gap:9px; position:relative;}
+  .voice-sheet-btn{
+    flex:1;
+    border-radius:13px;
+    padding:12px;
+    font-family:'Manrope', sans-serif;
+    font-size:13.5px; font-weight:800;
+    cursor:pointer;
+  }
+  .voice-sheet-btn:active{transform:scale(.97);}
+  .voice-sheet-btn-ghost{
+    background:none;
+    border:1px solid var(--card-border);
+    color:var(--text-muted);
+  }
+  .voice-sheet-btn-gold{
+    background:#EF9F27;
+    border:none;
+    color:#412402;
+  }
+  .voice-sheet-btn-gold:disabled{opacity:.4; cursor:not-allowed;}
+
+  /* «Голосовой ввод недоступен» — нет поддержки браузером или нет сети */
+  .voice-toast{
+    position:absolute; left:14px; right:14px; top:12px;
+    background:linear-gradient(160deg, #24405f, var(--navy-deep));
+    color:var(--cream);
+    border:1px solid rgba(233,203,126,0.3);
+    border-radius:14px;
+    padding:10px 14px;
+    font-family:'Manrope', sans-serif; font-size:12.5px; font-weight:700;
+    text-align:center;
+    z-index:95;
+    box-shadow:0 14px 28px -12px rgba(18,35,58,0.6);
+  }
+  .voice-toast[hidden]{display:none;}
+
+  /* prefers-reduced-motion — статичное свечение, без пульса/дыхания
+     (JS также не запускает соответствующие requestAnimationFrame-циклы) */
+  @media (prefers-reduced-motion: reduce){
+    .voice-glow{transition:none;}
+    .voice-sheet{transition:none;}
+  }
+
   /* ---------- Боковое меню отделов (правый край) ---------- */
   /* сторона меняется в настройках профиля */
   .screen.dept-left .dept-panel{
@@ -8477,6 +8610,35 @@
       <svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
     </button>
 
+    <!-- ---------- Голосовой ассистент (только роль руководителя) ----------
+         Вызов — горизонтальный свайп по нижнему меню, в любую сторону. -->
+    <div class="voice-overlay" id="voiceOverlay" hidden>
+      <div class="voice-glow" id="voiceGlow"></div>
+      <div class="voice-card" id="voiceCard">
+        <span class="voice-card-text" id="voiceCardText">Слушаю…</span>
+      </div>
+    </div>
+
+    <div class="voice-sheet" id="voiceSheet" hidden>
+      <div class="voice-sheet-rim"></div>
+      <div class="voice-sheet-glow" id="voiceSheetGlow"></div>
+      <div class="voice-sheet-head">
+        <svg class="voice-sheet-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5c.3 3.4 1.1 5.6 2.4 6.9 1.3 1.3 3.5 2.1 6.9 2.4-3.4.3-5.6 1.1-6.9 2.4-1.3 1.3-2.1 3.5-2.4 6.9-.3-3.4-1.1-5.6-2.4-6.9C8.3 12.9 6.1 12.1 2.7 11.8c3.4-.3 5.6-1.1 6.9-2.4C10.9 8.1 11.7 5.9 12 2.5z"/><path d="M19 15.5c.15 1.5.5 2.5 1.1 3.1.6.6 1.6.95 3.1 1.1-1.5.15-2.5.5-3.1 1.1-.6.6-.95 1.6-1.1 3.1-.15-1.5-.5-2.5-1.1-3.1-.6-.6-1.6-.95-3.1-1.1 1.5-.15 2.5-.5 3.1-1.1.6-.6.95-1.6 1.1-3.1z"/></svg>
+        <span class="voice-sheet-title">Понял так</span>
+      </div>
+      <div class="voice-sheet-rows">
+        <div class="voice-sheet-row"><span class="voice-sheet-row-label">Действие</span><span class="voice-sheet-row-value" id="voiceRowAction">—</span></div>
+        <div class="voice-sheet-row"><span class="voice-sheet-row-label">Блюдо</span><span class="voice-sheet-row-value" id="voiceRowDish">—</span></div>
+        <div class="voice-sheet-row"><span class="voice-sheet-row-label">Точка</span><span class="voice-sheet-row-value" id="voiceRowPoint">—</span></div>
+      </div>
+      <div class="voice-sheet-actions">
+        <button class="voice-sheet-btn voice-sheet-btn-ghost" id="voiceSheetChangeBtn">Изменить</button>
+        <button class="voice-sheet-btn voice-sheet-btn-gold" id="voiceSheetConfirmBtn">Выполнить</button>
+      </div>
+    </div>
+
+    <div class="voice-toast" id="voiceUnavailableToast" hidden>Голосовой ввод недоступен</div>
+
     <!-- подтверждение сохранения изменений стоп/старт-листа -->
     <!-- модификатор, комментарий и курс для непробитой позиции -->
     <div class="modal-overlay" id="optsOverlay" hidden>
@@ -9745,13 +9907,16 @@
 
   let listNotifyPending = null;   // попадёт в копилку, если не ознакомились вовремя
 
-  function showListNotify() {
+  /* voiceUndo — команда голосового ассистента: та же плашка, что у всех,
+     но кнопка «Отменить» вместо «Ознакомиться» (и в копилке тоже) */
+  function showListNotify(voiceUndo) {
     clearTimeout(notifyTimer);
     const title = changedListLabel();
     const note = 'Обновление от менеджера · сотрудникам зала';
     document.getElementById('notifyTitle').textContent = title;
     document.getElementById('notifyNote').textContent = note;
-    listNotifyPending = { employee:'Зал', topic:'stoplist', title:title, note:note, at:Date.now() };
+    document.getElementById('notifyOpen').textContent = voiceUndo ? 'Отменить' : 'Ознакомиться';
+    listNotifyPending = { employee:'Зал', topic:'stoplist', title:title, note:note, at:Date.now(), voiceUndo:voiceUndo || null };
     listNotifyEl.classList.remove('leaving');
     listNotifyEl.style.transition = '';
     listNotifyEl.style.transform = '';
@@ -9784,8 +9949,13 @@
   }
 
   document.getElementById('notifyOpen').addEventListener('click', () => {
+    const pending = listNotifyPending;
     hideListNotify(false);
-    location.hash = 'мн-04';
+    if (pending && pending.voiceUndo) {
+      undoVoiceStopCommand(pending.voiceUndo);
+    } else {
+      location.hash = 'мн-04';
+    }
   });
 
   /* смахнуть тост стоп-листа пальцем — не ознакомился, уходит в копилку */
@@ -13750,9 +13920,11 @@
                 '<span class="notif-row-note">' + n.note + '</span>' +
                 '<span class="notif-row-time">' + stampText(n.at) + (n.read ? ' · смахнули' : '') + '</span>' +
               '</button>' +
-              (canCloseFromNotif(n)
-                ? '<button class="notif-row-close" data-notif-close="' + n.id + '">Закрыть стол</button>'
-                : '') +
+              (n.voiceUndo
+                ? '<button class="notif-row-close" data-notif-undo="' + n.id + '">Отменить</button>'
+                : canCloseFromNotif(n)
+                  ? '<button class="notif-row-close" data-notif-close="' + n.id + '">Закрыть стол</button>'
+                  : '') +
             '</div>').join('') +
         '</div>';
       }).join('');
@@ -13828,6 +14000,17 @@
     if (toggle) {
       const key = toggle.dataset.notifToggle;
       if (notifExpanded.has(key)) notifExpanded.delete(key); else notifExpanded.add(key);
+      renderNotifPanel();
+      return;
+    }
+    /* «Отменить» — откат команды голосового ассистента прямо из копилки */
+    const undoBtn = e.target.closest('[data-notif-undo]');
+    if (undoBtn) {
+      const id = undoBtn.dataset.notifUndo;
+      const n = notifInbox.find(x => x.id === id);
+      notifInbox = notifInbox.filter(x => x.id !== id);
+      updateNotifBell();
+      if (n && n.voiceUndo) undoVoiceStopCommand(n.voiceUndo);
       renderNotifPanel();
       return;
     }
@@ -20181,6 +20364,382 @@
     });
   });
   applyVenueWording();
+
+  /* ==========================================================
+     Голосовой ассистент — только роль руководителя (isManagerRole).
+     Вызов: горизонтальный свайп по нижнему меню, любое направление,
+     жест живёт на #bottomNav целиком, а не у краёв экрана, поэтому
+     системные edge-жесты не задеты. Разбор фразы поддерживает пока
+     одну команду: «поставь/убери [блюдо] в стоп» — остальные заготовки
+     ниже рассчитаны на то, что команд станет больше (см. changesData).
+     ========================================================== */
+  if (isManagerRole) {
+    const voiceOverlayEl = document.getElementById('voiceOverlay');
+    const voiceGlowEl = document.getElementById('voiceGlow');
+    const voiceCardEl = document.getElementById('voiceCard');
+    const voiceCardTextEl = document.getElementById('voiceCardText');
+    const voiceSheetEl = document.getElementById('voiceSheet');
+    const voiceSheetGlowEl = document.getElementById('voiceSheetGlow');
+    const voiceRowActionEl = document.getElementById('voiceRowAction');
+    const voiceRowDishEl = document.getElementById('voiceRowDish');
+    const voiceRowPointEl = document.getElementById('voiceRowPoint');
+    const voiceSheetChangeBtnEl = document.getElementById('voiceSheetChangeBtn');
+    const voiceSheetConfirmBtnEl = document.getElementById('voiceSheetConfirmBtn');
+    const voiceUnavailableEl = document.getElementById('voiceUnavailableToast');
+
+    const voiceReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const VoiceSpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    let voiceState = 'idle';   // idle | listening | sheet
+    let voiceRecognition = null;
+    let voiceFinalTranscript = '';
+    let voiceCurrentCommand = null;
+
+    function positionAboveNav(el) {
+      const navRect = bottomNavEl.getBoundingClientRect();
+      const screenRect = screenEl.getBoundingClientRect();
+      el.style.bottom = (screenRect.bottom - navRect.top + 10) + 'px';
+    }
+
+    let voiceUnavailableTimer = null;
+    function showVoiceUnavailable() {
+      voiceUnavailableEl.hidden = false;
+      clearTimeout(voiceUnavailableTimer);
+      voiceUnavailableTimer = setTimeout(() => { voiceUnavailableEl.hidden = true; }, 2600);
+    }
+
+    /* ---------- Свечение при прослушивании: яркость от громкости голоса,
+       глубина/цвета — фиксированные (задаёт CSS). В тишине не гаснет —
+       держится на полу VOICE_GLOW_FLOOR. Если getUserMedia не даётся
+       параллельно с распознаванием (занят микрофон) — переходим на
+       пульс по событиям речи (onspeechstart/onspeechend + каждый result). */
+    const VOICE_GLOW_FLOOR = 0.28;
+    function setVoiceGlowLevel(level) {
+      voiceGlowEl.style.opacity = Math.max(0, Math.min(1, level)).toFixed(3);
+    }
+
+    let voiceMicStream = null, voiceAudioCtx = null, voiceAnalyser = null, voiceLevelRaf = null;
+    let voiceLevelMode = 'pulse';
+    const voiceLevelData = new Uint8Array(64);
+
+    async function startVoiceLevelMeter() {
+      if (voiceReducedMotion) { setVoiceGlowLevel(0.55); return; }
+      try {
+        voiceMicStream = await navigator.mediaDevices.getUserMedia({ audio:true });
+        if (voiceState !== 'listening') { voiceMicStream.getTracks().forEach(t => t.stop()); voiceMicStream = null; return; }
+        voiceAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const source = voiceAudioCtx.createMediaStreamSource(voiceMicStream);
+        voiceAnalyser = voiceAudioCtx.createAnalyser();
+        voiceAnalyser.fftSize = 128;
+        source.connect(voiceAnalyser);
+        voiceLevelMode = 'volume';
+        voiceLevelLoop();
+      } catch (err) {
+        voiceLevelMode = 'pulse';
+        setVoiceGlowLevel(VOICE_GLOW_FLOOR);
+      }
+    }
+
+    function voiceLevelLoop() {
+      if (voiceState !== 'listening' || voiceLevelMode !== 'volume') return;
+      voiceAnalyser.getByteFrequencyData(voiceLevelData);
+      let sum = 0;
+      for (let i = 0; i < voiceLevelData.length; i++) sum += voiceLevelData[i];
+      const avg = sum / voiceLevelData.length / 255;
+      setVoiceGlowLevel(VOICE_GLOW_FLOOR + avg * (1 - VOICE_GLOW_FLOOR));
+      voiceLevelRaf = requestAnimationFrame(voiceLevelLoop);
+    }
+
+    function stopVoiceLevelMeter() {
+      if (voiceLevelRaf) cancelAnimationFrame(voiceLevelRaf);
+      voiceLevelRaf = null;
+      if (voiceMicStream) { voiceMicStream.getTracks().forEach(t => t.stop()); voiceMicStream = null; }
+      if (voiceAudioCtx) { try { voiceAudioCtx.close(); } catch (e) {} voiceAudioCtx = null; }
+      voiceAnalyser = null;
+      voiceLevelMode = 'pulse';
+    }
+
+    let voicePulseTimer = null;
+    function pulseVoiceGlow() {
+      if (voiceReducedMotion || voiceLevelMode !== 'pulse') return;
+      setVoiceGlowLevel(1);
+      clearTimeout(voicePulseTimer);
+      voicePulseTimer = setTimeout(() => setVoiceGlowLevel(VOICE_GLOW_FLOOR), 240);
+    }
+
+    /* ---------- Распознавание речи ---------- */
+    function createVoiceRecognition() {
+      const rec = new VoiceSpeechRecognitionCtor();
+      rec.lang = 'ru-RU';
+      rec.interimResults = true;
+      rec.continuous = false;
+      rec.maxAlternatives = 1;
+      rec.onresult = e => {
+        let interim = '', final = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          const chunk = e.results[i][0].transcript;
+          if (e.results[i].isFinal) final += chunk; else interim += chunk;
+        }
+        if (final) voiceFinalTranscript += final;
+        voiceCardTextEl.textContent = (voiceFinalTranscript + interim).trim() || 'Слушаю…';
+        pulseVoiceGlow();
+      };
+      rec.onspeechstart = () => { if (voiceLevelMode === 'pulse') setVoiceGlowLevel(1); };
+      rec.onspeechend = () => { if (voiceLevelMode === 'pulse') setVoiceGlowLevel(VOICE_GLOW_FLOOR); };
+      rec.onerror = e => {
+        if (e.error === 'not-allowed' || e.error === 'service-not-allowed' || e.error === 'network') {
+          closeVoicePanel();
+          showVoiceUnavailable();
+        }
+        /* no-speech и прочие мелкие ошибки — просто дожидаемся onend */
+      };
+      rec.onend = () => {
+        if (voiceRecognition !== rec) return;   // уже отменили/заменили извне
+        voiceRecognition = null;
+        finishVoiceListening();
+      };
+      return rec;
+    }
+
+    function openVoiceListening() {
+      if (voiceState !== 'idle') return;
+      if (!VoiceSpeechRecognitionCtor || !navigator.onLine) { showVoiceUnavailable(); return; }
+      voiceState = 'listening';
+      voiceFinalTranscript = '';
+      voiceCardTextEl.textContent = 'Слушаю…';
+      positionAboveNav(voiceCardEl);
+      voiceOverlayEl.hidden = false;
+      setVoiceGlowLevel(VOICE_GLOW_FLOOR);
+      voiceRecognition = createVoiceRecognition();
+      try { voiceRecognition.start(); }
+      catch (err) { voiceRecognition = null; closeVoicePanel(); showVoiceUnavailable(); return; }
+      startVoiceLevelMeter();
+    }
+
+    function finishVoiceListening() {
+      stopVoiceLevelMeter();
+      voiceOverlayEl.hidden = true;
+      voiceState = 'idle';
+      const transcript = voiceFinalTranscript.trim();
+      if (!transcript) return;
+      const cmd = parseVoiceCommand(transcript);
+      if (!cmd) return;   // фраза не разобрана — молча закрываемся, ничего не выдумываем
+      openVoiceSheet(cmd);
+    }
+
+    function closeVoicePanel() {
+      if (voiceRecognition) {
+        const rec = voiceRecognition;
+        voiceRecognition = null;
+        rec.onend = null; rec.onresult = null; rec.onerror = null;
+        try { rec.abort(); } catch (err) {}
+      }
+      stopVoiceLevelMeter();
+      voiceOverlayEl.hidden = true;
+      voiceState = 'idle';
+      voiceFinalTranscript = '';
+    }
+
+    /* отмена до подтверждения: тап вне карточки или свайп вниз */
+    voiceOverlayEl.addEventListener('click', e => {
+      if (e.target.closest('#voiceCard')) return;
+      closeVoicePanel();
+    });
+    (function enableVoiceCancelSwipe() {
+      let dragging = false, startY = 0;
+      voiceOverlayEl.addEventListener('pointerdown', e => { dragging = true; startY = e.clientY; });
+      voiceOverlayEl.addEventListener('pointermove', e => {
+        if (!dragging) return;
+        if (e.clientY - startY > 60) { dragging = false; closeVoicePanel(); }
+      });
+      voiceOverlayEl.addEventListener('pointerup', () => { dragging = false; });
+      voiceOverlayEl.addEventListener('pointercancel', () => { dragging = false; });
+    })();
+
+    /* ---------- Разбор фразы: действие / блюдо / точка ----------
+       Первая (и пока единственная) команда: «поставь/убери [блюдо] в стоп».
+       Блюдо ищем нечётко по всему меню Старт/Стоп (menuItems), точка по
+       умолчанию — текущая (venueDisplayName), выбора точки в прототипе нет. */
+    function voiceNormalizeText(s) {
+      return (s || '')
+        .toLowerCase()
+        .replace(/ё/g, 'е')
+        .replace(/[«»"'.,!?()]/g, '')
+        .replace(/-/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    const VOICE_STOP_ADD_VERBS = ['постав', 'добав'];
+    const VOICE_STOP_REMOVE_VERBS = ['убер', 'убра', 'сним', 'верн'];
+
+    function voiceFuzzyFindMenuItem(phrase) {
+      const q = voiceNormalizeText(phrase);
+      if (!q) return null;
+      const qWords = q.split(' ').filter(Boolean);
+      let best = null, bestScore = 0;
+      menuItems.forEach(item => {
+        const name = voiceNormalizeText(item.name);
+        let score = 0;
+        if (name === q) score = 100;
+        else if (name.includes(q) || q.includes(name)) score = 80;
+        else {
+          const nameWords = name.split(' ').filter(Boolean);
+          const matched = qWords.filter(w => nameWords.some(nw => nw.startsWith(w) || w.startsWith(nw)));
+          score = matched.length ? Math.round(matched.length / qWords.length * 60) : 0;
+        }
+        if (score > bestScore) { bestScore = score; best = item; }
+      });
+      return bestScore >= 30 ? best : null;
+    }
+
+    function parseVoiceCommand(rawText) {
+      const norm = voiceNormalizeText(rawText);
+      if (!norm) return null;
+      const m = norm.match(/^(\S+)\s+(.+?)\s+(?:в|из|со|с)\s+стоп\S*(?:\s+лист\S*)?$/);
+      if (!m) return null;
+      const verb = m[1];
+      const dishPhrase = m[2].trim();
+      if (!dishPhrase) return null;
+      const isAdd = VOICE_STOP_ADD_VERBS.some(v => verb.startsWith(v));
+      const isRemove = !isAdd && VOICE_STOP_REMOVE_VERBS.some(v => verb.startsWith(v));
+      if (!isAdd && !isRemove) return null;
+      return {
+        kind: isAdd ? 'add' : 'remove',
+        actionLabel: isAdd ? 'Добавить в стоп-лист' : 'Убрать из стоп-листа',
+        dishPhrase: dishPhrase,
+        dishItem: voiceFuzzyFindMenuItem(dishPhrase),
+        point: venueDisplayName(),
+        changesData: true   // информационные команды (когда появятся) — false, без шторки и без «Отменить»
+      };
+    }
+
+    /* ---------- «Понял так» — шторка с подтверждением ---------- */
+    let voiceSheetBreatheRaf = null;
+    function startVoiceSheetBreathe() {
+      if (voiceReducedMotion) {
+        voiceSheetGlowEl.style.height = '60px';
+        voiceSheetGlowEl.style.opacity = '.5';
+        return;
+      }
+      const step = ts => {
+        const t = (ts % 5000) / 5000;
+        const phase = (1 - Math.cos(t * Math.PI * 2)) / 2;   // 0..1..0, плавно
+        voiceSheetGlowEl.style.height = (40 + 40 * phase).toFixed(1) + 'px';
+        voiceSheetGlowEl.style.opacity = (0.28 + 0.5 * phase).toFixed(3);
+        voiceSheetBreatheRaf = requestAnimationFrame(step);
+      };
+      voiceSheetBreatheRaf = requestAnimationFrame(step);
+    }
+    function stopVoiceSheetBreathe() {
+      if (voiceSheetBreatheRaf) cancelAnimationFrame(voiceSheetBreatheRaf);
+      voiceSheetBreatheRaf = null;
+    }
+
+    function openVoiceSheet(cmd) {
+      voiceState = 'sheet';
+      voiceCurrentCommand = cmd;
+      voiceRowActionEl.textContent = cmd.actionLabel;
+      voiceRowDishEl.textContent = cmd.dishItem ? cmd.dishItem.name : 'Не найдено';
+      voiceRowDishEl.classList.toggle('is-missing', !cmd.dishItem);
+      voiceRowPointEl.textContent = cmd.point;
+      voiceSheetConfirmBtnEl.disabled = !cmd.dishItem;
+      positionAboveNav(voiceSheetEl);
+      voiceSheetEl.hidden = false;
+      voiceSheetEl.classList.remove('is-open');
+      void voiceSheetEl.offsetHeight;   // форсируем reflow — иначе первый transition не сыграет
+      requestAnimationFrame(() => voiceSheetEl.classList.add('is-open'));
+      startVoiceSheetBreathe();
+    }
+
+    function closeVoiceSheet(after) {
+      voiceSheetEl.classList.remove('is-open');
+      stopVoiceSheetBreathe();
+      setTimeout(() => {
+        voiceSheetEl.hidden = true;
+        if (after) after();
+      }, 280);
+    }
+
+    voiceSheetChangeBtnEl.addEventListener('click', () => {
+      closeVoiceSheet(() => {
+        voiceState = 'idle';
+        voiceCurrentCommand = null;
+        openVoiceListening();
+      });
+    });
+
+    voiceSheetConfirmBtnEl.addEventListener('click', () => {
+      if (voiceSheetConfirmBtnEl.disabled || !voiceCurrentCommand || !voiceCurrentCommand.dishItem) return;
+      const cmd = voiceCurrentCommand;
+      closeVoiceSheet(() => {
+        voiceState = 'idle';
+        voiceCurrentCommand = null;
+        applyVoiceStopCommand(cmd);
+      });
+    });
+
+    /* ---------- Выполнение через существующую логику Старт/Стоп листа ----------
+       Тот же item.status и те же renderStartStop()/renderDishList(), что и у
+       ручного переключателя (attachToggleHandlers) — здесь не toggle, а явная
+       установка, потому что голосовая команда — это намерение, а не клик по
+       уже видимой кнопке. markListChanged/listChanges используем только на
+       время одного вызова showListNotify, чтобы не тянуть в неё несохранённые
+       ручные правки, если они где-то параллельно копятся. */
+    function applyVoiceStopCommand(cmd) {
+      const item = cmd.dishItem;
+      if (!item) return;
+      const prevStatus = item.status;
+      item.status = cmd.kind === 'add' ? 'stop' : (item.status === 'stop' ? null : item.status);
+      renderStartStop();
+      renderDishList();
+      const hadStopFlag = listChanges.has('stop');
+      listChanges.add('stop');
+      showListNotify({ itemId: item.id, prevStatus: prevStatus });
+      if (!hadStopFlag) listChanges.delete('stop');
+    }
+
+    /* «Отменить» — из живой плашки или прямо из копилки; остальным сотрудникам
+       это уходит как обычное изменение стоп-листа, отдельного уведомления
+       об откате не делаем (никакого showListNotify здесь) */
+    window.undoVoiceStopCommand = function (info) {
+      const item = menuItems.find(i => i.id === info.itemId);
+      if (!item) return;
+      item.status = info.prevStatus;
+      renderStartStop();
+      renderDishList();
+    };
+
+    /* ---------- Вызов: горизонтальный свайп по нижнему меню ----------
+       Начало жеста ближе 24px к левому/правому краю — не наш, чтобы не
+       задевать системные edge-жесты; порог по dx — чтобы не мешать обычным
+       тапам по кнопкам вкладок. */
+    (function enableVoiceAssistantTrigger() {
+      let dragging = false, startX = 0, startY = 0, moved = false;
+      bottomNavEl.addEventListener('pointerdown', e => {
+        if (voiceState !== 'idle') return;
+        const rect = bottomNavEl.getBoundingClientRect();
+        if (e.clientX - rect.left < 24 || rect.right - e.clientX < 24) return;
+        dragging = true; moved = false; startX = e.clientX; startY = e.clientY;
+      });
+      bottomNavEl.addEventListener('pointermove', e => {
+        if (!dragging) return;
+        const dx = e.clientX - startX, dy = e.clientY - startY;
+        if (!moved && Math.abs(dx) > 28 && Math.abs(dx) > Math.abs(dy) * 1.4) moved = true;
+      });
+      bottomNavEl.addEventListener('pointerup', () => {
+        if (!dragging) return;
+        dragging = false;
+        if (moved) openVoiceListening();
+      });
+      bottomNavEl.addEventListener('pointercancel', () => { dragging = false; });
+      /* гасим клик по кнопке вкладки, если жест распознан как вызов ассистента */
+      bottomNavEl.addEventListener('click', e => {
+        if (moved) { e.stopPropagation(); e.preventDefault(); }
+        moved = false;
+      }, true);
+    })();
+  }
 
   /* старт: первый экран файла — МН-00 */
   if (!location.hash) location.hash = 'мн-00';
