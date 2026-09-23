@@ -554,37 +554,6 @@
   }
   .map-row .chevron{width:16px; height:16px; stroke:var(--text-muted); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0;}
 
-  /* кнопка возврата к карте экранов — служебная, вне экрана телефона */
-  .map-side-btn{
-    position:fixed;
-    left:0; top:50%;
-    transform:translateY(-50%);
-    display:flex; flex-direction:column; align-items:center; gap:10px;
-    background:linear-gradient(160deg, #24405f, var(--navy-deep));
-    color:var(--gold-light);
-    border:none;
-    border-left:none;
-    border-radius:0 16px 16px 0;
-    padding:calc(10px + env(safe-area-inset-top, 0px)) 7px 10px;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:11px;
-    font-weight:500;
-    letter-spacing:.14em;
-    text-transform:uppercase;
-    cursor:pointer;
-    box-shadow:6px 0 24px -8px rgba(18,35,58,0.55);
-    transition:padding-left .18s ease, color .18s ease;
-    z-index:50;
-  }
-  .map-side-btn:hover{padding-left:11px;}
-  .map-side-btn svg{width:17px; height:17px; flex-shrink:0;}
-  .map-side-btn.is-active{
-    color:var(--navy-deep);
-    background:linear-gradient(160deg, var(--gold-light), var(--gold));
-    box-shadow:6px 0 24px -8px rgba(198,153,47,0.6);
-  }
-  .map-side-btn[hidden]{display:none;}
-
   /* stat cards (Главная) */
   .stat-grid{
     margin-top:-22px;
@@ -6198,10 +6167,6 @@
 </style>
 </head>
 <body>
-
-<button class="map-side-btn" id="mapHeaderBtn" aria-label="Карта экранов">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="7" height="7" rx="1.4"/><rect x="14" y="4" width="7" height="7" rx="1.4"/><rect x="3" y="14" width="7" height="7" rx="1.4"/><rect x="14" y="14" width="7" height="7" rx="1.4"/></svg>
-</button>
 
 <div class="phone">
   <div class="notch"></div>
@@ -16167,7 +16132,6 @@
      в разметку МН-00 «Карта экранов».
      ===================================================== */
   const mapPanel = document.querySelector('.panel[data-panel="map"]');
-  const mapHeaderBtn = document.getElementById('mapHeaderBtn');
   let routing = false;
 
   /* уходя из деталей смены, гасим всё, что было открыто поверх заказа */
@@ -19456,7 +19420,7 @@
       location.hash = id;
     }
     routing = false;
-    syncMapBtn(id);
+    syncScreenInfo(id);
   }
 
   /* выполнить маршрут и подтянуть хеш — когда экран нужно именно открыть */
@@ -19464,11 +19428,6 @@
     const fn = ROUTES[id];
     if (fn) fn();
     setRoute(id);
-  }
-
-  function syncMapBtn(id) {
-    mapHeaderBtn.classList.toggle('is-active', id === 'мн-00');
-    syncScreenInfo(id);
   }
 
   /* ---------- памятка по экрану — что это за экран и что на нём делают ----------
@@ -19554,11 +19513,11 @@
     routing = true;
     if (route) route(); else showMap();
     routing = false;
-    syncMapBtn(route ? id : 'мн-00');
+    syncScreenInfo(route ? id : 'мн-00');
   }
 
   window.addEventListener('hashchange', () => {
-    if (skipRouteCount > 0) { skipRouteCount--; syncMapBtn(currentRoute()); return; }
+    if (skipRouteCount > 0) { skipRouteCount--; syncScreenInfo(currentRoute()); return; }
     applyRoute();
   });
 
@@ -19566,8 +19525,6 @@
   document.querySelectorAll('.map-row[data-goto]').forEach(row => {
     row.addEventListener('click', () => { location.hash = row.dataset.goto; });
   });
-
-  mapHeaderBtn.addEventListener('click', () => { location.hash = 'мн-00'; });
 
   /* синхронизация хеша при обычной навигации по прототипу */
   const TAB_ROUTE = { home:'мн-01', shift:'мн-02', messenger:'мн-05', planner:'мн-09', profile:'мн-10' };
