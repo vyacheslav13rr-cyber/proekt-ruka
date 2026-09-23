@@ -20424,76 +20424,26 @@
 
     /* ---------- Свечение при прослушивании: яркость от громкости голоса,
        глубина/цвета — фиксированные (задаёт CSS). В тишине не гаснет —
-       держится на полу VOICE_GLOW_FLOOR. Если getUserMedia не даётся
-       параллельно с распознаванием (занят микрофон) — переходим на
-       пульс по событиям речи (onspeechstart/onspeechend + каждый result). */
+       держится на полу VOICE_GLOW_FLOOR.
+       Точный замер через getUserMedia+AnalyserNode сюда сознательно не
+       добавлен: на части мобильных браузеров параллельный с распознаванием
+       доступ к микрофону не просто «не даётся» с понятной ошибкой (тогда
+       сработал бы штатный откат из ТЗ), а молча обрывает сам захват речи
+       распознаванием на полуслове — цена точной подсветки оказалась
+       слишком высокой. Вместо этого — пульс по событиям самого
+       распознавания (onspeechstart/onspeechend + каждый result), это и
+       есть тот самый запасной вариант из ТЗ, просто теперь единственный. */
     const VOICE_GLOW_FLOOR = 0.28;
     function setVoiceGlowLevel(level) {
       voiceGlowEl.style.opacity = Math.max(0, Math.min(1, level)).toFixed(3);
     }
 
-    let voiceMicStream = null, voiceAudioCtx = null, voiceAnalyser = null, voiceLevelRaf = null;
-    let voiceLevelMode = 'pulse';
-    const voiceLevelData = new Uint8Array(64);
-
-    async function startVoiceLevelMeter() {
-      if (voiceReducedMotion) { setVoiceGlowLevel(0.55); return; }
-      try {
-        voiceMicStream = await navigator.mediaDevices.getUserMedia({ audio:true });
-        if (voiceState !== 'listening') { voiceMicStream.getTracks().forEach(t => t.stop()); voiceMicStream = null; return; }
-        voiceAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const source = voiceAudioCtx.createMediaStreamSource(voiceMicStream);
-        voiceAnalyser = voiceAudioCtx.createAnalyser();
-        voiceAnalyser.fftSize = 128;
-        source.connect(voiceAnalyser);
-        voiceLevelMode = 'volume';
-        voiceLevelLoop();
-      } catch (err) {
-        voiceLevelMode = 'pulse';
-        setVoiceGlowLevel(VOICE_GLOW_FLOOR);
-      }
-    }
-
-    function voiceLevelLoop() {
-      if (voiceState !== 'listening' || voiceLevelMode !== 'volume') return;
-      voiceAnalyser.getByteFrequencyData(voiceLevelData);
-      let sum = 0;
-      for (let i = 0; i < voiceLevelData.length; i++) sum += voiceLevelData[i];
-      const avg = sum / voiceLevelData.length / 255;
-      setVoiceGlowLevel(VOICE_GLOW_FLOOR + avg * (1 - VOICE_GLOW_FLOOR));
-      voiceLevelRaf = requestAnimationFrame(voiceLevelLoop);
-    }
-
-    function stopVoiceLevelMeter() {
-      if (voiceLevelRaf) cancelAnimationFrame(voiceLevelRaf);
-      voiceLevelRaf = null;
-      if (voiceMicStream) { voiceMicStream.getTracks().forEach(t => t.stop()); voiceMicStream = null; }
-      if (voiceAudioCtx) { try { voiceAudioCtx.close(); } catch (e) {} voiceAudioCtx = null; }
-      voiceAnalyser = null;
-      voiceLevelMode = 'pulse';
-    }
-
     let voicePulseTimer = null;
     function pulseVoiceGlow() {
-      if (voiceReducedMotion || voiceLevelMode !== 'pulse') return;
+      if (voiceReducedMotion) return;
       setVoiceGlowLevel(1);
       clearTimeout(voicePulseTimer);
       voicePulseTimer = setTimeout(() => setVoiceGlowLevel(VOICE_GLOW_FLOOR), 240);
-    }
-
-    /* ---------- Распознавание речи ----------
-       Замер громкости (getUserMedia) не запускаем одновременно со стартом
-       распознавания: на части мобильных браузеров параллельный доступ к
-       микрофону молча ломает сам захват речи распознаванием (recognition
-       остаётся «слушающим», но ни разу не получает onresult). Поэтому
-       сначала ждём подтверждения, что распознавание само поймало звук
-       (onspeechstart), и только тогда один раз пробуем добавить точный
-       замер громкости — до этого момента светится пульсом по событиям речи. */
-    let voiceLevelMeterAttempted = false;
-    function attemptVoiceLevelMeterUpgrade() {
-      if (voiceLevelMeterAttempted) return;
-      voiceLevelMeterAttempted = true;
-      startVoiceLevelMeter();
     }
 
     function createVoiceRecognition() {
@@ -20525,11 +20475,8 @@
         pulseVoiceGlow();
         scheduleSilenceStop();   // пришёл фрагмент — ждём, вдруг фраза продолжится
       };
-      rec.onspeechstart = () => {
-        if (voiceLevelMode === 'pulse') setVoiceGlowLevel(1);
-        attemptVoiceLevelMeterUpgrade();
-      };
-      rec.onspeechend = () => { if (voiceLevelMode === 'pulse') setVoiceGlowLevel(VOICE_GLOW_FLOOR); };
+      rec.onspeechstart = () => setVoiceGlowLevel(1);
+      rec.onspeechend = () => setVoiceGlowLevel(VOICE_GLOW_FLOOR);
       rec.onerror = e => {
         if (e.error === 'not-allowed' || e.error === 'service-not-allowed' || e.error === 'network') {
           closeVoicePanel();
@@ -20580,8 +20527,6 @@
       voiceState = 'listening';
       voiceFinalTranscript = '';
       voiceNoSpeechRetries = 0;
-      voiceLevelMeterAttempted = false;
-      voiceLevelMode = 'pulse';
       voiceCardTextEl.textContent = 'Слушаю…';
       positionAboveNav(voiceCardEl);
       voiceOverlayEl.hidden = false;
@@ -20590,7 +20535,6 @@
     }
 
     function finishVoiceListening() {
-      stopVoiceLevelMeter();
       voiceOverlayEl.hidden = true;
       voiceState = 'idle';
       const transcript = voiceFinalTranscript.trim();
@@ -20611,7 +20555,6 @@
         rec.onend = null; rec.onresult = null; rec.onerror = null;
         try { rec.abort(); } catch (err) {}
       }
-      stopVoiceLevelMeter();
       voiceOverlayEl.hidden = true;
       voiceState = 'idle';
       voiceFinalTranscript = '';
