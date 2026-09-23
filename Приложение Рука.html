@@ -4209,6 +4209,12 @@
     justify-content:space-evenly;
     box-shadow:0 14px 28px rgba(43,36,24,0.22);
     z-index:10;
+    /* горизонтальный свайп — вызов голосового ассистента (см. JS); без
+       этого на реальном тач-устройстве браузер иногда забирает жест себе
+       раньше, чем до нас доходит полная серия pointermove/pointerup.
+       none, а не pan-y — сама полоса меню не скроллится, а pan-y всё
+       равно не спасает от ранней отмены жеста на некоторых движках */
+    touch-action:none;
     transition:background .3s ease, transform .3s ease, opacity .25s ease;
   }
   /* сворачивается вправо, за край экрана — сам размер и шрифт не меняются */
@@ -4348,6 +4354,10 @@
     position:absolute; inset:0;
     z-index:90;
     background:transparent;
+    /* весь оверлей — свайп вниз для отмены; нативному скроллу тут ловить
+       нечего, но без явного touch-action браузер иногда всё равно
+       забирает жест себе на середине */
+    touch-action:none;
   }
   .voice-overlay[hidden]{display:none;}
 
@@ -20546,14 +20556,23 @@
       closeVoicePanel();
     });
     (function enableVoiceCancelSwipe() {
-      let dragging = false, startY = 0;
-      voiceOverlayEl.addEventListener('pointerdown', e => { dragging = true; startY = e.clientY; });
+      let dragging = false, startY = 0, activePointerId = null;
+      voiceOverlayEl.addEventListener('pointerdown', e => {
+        dragging = true; startY = e.clientY; activePointerId = e.pointerId;
+        try { voiceOverlayEl.setPointerCapture(e.pointerId); } catch (err) {}
+      });
       voiceOverlayEl.addEventListener('pointermove', e => {
-        if (!dragging) return;
+        if (!dragging || e.pointerId !== activePointerId) return;
         if (e.clientY - startY > 60) { dragging = false; closeVoicePanel(); }
       });
-      voiceOverlayEl.addEventListener('pointerup', () => { dragging = false; });
-      voiceOverlayEl.addEventListener('pointercancel', () => { dragging = false; });
+      voiceOverlayEl.addEventListener('pointerup', e => {
+        if (e.pointerId !== activePointerId) return;
+        dragging = false;
+      });
+      voiceOverlayEl.addEventListener('pointercancel', e => {
+        if (e.pointerId !== activePointerId) return;
+        dragging = false;
+      });
     })();
 
     /* ---------- Разбор фразы: действие / блюдо / точка ----------
@@ -20715,24 +20734,55 @@
        задевать системные edge-жесты; порог по dx — чтобы не мешать обычным
        тапам по кнопкам вкладок. */
     (function enableVoiceAssistantTrigger() {
-      let dragging = false, startX = 0, startY = 0, moved = false;
+      let dragging = false, startX = 0, startY = 0, moved = false, activePointerId = null;
+      let safetyTimer = null;
+
+      /* на некоторых мобильных браузерах жест иногда «теряется» —
+         pointerup/pointercancel не долетают (браузер решил, что это
+         вертикальный скролл, и забрал жест себе); свежий pointerdown
+         жёстко сбрасывает застрявшее состояние, а таймер отпускает его
+         сам, если события так и не пришли (тот же приём, что в
+         reserveSwipeReset) */
+      function resetDrag() {
+        dragging = false;
+        activePointerId = null;
+        clearTimeout(safetyTimer);
+      }
+
       bottomNavEl.addEventListener('pointerdown', e => {
+        resetDrag();
+        moved = false;
         if (voiceState !== 'idle') return;
         const rect = bottomNavEl.getBoundingClientRect();
         if (e.clientX - rect.left < 24 || rect.right - e.clientX < 24) return;
-        dragging = true; moved = false; startX = e.clientX; startY = e.clientY;
+        dragging = true; startX = e.clientX; startY = e.clientY;
+        activePointerId = e.pointerId;
+        /* захват указателя — иначе на узкой полосе меню палец легко уходит
+           за пределы элемента и pointermove/pointerup перестают доходить */
+        try { bottomNavEl.setPointerCapture(e.pointerId); } catch (err) {}
+        safetyTimer = setTimeout(resetDrag, 800);
       });
+      /* решаем по первому же движению, не дожидаясь pointerup — на реальных
+         тач-браузерах короткий горизонтальный свайп иногда обрывается
+         pointercancel'ом (см. reserveSwipeReset выше) раньше, чем палец
+         оторвётся от экрана, так что ждать отпускания небезопасно */
       bottomNavEl.addEventListener('pointermove', e => {
-        if (!dragging) return;
+        if (!dragging || e.pointerId !== activePointerId || moved) return;
         const dx = e.clientX - startX, dy = e.clientY - startY;
-        if (!moved && Math.abs(dx) > 28 && Math.abs(dx) > Math.abs(dy) * 1.4) moved = true;
+        if (Math.abs(dx) > 16 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+          moved = true;
+          resetDrag();
+          openVoiceListening();
+        }
       });
-      bottomNavEl.addEventListener('pointerup', () => {
-        if (!dragging) return;
-        dragging = false;
-        if (moved) openVoiceListening();
+      bottomNavEl.addEventListener('pointerup', e => {
+        if (!dragging || e.pointerId !== activePointerId) return;
+        resetDrag();
       });
-      bottomNavEl.addEventListener('pointercancel', () => { dragging = false; });
+      bottomNavEl.addEventListener('pointercancel', e => {
+        if (e.pointerId !== activePointerId) return;
+        resetDrag();
+      });
       /* гасим клик по кнопке вкладки, если жест распознан как вызов ассистента */
       bottomNavEl.addEventListener('click', e => {
         if (moved) { e.stopPropagation(); e.preventDefault(); }
