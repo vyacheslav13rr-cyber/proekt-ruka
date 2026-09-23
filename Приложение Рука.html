@@ -20500,9 +20500,20 @@
       const rec = new VoiceSpeechRecognitionCtor();
       rec.lang = 'ru-RU';
       rec.interimResults = true;
-      rec.continuous = false;
+      /* continuous:false обрывал сессию по первой же паузе между словами —
+         «Цезарь [пауза] с курицей в стоп» распознавался как одно слово
+         «Цезарь», и на этом всё заканчивалось. С continuous:true движок
+         не закрывает сессию сам — конец фразы теперь определяем своей
+         паузой между фрагментами (voiceSilenceStop), с запасом на обычные
+         паузы между словами */
+      rec.continuous = true;
       rec.maxAlternatives = 1;
       let noSpeechErrored = false;
+      let silenceTimer = null;
+      function scheduleSilenceStop() {
+        clearTimeout(silenceTimer);
+        silenceTimer = setTimeout(() => { try { rec.stop(); } catch (err) {} }, 1600);
+      }
       rec.onresult = e => {
         let interim = '', final = '';
         for (let i = e.resultIndex; i < e.results.length; i++) {
@@ -20512,6 +20523,7 @@
         if (final) voiceFinalTranscript += final;
         voiceCardTextEl.textContent = (voiceFinalTranscript + interim).trim() || 'Слушаю…';
         pulseVoiceGlow();
+        scheduleSilenceStop();   // пришёл фрагмент — ждём, вдруг фраза продолжится
       };
       rec.onspeechstart = () => {
         if (voiceLevelMode === 'pulse') setVoiceGlowLevel(1);
@@ -20530,6 +20542,7 @@
         if (e.error === 'no-speech') noSpeechErrored = true;
       };
       rec.onend = () => {
+        clearTimeout(silenceTimer);
         if (voiceRecognition !== rec) return;   // уже отменили/заменили извне
         voiceRecognition = null;
         clearTimeout(voiceListenSafetyTimer);
@@ -20558,7 +20571,7 @@
       voiceListenSafetyTimer = setTimeout(() => {
         if (!voiceRecognition) return;
         try { voiceRecognition.stop(); } catch (err) {}
-      }, 12000);
+      }, 18000);   // общий потолок на всю фразу — с запасом на паузы между словами
     }
 
     function openVoiceListening() {
