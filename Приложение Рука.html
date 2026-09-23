@@ -20412,10 +20412,14 @@
     }
 
     let voiceUnavailableTimer = null;
-    function showVoiceUnavailable() {
+    function showVoiceToast(text) {
+      voiceUnavailableEl.textContent = text;
       voiceUnavailableEl.hidden = false;
       clearTimeout(voiceUnavailableTimer);
       voiceUnavailableTimer = setTimeout(() => { voiceUnavailableEl.hidden = true; }, 2600);
+    }
+    function showVoiceUnavailable() {
+      showVoiceToast('Голосовой ввод недоступен');
     }
 
     /* ---------- Свечение при прослушивании: яркость от громкости голоса,
@@ -20506,10 +20510,15 @@
       rec.onend = () => {
         if (voiceRecognition !== rec) return;   // уже отменили/заменили извне
         voiceRecognition = null;
+        clearTimeout(voiceListenSafetyTimer);
         finishVoiceListening();
       };
       return rec;
     }
+
+    /* если распознавание вообще не прислало ни onresult, ни onend (движок
+       завис) — не оставляем ассистента «слушающим» навсегда */
+    let voiceListenSafetyTimer = null;
 
     function openVoiceListening() {
       if (voiceState !== 'idle') return;
@@ -20524,6 +20533,11 @@
       try { voiceRecognition.start(); }
       catch (err) { voiceRecognition = null; closeVoicePanel(); showVoiceUnavailable(); return; }
       startVoiceLevelMeter();
+      clearTimeout(voiceListenSafetyTimer);
+      voiceListenSafetyTimer = setTimeout(() => {
+        if (!voiceRecognition) return;
+        try { voiceRecognition.stop(); } catch (err) {}
+      }, 12000);
     }
 
     function finishVoiceListening() {
@@ -20531,13 +20545,17 @@
       voiceOverlayEl.hidden = true;
       voiceState = 'idle';
       const transcript = voiceFinalTranscript.trim();
-      if (!transcript) return;
+      if (!transcript) { showVoiceToast('Не расслышал'); return; }
       const cmd = parseVoiceCommand(transcript);
-      if (!cmd) return;   // фраза не разобрана — молча закрываемся, ничего не выдумываем
+      /* фраза не разобрана — не закрываемся молча (раньше выглядело так,
+         будто ассистент вообще не среагировал), а прямо показываем, что
+         услышали, чтобы было понятно, что переформулировать */
+      if (!cmd) { showVoiceToast('Не понял команду: «' + transcript + '»'); return; }
       openVoiceSheet(cmd);
     }
 
     function closeVoicePanel() {
+      clearTimeout(voiceListenSafetyTimer);
       if (voiceRecognition) {
         const rec = voiceRecognition;
         voiceRecognition = null;
@@ -20615,7 +20633,10 @@
     function parseVoiceCommand(rawText) {
       const norm = voiceNormalizeText(rawText);
       if (!norm) return null;
-      const m = norm.match(/^(\S+)\s+(.+?)\s+(?:в|из|со|с)\s+стоп\S*(?:\s+лист\S*)?$/);
+      /* не привязываемся к концу фразы — «...в стоп лист пожалуйста» и
+         подобные хвосты не должны ронять разбор, «стоп» после предлога
+         достаточно поймать где угодно в фразе */
+      const m = norm.match(/^(\S+)\s+(.+?)\s+(?:в|на|из|со|с)\s+стоп/);
       if (!m) return null;
       const verb = m[1];
       const dishPhrase = m[2].trim();
