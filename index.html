@@ -20474,13 +20474,24 @@
         clearTimeout(silenceTimer);
         silenceTimer = setTimeout(() => { try { rec.stop(); } catch (err) {} }, 1600);
       }
+      /* при continuous:true движок на части браузеров повторно присылает
+         уже готовый (isFinal) фрагмент в одном из следующих событий —
+         без этой защиты он приплюсовывался бы к фразе заново на каждом
+         повторе, отсюда «Цезарьсалат Цезарьсалат Цезарь…»; индекс уже
+         зачтённого финального результата не даёт добавить один и тот же
+         фрагмент дважды */
+      let lastFinalIndex = -1;
       rec.onresult = e => {
-        let interim = '', final = '';
+        let interim = '';
         for (let i = e.resultIndex; i < e.results.length; i++) {
-          const chunk = e.results[i][0].transcript;
-          if (e.results[i].isFinal) final += chunk; else interim += chunk;
+          const result = e.results[i];
+          const chunk = result[0].transcript;
+          if (result.isFinal) {
+            if (i > lastFinalIndex) { voiceFinalTranscript += chunk; lastFinalIndex = i; }
+          } else {
+            interim += chunk;
+          }
         }
-        if (final) voiceFinalTranscript += final;
         voiceCardTextEl.textContent = (voiceFinalTranscript + interim).trim() || 'Слушаю…';
         pulseVoiceGlow();
         scheduleSilenceStop();   // пришёл фрагмент — ждём, вдруг фраза продолжится
