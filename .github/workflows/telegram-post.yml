@@ -7,18 +7,32 @@ on:
         description: 'Текст поста'
         required: true
         type: string
+      image_path:
+        description: 'Путь к картинке в репозитории (необязательно)'
+        required: false
+        type: string
 
 jobs:
   send:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: Send Telegram message
         env:
           BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           CHAT_ID: ${{ secrets.TELEGRAM_CHANNEL_ID }}
           TEXT: ${{ inputs.message }}
+          IMAGE: ${{ inputs.image_path }}
         run: |
-          curl -sS -f -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
-            --data-urlencode "chat_id=${CHAT_ID}" \
-            --data-urlencode "text=${TEXT}" \
-            -o /dev/null
+          if [ -n "$IMAGE" ]; then
+            curl -sS -f -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto" \
+              -F "chat_id=${CHAT_ID}" \
+              -F "caption=${TEXT}" \
+              -F "photo=@${IMAGE}" \
+              -o /dev/null
+          else
+            curl -sS -f -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
+              --data-urlencode "chat_id=${CHAT_ID}" \
+              --data-urlencode "text=${TEXT}" \
+              -o /dev/null
+          fi
