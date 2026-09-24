@@ -1,0 +1,24 @@
+name: Отправить пост в Telegram
+
+on:
+  workflow_dispatch:
+    inputs:
+      message:
+        description: 'Текст поста'
+        required: true
+        type: string
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Telegram message
+        env:
+          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.TELEGRAM_CHANNEL_ID }}
+          TEXT: ${{ inputs.message }}
+        run: |
+          curl -sS -f -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${CHAT_ID}" \
+            --data-urlencode "text=${TEXT}" \
+            -o /dev/null
