@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(env)",
+      "Bash(printenv)",
+      "Bash(printenv *)",
+      "Bash(ls)",
+      "Bash(ls *)",
+      "Bash(find *)"
+    ]
+  }
+}
