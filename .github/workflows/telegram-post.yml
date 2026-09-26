@@ -19,17 +19,30 @@ jobs:
       - uses: actions/checkout@v4
       - name: Send Telegram message
         env:
+          LANG: C.UTF-8
           BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           CHAT_ID: ${{ secrets.TELEGRAM_CHANNEL_ID }}
           TEXT: ${{ inputs.message }}
           IMAGE: ${{ inputs.image_path }}
         run: |
           if [ -n "$IMAGE" ]; then
-            curl -sS -f -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto" \
-              -F "chat_id=${CHAT_ID}" \
-              -F "caption=${TEXT}" \
-              -F "photo=@${IMAGE}" \
-              -o /dev/null
+            if [ "${#TEXT}" -gt 1024 ]; then
+              # Длинный текст не влезает в подпись: фото без подписи, затем текст отдельным сообщением
+              curl -sS -f -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto" \
+                -F "chat_id=${CHAT_ID}" \
+                -F "photo=@${IMAGE}" \
+                -o /dev/null
+              curl -sS -f -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
+                --data-urlencode "chat_id=${CHAT_ID}" \
+                --data-urlencode "text=${TEXT}" \
+                -o /dev/null
+            else
+              curl -sS -f -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto" \
+                -F "chat_id=${CHAT_ID}" \
+                -F "caption=${TEXT}" \
+                -F "photo=@${IMAGE}" \
+                -o /dev/null
+            fi
           else
             curl -sS -f -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
               --data-urlencode "chat_id=${CHAT_ID}" \
