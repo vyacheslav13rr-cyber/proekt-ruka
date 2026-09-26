@@ -1,4 +1,8 @@
 {
-  "offset": 184024963,
-  "sessions": {}
+  "offset": 184024966,
+  "sessions": {
+    "5303699160": {
+      "awaiting": "new_topic"
+    }
+  }
 }
