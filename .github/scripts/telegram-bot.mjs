@@ -51,13 +51,24 @@ async function sendOrEdit(chatId, messageId, text, keyboard) {
 const kb = (rows) => ({ inline_keyboard: rows });
 const btn = (text, data) => ({ text, callback_data: data });
 
-function mainMenuKeyboard() {
-  return kb([
-    [btn('📝 Новая тема', 'menu:new_topic')],
-    [btn('📋 Темы', 'menu:topics')],
-    [btn('📅 Расписание', 'menu:schedule')],
-    [btn('🚀 Опубликовать', 'menu:publish')],
-  ]);
+function mainReplyKeyboard() {
+  return {
+    keyboard: [
+      ['📝 Новая тема', '🆕 Создать пост'],
+      ['📋 Темы', '📅 Расписание'],
+    ],
+    resize_keyboard: true,
+  };
+}
+
+function matchMenuButton(text) {
+  const map = {
+    '📝 Новая тема': 'new_topic',
+    '🆕 Создать пост': 'new_post',
+    '📋 Темы': 'topics',
+    '📅 Расписание': 'schedule',
+  };
+  return map[text] || null;
 }
 
 function truncate(str, n) {
@@ -133,6 +144,17 @@ function listReadyTopics(md) {
 
 function getReadyTopic(md, id) {
   return listReadyTopics(md).find((t) => t.id === id) || null;
+}
+
+function nextTopicId(md) {
+  const ids = [...md.matchAll(/topic id=T-(\d+)/g)].map((m) => Number(m[1]));
+  const n = ids.length ? Math.max(...ids) + 1 : 1;
+  return `T-${String(n).padStart(4, '0')}`;
+}
+
+function appendReadyTopic(md, id, text) {
+  const block = `<!-- topic id=${id} status=ready -->\n${text}\n<!-- /topic -->`;
+  return replaceSection(md, 'Разобранные', (body) => body.replace(/\s+$/, '') + `\n\n${block}\n`);
 }
 
 function moveTopicToPublished(md, id, dateStr) {
@@ -347,7 +369,7 @@ async function handleCallback(cq, ctx) {
 
   if (data === 'menu:main') {
     ctx.state.sessions[chatId] = { awaiting: null };
-    return send('Главное меню:', mainMenuKeyboard());
+    return tg('sendMessage', { chat_id: chatId, text: 'Главное меню — кнопки снизу.', reply_markup: mainReplyKeyboard() });
   }
 
   if (data === 'menu:new_topic') {
@@ -442,11 +464,6 @@ async function handleCallback(cq, ctx) {
     return send(del.found ? `Удалено ✅\n\n${text}` : 'Запись уже отсутствовала.', keyboard);
   }
 
-  if (data === 'menu:publish') {
-    const { text, keyboard } = renderReadyTopicsList(ctx, 'publish:confirm');
-    return send(text, keyboard);
-  }
-
   if (data.startsWith('publish:confirm:')) {
     const id = data.slice('publish:confirm:'.length);
     const topic = getReadyTopic(ctx.topicsMd, id);
@@ -463,7 +480,7 @@ async function handleCallback(cq, ctx) {
     return publishTopic(ctx, chatId, id);
   }
 
-  return send('Не понял действие.', mainMenuKeyboard());
+  return send('Не понял действие.', kb([[btn('🏠 В меню', 'menu:main')]]));
 }
 
 // ---------- Обработка текстовых сообщений ----------
@@ -474,7 +491,15 @@ async function handleMessage(msg, ctx) {
   const text = (msg.text || '').trim();
 
   if (text === '/start') {
-    await sendOrEdit(chatId, null, 'Главное меню:', mainMenuKeyboard());
+    ctx.state.sessions[chatId] = { awaiting: null };
+    await tg('sendMessage', { chat_id: chatId, text: 'Главное меню — кнопки снизу.', reply_markup: mainReplyKeyboard() });
+    return;
+  }
+
+  const menuAction = matchMenuButton(text);
+  if (menuAction) {
+    ctx.state.sessions[chatId] = { awaiting: null };
+    await runMenuAction(menuAction, chatId, ctx);
     return;
   }
 
@@ -490,6 +515,27 @@ async function handleMessage(msg, ctx) {
       chat_id: chatId,
       text: `Тема добавлена ✅\n«${text}»`,
       reply_markup: kb([[btn('➕ Ещё одна', 'menu:new_topic')], [btn('🏠 В меню', 'menu:main')]]),
+    });
+    return;
+  }
+
+  if (session.awaiting === 'new_post') {
+    if (!text) {
+      await tg('sendMessage', { chat_id: chatId, text: 'Пришли текст поста.' });
+      return;
+    }
+    const id = nextTopicId(ctx.topicsMd);
+    ctx.topicsMd = appendReadyTopic(ctx.topicsMd, id, text);
+    ctx.changed.add('topics');
+    ctx.state.sessions[chatId] = { awaiting: null };
+    await tg('sendMessage', {
+      chat_id: chatId,
+      text: `Пост добавлен как ${id} ✅\n\n${text}`,
+      reply_markup: kb([
+        [btn('🚀 Опубликовать', `publish:confirm:${id}`)],
+        [btn('📅 В расписание', `schedule:pick:${id}`)],
+        [btn('🏠 В меню', 'menu:main')],
+      ]),
     });
     return;
   }
@@ -532,7 +578,33 @@ async function handleMessage(msg, ctx) {
     return;
   }
 
-  await sendOrEdit(chatId, null, 'Главное меню:', mainMenuKeyboard());
+  await tg('sendMessage', { chat_id: chatId, text: 'Не понял. Выбери пункт меню снизу.', reply_markup: mainReplyKeyboard() });
+}
+
+async function runMenuAction(action, chatId, ctx) {
+  if (action === 'new_topic') {
+    ctx.state.sessions[chatId] = { awaiting: 'new_topic' };
+    return tg('sendMessage', { chat_id: chatId, text: 'Пришли текст новой темы одной строкой.' });
+  }
+  if (action === 'new_post') {
+    ctx.state.sessions[chatId] = { awaiting: 'new_post' };
+    return tg('sendMessage', { chat_id: chatId, text: 'Пришли готовый текст поста (можно в несколько строк).' });
+  }
+  if (action === 'topics') {
+    return tg('sendMessage', {
+      chat_id: chatId,
+      text: 'Темы:',
+      reply_markup: kb([
+        [btn('🟡 Сырые', 'topics:raw')],
+        [btn('🟢 Разобранные', 'topics:ready')],
+        [btn('✅ Опубликованные', 'topics:published')],
+      ]),
+    });
+  }
+  if (action === 'schedule') {
+    const { text, keyboard } = renderScheduleList(ctx);
+    return tg('sendMessage', { chat_id: chatId, text, reply_markup: keyboard });
+  }
 }
 
 // ---------- Точка входа ----------
