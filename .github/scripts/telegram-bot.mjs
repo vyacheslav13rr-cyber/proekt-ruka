@@ -67,8 +67,26 @@ function matchMenuButton(text) {
     '🆕 Создать пост': 'new_post',
     '📋 Темы': 'topics',
     '📅 Расписание': 'schedule',
+    '/new_topic': 'new_topic',
+    '/new_post': 'new_post',
+    '/topics': 'topics',
+    '/schedule': 'schedule',
   };
   return map[text] || null;
+}
+
+// Настраивает нативную кнопку «Меню» слева от поля ввода (список команд).
+// Вызывается на каждом запуске — Telegram просто перезаписывает то же самое.
+async function ensureMenuButton() {
+  await tg('setMyCommands', {
+    commands: [
+      { command: 'new_topic', description: '📝 Новая тема' },
+      { command: 'new_post', description: '🆕 Создать пост' },
+      { command: 'topics', description: '📋 Темы' },
+      { command: 'schedule', description: '📅 Расписание' },
+    ],
+  });
+  await tg('setChatMenuButton', { menu_button: { type: 'commands' } });
 }
 
 function truncate(str, n) {
@@ -616,6 +634,8 @@ async function main() {
     process.exitCode = 1;
     return;
   }
+
+  await ensureMenuButton();
 
   const state = await loadState();
   const ctx = {
