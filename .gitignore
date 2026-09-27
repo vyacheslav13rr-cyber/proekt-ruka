@@ -4,6 +4,3 @@ Thumbs.db
 
 # Локальные секреты бота (токен и т.п.) — никогда не коммитить
 local-runner/config.json
-
-# Сохранённый токен GitHub для git push из контейнера (см. local-runner/README.md)
-.git-credentials
