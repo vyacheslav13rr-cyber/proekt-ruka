@@ -103,22 +103,15 @@ async function sendOrEdit(chatId, messageId, text, keyboard) {
 const kb = (rows) => ({ inline_keyboard: rows });
 const btn = (text, data) => ({ text, callback_data: data });
 
-function mainReplyKeyboard() {
-  return {
-    keyboard: [
-      ['📝 Новая тема', '🆕 Создать пост'],
-      ['📋 Темы', '📅 Расписание'],
-    ],
-    resize_keyboard: true,
-  };
+function menuInlineKeyboard() {
+  return kb([
+    [btn('📝 Новая тема', 'menu:new_topic'), btn('🆕 Создать пост', 'menu:new_post')],
+    [btn('📋 Темы', 'menu:topics'), btn('📅 Расписание', 'menu:schedule')],
+  ]);
 }
 
 function matchMenuButton(text) {
   const map = {
-    '📝 Новая тема': 'new_topic',
-    '🆕 Создать пост': 'new_post',
-    '📋 Темы': 'topics',
-    '📅 Расписание': 'schedule',
     '/new_topic': 'new_topic',
     '/new_post': 'new_post',
     '/topics': 'topics',
@@ -132,6 +125,7 @@ function matchMenuButton(text) {
 async function ensureMenuButton() {
   await tg('setMyCommands', {
     commands: [
+      { command: 'menu', description: '📲 Открыть меню' },
       { command: 'new_topic', description: '📝 Новая тема' },
       { command: 'new_post', description: '🆕 Создать пост' },
       { command: 'topics', description: '📋 Темы' },
@@ -439,7 +433,12 @@ async function handleCallback(cq, ctx) {
 
   if (data === 'menu:main') {
     ctx.state.sessions[chatId] = { awaiting: null };
-    return tg('sendMessage', { chat_id: chatId, text: 'Главное меню — кнопки снизу.', reply_markup: mainReplyKeyboard() });
+    return send('Главное меню:', menuInlineKeyboard());
+  }
+
+  if (data === 'menu:new_post') {
+    ctx.state.sessions[chatId] = { awaiting: 'new_post' };
+    return send('Пришли готовый текст поста (можно в несколько строк).', kb([[btn('🏠 В меню', 'menu:main')]]));
   }
 
   if (data === 'menu:new_topic') {
@@ -562,7 +561,14 @@ async function handleMessage(msg, ctx) {
 
   if (text === '/start') {
     ctx.state.sessions[chatId] = { awaiting: null };
-    await tg('sendMessage', { chat_id: chatId, text: 'Главное меню — кнопки снизу.', reply_markup: mainReplyKeyboard() });
+    await tg('sendMessage', { chat_id: chatId, text: 'Убираю старое меню…', reply_markup: { remove_keyboard: true } });
+    await tg('sendMessage', { chat_id: chatId, text: 'Главное меню:', reply_markup: menuInlineKeyboard() });
+    return;
+  }
+
+  if (text === '/menu') {
+    ctx.state.sessions[chatId] = { awaiting: null };
+    await tg('sendMessage', { chat_id: chatId, text: 'Главное меню:', reply_markup: menuInlineKeyboard() });
     return;
   }
 
@@ -649,7 +655,7 @@ async function handleMessage(msg, ctx) {
     return;
   }
 
-  await tg('sendMessage', { chat_id: chatId, text: 'Не понял. Выбери пункт меню снизу.', reply_markup: mainReplyKeyboard() });
+  await tg('sendMessage', { chat_id: chatId, text: 'Не понял. Открой меню командой /menu.', reply_markup: menuInlineKeyboard() });
 }
 
 async function runMenuAction(action, chatId, ctx) {
