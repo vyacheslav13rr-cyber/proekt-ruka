@@ -1,7 +1,4 @@
 desktop.ini
 Thumbs.db
 .DS_Store
-
-# Локальные секреты бота (токен и т.п.) — никогда не коммитить
-local-runner/config.json
 bot/.env

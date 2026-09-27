@@ -1,5 +1,0 @@
-{
-  "botToken": "вставь сюда значение секрета TELEGRAM_BOT_TOKEN",
-  "channelId": "вставь сюда значение секрета TELEGRAM_CHANNEL_ID",
-  "ownerChatId": "вставь сюда значение секрета TELEGRAM_OWNER_CHAT_ID"
-}
