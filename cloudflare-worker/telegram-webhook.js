@@ -119,6 +119,8 @@ function matchMenuButton(text) {
   return map[text] || null;
 }
 
+const MINI_APP_URL = 'https://vyacheslav13rr-cyber.github.io/proekt-ruka/telegram-menu/';
+
 async function ensureMenuButton(env) {
   await tg(env, 'setMyCommands', {
     commands: [
@@ -129,7 +131,9 @@ async function ensureMenuButton(env) {
       { command: 'schedule', description: '📅 Расписание' },
     ],
   });
-  await tg(env, 'setChatMenuButton', { menu_button: { type: 'commands' } });
+  await tg(env, 'setChatMenuButton', {
+    menu_button: { type: 'web_app', text: 'Меню', web_app: { url: MINI_APP_URL } },
+  });
 }
 
 function truncate(str, n) {
@@ -623,6 +627,21 @@ async function handleMessage(msg, ctx) {
   const chatId = msg.chat.id;
   const session = ctx.state.sessions[chatId] || { awaiting: null };
   const text = (msg.text || '').trim();
+
+  if (msg.web_app_data) {
+    let payload = null;
+    try {
+      payload = JSON.parse(msg.web_app_data.data);
+    } catch {
+      payload = null;
+    }
+    const action = payload && payload.action;
+    if (action && ['new_topic', 'new_post', 'topics', 'schedule'].includes(action)) {
+      ctx.state.sessions[chatId] = { awaiting: null };
+      await runMenuAction(action, chatId, ctx);
+    }
+    return;
+  }
 
   if (text === '/start') {
     ctx.state.sessions[chatId] = { awaiting: null };
