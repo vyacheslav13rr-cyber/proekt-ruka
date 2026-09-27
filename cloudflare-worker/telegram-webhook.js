@@ -1,24 +1,83 @@
-// Бот РУКА: приём тем в Telegram и управление расписанием публикаций.
-// Работает без постоянного сервера — запускается по расписанию GitHub Actions,
-// один раз опрашивает Telegram (getUpdates), обрабатывает накопленные
-// сообщения/нажатия кнопок и сохраняет изменения в файлы репозитория.
+// Вебхук-бот РУКА (Cloudflare Workers): мгновенная реакция на кнопки/сообщения.
+// В отличие от .github/scripts/telegram-bot.mjs (опрос раз в 5 минут),
+// этот воркер получает обновления от Telegram сразу, как только они происходят.
+// Своей файловой системы или базы данных у воркера нет — все файлы
+// читаются и пишутся прямо в этот репозиторий через GitHub Contents API.
+//
+// Нужные секреты воркера (Settings → Variables and Secrets в панели Cloudflare):
+//   GH_TOKEN        — GitHub-токен с правом записи в этот репозиторий
+//   BOT_TOKEN        — токен Telegram-бота (тот же, что в секретах GitHub)
+//   CHANNEL_ID       — ID канала РУКА для публикации
+//   OWNER_CHAT_ID    — твой личный числовой Telegram ID
+//   WEBHOOK_SECRET   — придуманная тобой случайная строка, проверяется на каждый запрос
 
-import { readFile, writeFile } from 'node:fs/promises';
-import path from 'node:path';
+const GH_OWNER = 'vyacheslav13rr-cyber';
+const GH_REPO = 'proekt-ruka';
+const GH_BRANCH = 'main';
+const GH_API = 'https://api.github.com';
 
-const TOPICS_FILE = 'Телеграм/Темы для постинга в телеграм-канал РУКА.md';
-const SCHEDULE_FILE = 'Телеграм/Расписание публикаций РУКА.md';
-const STATE_FILE = '.github/state/telegram-bot-state.json';
+const TOPICS_PATH = 'Телеграм/Темы для постинга в телеграм-канал РУКА.md';
+const SCHEDULE_PATH = 'Телеграм/Расписание публикаций РУКА.md';
+const STATE_PATH = '.github/state/telegram-bot-state.json';
 
-const BOT_TOKEN = process.env.BOT_TOKEN;
-const OWNER_CHAT_ID = process.env.OWNER_CHAT_ID;
-const CHANNEL_ID = process.env.CHANNEL_ID;
-const API = `https://api.telegram.org/bot${BOT_TOKEN}`;
+// ---------- GitHub Contents API ----------
+
+function ghHeaders(env, accept) {
+  return {
+    Authorization: `Bearer ${env.GH_TOKEN}`,
+    'User-Agent': 'ruka-telegram-webhook',
+    Accept: accept || 'application/vnd.github+json',
+  };
+}
+
+function encodeBase64Utf8(str) {
+  return btoa(unescape(encodeURIComponent(str)));
+}
+
+function decodeBase64Utf8(b64) {
+  return decodeURIComponent(escape(atob(b64.replace(/\n/g, ''))));
+}
+
+async function ghGetFile(env, path) {
+  const url = `${GH_API}/repos/${GH_OWNER}/${GH_REPO}/contents/${encodeURIComponent(path)}?ref=${GH_BRANCH}`;
+  const res = await fetch(url, { headers: ghHeaders(env) });
+  if (!res.ok) throw new Error(`GitHub GET ${path}: ${res.status} ${await res.text()}`);
+  const data = await res.json();
+  return { content: decodeBase64Utf8(data.content), sha: data.sha };
+}
+
+async function ghPutFile(env, path, content, sha, message) {
+  const url = `${GH_API}/repos/${GH_OWNER}/${GH_REPO}/contents/${encodeURIComponent(path)}`;
+  const res = await fetch(url, {
+    method: 'PUT',
+    headers: { ...ghHeaders(env), 'content-type': 'application/json' },
+    body: JSON.stringify({
+      message,
+      content: encodeBase64Utf8(content),
+      sha,
+      branch: GH_BRANCH,
+      committer: { name: 'ruka-telegram-bot', email: 'ruka-telegram-bot@users.noreply.github.com' },
+    }),
+  });
+  if (!res.ok) throw new Error(`GitHub PUT ${path}: ${res.status} ${await res.text()}`);
+  return res.json();
+}
+
+async function ghGetRawBytes(env, path) {
+  const url = `${GH_API}/repos/${GH_OWNER}/${GH_REPO}/contents/${encodeURIComponent(path)}?ref=${GH_BRANCH}`;
+  const res = await fetch(url, { headers: ghHeaders(env, 'application/vnd.github.raw') });
+  if (!res.ok) throw new Error(`GitHub RAW GET ${path}: ${res.status}`);
+  return res.arrayBuffer();
+}
 
 // ---------- Telegram API ----------
 
-async function tg(method, params = {}) {
-  const res = await fetch(`${API}/${method}`, {
+function tgApiUrl(env, method) {
+  return `https://api.telegram.org/bot${env.BOT_TOKEN}/${method}`;
+}
+
+async function tg(env, method, params = {}) {
+  const res = await fetch(tgApiUrl(env, method), {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(params),
@@ -28,22 +87,14 @@ async function tg(method, params = {}) {
   return data;
 }
 
-async function tgSendPhoto(chatId, imagePath, caption) {
-  const buf = await readFile(imagePath);
+async function tgSendPhoto(env, chatId, imagePath, caption) {
+  const bytes = await ghGetRawBytes(env, imagePath);
   const form = new FormData();
   form.append('chat_id', String(chatId));
   form.append('caption', caption);
-  form.append('photo', new Blob([buf]), path.basename(imagePath));
-  const res = await fetch(`${API}/sendPhoto`, { method: 'POST', body: form });
+  form.append('photo', new Blob([bytes]), imagePath.split('/').pop());
+  const res = await fetch(tgApiUrl(env, 'sendPhoto'), { method: 'POST', body: form });
   return res.json();
-}
-
-async function sendOrEdit(chatId, messageId, text, keyboard) {
-  if (messageId) {
-    const r = await tg('editMessageText', { chat_id: chatId, message_id: messageId, text, reply_markup: keyboard });
-    if (r.ok) return;
-  }
-  await tg('sendMessage', { chat_id: chatId, text, reply_markup: keyboard });
 }
 
 // ---------- Клавиатуры ----------
@@ -272,18 +323,48 @@ function formatRuDateTime(date) {
   return `${pad(d.getUTCDate())}.${pad(d.getUTCMonth() + 1)}.${d.getUTCFullYear()} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
 }
 
-// ---------- Состояние между запусками ----------
+// ---------- Загрузка/сохранение данных из репозитория ----------
 
-async function loadState() {
-  try {
-    return JSON.parse(await readFile(STATE_FILE, 'utf8'));
-  } catch {
-    return { offset: 0, sessions: {} };
-  }
+async function loadDataCtx(env) {
+  const [topics, schedule] = await Promise.all([ghGetFile(env, TOPICS_PATH), ghGetFile(env, SCHEDULE_PATH)]);
+  return {
+    env,
+    topicsMd: topics.content,
+    topicsSha: topics.sha,
+    topicsChanged: false,
+    scheduleMd: schedule.content,
+    scheduleSha: schedule.sha,
+    scheduleChanged: false,
+  };
 }
 
-async function saveState(state) {
-  await writeFile(STATE_FILE, JSON.stringify(state, null, 2) + '\n', 'utf8');
+async function saveDataCtx(ctx) {
+  const jobs = [];
+  if (ctx.topicsChanged) jobs.push(ghPutFile(ctx.env, TOPICS_PATH, normalizeBlankLines(ctx.topicsMd), ctx.topicsSha, 'Бот: обновление тем'));
+  if (ctx.scheduleChanged) jobs.push(ghPutFile(ctx.env, SCHEDULE_PATH, normalizeBlankLines(ctx.scheduleMd), ctx.scheduleSha, 'Бот: обновление расписания'));
+  if (jobs.length) await Promise.all(jobs);
+}
+
+async function loadBotCtx(env) {
+  const base = await loadDataCtx(env);
+  let state = { sessions: {} };
+  let stateSha = null;
+  try {
+    const stateFile = await ghGetFile(env, STATE_PATH);
+    state = JSON.parse(stateFile.content);
+    if (!state.sessions) state.sessions = {};
+    stateSha = stateFile.sha;
+  } catch (err) {
+    console.error('Не удалось прочитать состояние диалога, начинаю с пустого', err);
+  }
+  return { ...base, state, stateSha, stateChanged: false };
+}
+
+async function saveBotCtx(ctx) {
+  await saveDataCtx(ctx);
+  if (ctx.stateChanged) {
+    await ghPutFile(ctx.env, STATE_PATH, JSON.stringify(ctx.state, null, 2) + '\n', ctx.stateSha, 'Бот: обновление состояния диалога');
+  }
 }
 
 // ---------- Экраны-списки ----------
@@ -314,15 +395,15 @@ function renderScheduleList(ctx) {
 async function publishTopic(ctx, chatId, topicId) {
   const topic = getReadyTopic(ctx.topicsMd, topicId);
   if (!topic) {
-    await tg('sendMessage', { chat_id: chatId, text: 'Тема не найдена (возможно уже опубликована).' });
+    await tg(ctx.env, 'sendMessage', { chat_id: chatId, text: 'Тема не найдена (возможно уже опубликована).' });
     return;
   }
   const result = topic.image
-    ? await tgSendPhoto(CHANNEL_ID, topic.image, topic.text)
-    : await tg('sendMessage', { chat_id: CHANNEL_ID, text: topic.text });
+    ? await tgSendPhoto(ctx.env, ctx.env.CHANNEL_ID, topic.image, topic.text)
+    : await tg(ctx.env, 'sendMessage', { chat_id: ctx.env.CHANNEL_ID, text: topic.text });
 
   if (!result.ok) {
-    await tg('sendMessage', { chat_id: chatId, text: `Не получилось опубликовать: ${result.description || 'ошибка Telegram API'}` });
+    await tg(ctx.env, 'sendMessage', { chat_id: chatId, text: `Не получилось опубликовать: ${result.description || 'ошибка Telegram API'}` });
     return;
   }
 
@@ -330,17 +411,18 @@ async function publishTopic(ctx, chatId, topicId) {
   const moved = moveTopicToPublished(ctx.topicsMd, topicId, dateStr);
   if (moved.ok) {
     ctx.topicsMd = moved.md;
-    ctx.changed.add('topics');
+    ctx.topicsChanged = true;
   }
   ctx.scheduleMd = removeScheduleForTopic(ctx.scheduleMd, topicId).md;
-  ctx.changed.add('schedule');
+  ctx.scheduleChanged = true;
 
-  await tg('sendMessage', { chat_id: chatId, text: 'Опубликовано ✅', reply_markup: kb([[btn('🏠 В меню', 'menu:main')]]) });
+  await tg(ctx.env, 'sendMessage', { chat_id: chatId, text: 'Опубликовано ✅', reply_markup: kb([[btn('🏠 В меню', 'menu:main')]]) });
 }
 
-// ---------- Напоминания по расписанию ----------
+// ---------- Напоминания по расписанию (запускается по крону) ----------
 
-async function checkReminders(ctx) {
+async function runReminders(env) {
+  const ctx = await loadDataCtx(env);
   const now = new Date();
   for (const e of listSchedule(ctx.scheduleMd)) {
     if (e.notified) continue;
@@ -348,32 +430,38 @@ async function checkReminders(ctx) {
     if (!dt || dt.getTime() > now.getTime()) continue;
     const topic = getReadyTopic(ctx.topicsMd, e.topic);
     const preview = topic ? truncate(topic.text, 80) : e.topic;
-    await tg('sendMessage', {
-      chat_id: OWNER_CHAT_ID,
+    await tg(env, 'sendMessage', {
+      chat_id: env.OWNER_CHAT_ID,
       text: `⏰ Пора публиковать (${e.at}):\n${preview}`,
       reply_markup: kb([[btn('🚀 Опубликовать', `publish:confirm:${e.topic}`)], [btn('🏠 В меню', 'menu:main')]]),
     });
     ctx.scheduleMd = updateScheduleEntry(ctx.scheduleMd, e.id, { notified: true }).md;
-    ctx.changed.add('schedule');
+    ctx.scheduleChanged = true;
   }
+  await saveDataCtx(ctx);
 }
 
 // ---------- Обработка нажатий кнопок ----------
 
 async function handleCallback(cq, ctx) {
-  await tg('answerCallbackQuery', { callback_query_id: cq.id });
+  await tg(ctx.env, 'answerCallbackQuery', { callback_query_id: cq.id });
   const chatId = cq.message.chat.id;
   const messageId = cq.message.message_id;
   const data = cq.data || '';
-  const send = (text, keyboard) => sendOrEdit(chatId, messageId, text, keyboard);
+  const send = async (text, keyboard) => {
+    const r = await tg(ctx.env, 'editMessageText', { chat_id: chatId, message_id: messageId, text, reply_markup: keyboard });
+    if (!r.ok) await tg(ctx.env, 'sendMessage', { chat_id: chatId, text, reply_markup: keyboard });
+  };
 
   if (data === 'menu:main') {
     ctx.state.sessions[chatId] = { awaiting: null };
-    return tg('sendMessage', { chat_id: chatId, text: 'Главное меню — кнопки снизу.', reply_markup: mainReplyKeyboard() });
+    ctx.stateChanged = true;
+    return tg(ctx.env, 'sendMessage', { chat_id: chatId, text: 'Главное меню — кнопки снизу.', reply_markup: mainReplyKeyboard() });
   }
 
   if (data === 'menu:new_topic') {
     ctx.state.sessions[chatId] = { awaiting: 'new_topic' };
+    ctx.stateChanged = true;
     return send('Пришли текст новой темы.', kb([[btn('🏠 В меню', 'menu:main')]]));
   }
 
@@ -431,6 +519,7 @@ async function handleCallback(cq, ctx) {
   if (data.startsWith('schedule:pick:')) {
     const topicId = data.slice('schedule:pick:'.length);
     ctx.state.sessions[chatId] = { awaiting: 'schedule_datetime', payload: { topicId } };
+    ctx.stateChanged = true;
     return send('Когда опубликовать? Формат: 30.09.2026 19:00 (время московское).', kb([[btn('🏠 В меню', 'menu:main')]]));
   }
 
@@ -452,6 +541,7 @@ async function handleCallback(cq, ctx) {
   if (data.startsWith('schedule:edit:')) {
     const id = data.slice('schedule:edit:'.length);
     ctx.state.sessions[chatId] = { awaiting: 'schedule_edit_datetime', payload: { scheduleId: id } };
+    ctx.stateChanged = true;
     return send('Новая дата/время? Формат: 30.09.2026 19:00.', kb([[btn('🏠 В меню', 'menu:main')]]));
   }
 
@@ -459,7 +549,7 @@ async function handleCallback(cq, ctx) {
     const id = data.slice('schedule:delete:'.length);
     const del = deleteScheduleLine(ctx.scheduleMd, id);
     ctx.scheduleMd = del.md;
-    ctx.changed.add('schedule');
+    ctx.scheduleChanged = true;
     const { text, keyboard } = renderScheduleList(ctx);
     return send(del.found ? `Удалено ✅\n\n${text}` : 'Запись уже отсутствовала.', keyboard);
   }
@@ -485,6 +575,34 @@ async function handleCallback(cq, ctx) {
 
 // ---------- Обработка текстовых сообщений ----------
 
+async function runMenuAction(action, chatId, ctx) {
+  if (action === 'new_topic') {
+    ctx.state.sessions[chatId] = { awaiting: 'new_topic' };
+    ctx.stateChanged = true;
+    return tg(ctx.env, 'sendMessage', { chat_id: chatId, text: 'Пришли текст новой темы.' });
+  }
+  if (action === 'new_post') {
+    ctx.state.sessions[chatId] = { awaiting: 'new_post' };
+    ctx.stateChanged = true;
+    return tg(ctx.env, 'sendMessage', { chat_id: chatId, text: 'Пришли готовый текст поста (можно в несколько строк).' });
+  }
+  if (action === 'topics') {
+    return tg(ctx.env, 'sendMessage', {
+      chat_id: chatId,
+      text: 'Темы:',
+      reply_markup: kb([
+        [btn('🟡 Сырые', 'topics:raw')],
+        [btn('🟢 Разобранные', 'topics:ready')],
+        [btn('✅ Опубликованные', 'topics:published')],
+      ]),
+    });
+  }
+  if (action === 'schedule') {
+    const { text, keyboard } = renderScheduleList(ctx);
+    return tg(ctx.env, 'sendMessage', { chat_id: chatId, text, reply_markup: keyboard });
+  }
+}
+
 async function handleMessage(msg, ctx) {
   const chatId = msg.chat.id;
   const session = ctx.state.sessions[chatId] || { awaiting: null };
@@ -492,27 +610,30 @@ async function handleMessage(msg, ctx) {
 
   if (text === '/start') {
     ctx.state.sessions[chatId] = { awaiting: null };
-    await tg('sendMessage', { chat_id: chatId, text: 'Главное меню — кнопки снизу.', reply_markup: mainReplyKeyboard() });
+    ctx.stateChanged = true;
+    await tg(ctx.env, 'sendMessage', { chat_id: chatId, text: 'Главное меню — кнопки снизу.', reply_markup: mainReplyKeyboard() });
     return;
   }
 
   const menuAction = matchMenuButton(text);
   if (menuAction) {
     ctx.state.sessions[chatId] = { awaiting: null };
+    ctx.stateChanged = true;
     await runMenuAction(menuAction, chatId, ctx);
     return;
   }
 
   if (session.awaiting === 'new_topic') {
     if (!text) {
-      await tg('sendMessage', { chat_id: chatId, text: 'Пришли текст темы.' });
+      await tg(ctx.env, 'sendMessage', { chat_id: chatId, text: 'Пришли текст темы.' });
       return;
     }
     const topicText = text.replace(/\s*\n+\s*/g, ' ').trim();
     ctx.topicsMd = appendRawTopic(ctx.topicsMd, topicText);
-    ctx.changed.add('topics');
+    ctx.topicsChanged = true;
     ctx.state.sessions[chatId] = { awaiting: null };
-    await tg('sendMessage', {
+    ctx.stateChanged = true;
+    await tg(ctx.env, 'sendMessage', {
       chat_id: chatId,
       text: `Тема добавлена ✅\n«${topicText}»`,
       reply_markup: kb([[btn('➕ Ещё одна', 'menu:new_topic')], [btn('🏠 В меню', 'menu:main')]]),
@@ -522,14 +643,15 @@ async function handleMessage(msg, ctx) {
 
   if (session.awaiting === 'new_post') {
     if (!text) {
-      await tg('sendMessage', { chat_id: chatId, text: 'Пришли текст поста.' });
+      await tg(ctx.env, 'sendMessage', { chat_id: chatId, text: 'Пришли текст поста.' });
       return;
     }
     const id = nextTopicId(ctx.topicsMd);
     ctx.topicsMd = appendReadyTopic(ctx.topicsMd, id, text);
-    ctx.changed.add('topics');
+    ctx.topicsChanged = true;
     ctx.state.sessions[chatId] = { awaiting: null };
-    await tg('sendMessage', {
+    ctx.stateChanged = true;
+    await tg(ctx.env, 'sendMessage', {
       chat_id: chatId,
       text: `Пост добавлен как ${id} ✅\n\n${text}`,
       reply_markup: kb([
@@ -544,15 +666,16 @@ async function handleMessage(msg, ctx) {
   if (session.awaiting === 'schedule_datetime') {
     const dt = parseRuDateTime(text);
     if (!dt) {
-      await tg('sendMessage', { chat_id: chatId, text: 'Не понял дату/время. Формат: 30.09.2026 19:00. Пришли ещё раз.' });
+      await tg(ctx.env, 'sendMessage', { chat_id: chatId, text: 'Не понял дату/время. Формат: 30.09.2026 19:00. Пришли ещё раз.' });
       return;
     }
     const { topicId } = session.payload;
     const { md, id } = addScheduleLine(ctx.scheduleMd, topicId, text);
     ctx.scheduleMd = md;
-    ctx.changed.add('schedule');
+    ctx.scheduleChanged = true;
     ctx.state.sessions[chatId] = { awaiting: null };
-    await tg('sendMessage', {
+    ctx.stateChanged = true;
+    await tg(ctx.env, 'sendMessage', {
       chat_id: chatId,
       text: `Запланировано ✅\n${text} — ${topicId} (${id})`,
       reply_markup: kb([[btn('🏠 В меню', 'menu:main')]]),
@@ -563,15 +686,16 @@ async function handleMessage(msg, ctx) {
   if (session.awaiting === 'schedule_edit_datetime') {
     const dt = parseRuDateTime(text);
     if (!dt) {
-      await tg('sendMessage', { chat_id: chatId, text: 'Не понял дату/время. Формат: 30.09.2026 19:00. Пришли ещё раз.' });
+      await tg(ctx.env, 'sendMessage', { chat_id: chatId, text: 'Не понял дату/время. Формат: 30.09.2026 19:00. Пришли ещё раз.' });
       return;
     }
     const { scheduleId } = session.payload;
     const { md, found } = updateScheduleEntry(ctx.scheduleMd, scheduleId, { at: text, notified: false });
     ctx.scheduleMd = md;
-    ctx.changed.add('schedule');
+    ctx.scheduleChanged = true;
     ctx.state.sessions[chatId] = { awaiting: null };
-    await tg('sendMessage', {
+    ctx.stateChanged = true;
+    await tg(ctx.env, 'sendMessage', {
       chat_id: chatId,
       text: found ? `Дата обновлена ✅\n${text}` : 'Запись не найдена, возможно уже удалена.',
       reply_markup: kb([[btn('🏠 В меню', 'menu:main')]]),
@@ -579,75 +703,43 @@ async function handleMessage(msg, ctx) {
     return;
   }
 
-  await tg('sendMessage', { chat_id: chatId, text: 'Не понял. Выбери пункт меню снизу.', reply_markup: mainReplyKeyboard() });
+  await tg(ctx.env, 'sendMessage', { chat_id: chatId, text: 'Не понял. Выбери пункт меню снизу.', reply_markup: mainReplyKeyboard() });
 }
 
-async function runMenuAction(action, chatId, ctx) {
-  if (action === 'new_topic') {
-    ctx.state.sessions[chatId] = { awaiting: 'new_topic' };
-    return tg('sendMessage', { chat_id: chatId, text: 'Пришли текст новой темы.' });
-  }
-  if (action === 'new_post') {
-    ctx.state.sessions[chatId] = { awaiting: 'new_post' };
-    return tg('sendMessage', { chat_id: chatId, text: 'Пришли готовый текст поста (можно в несколько строк).' });
-  }
-  if (action === 'topics') {
-    return tg('sendMessage', {
-      chat_id: chatId,
-      text: 'Темы:',
-      reply_markup: kb([
-        [btn('🟡 Сырые', 'topics:raw')],
-        [btn('🟢 Разобранные', 'topics:ready')],
-        [btn('✅ Опубликованные', 'topics:published')],
-      ]),
-    });
-  }
-  if (action === 'schedule') {
-    const { text, keyboard } = renderScheduleList(ctx);
-    return tg('sendMessage', { chat_id: chatId, text, reply_markup: keyboard });
-  }
+// ---------- Точка входа воркера ----------
+
+async function handleUpdate(update, env) {
+  const from = update.message?.from || update.callback_query?.from;
+  if (!from || String(from.id) !== String(env.OWNER_CHAT_ID)) return;
+
+  const ctx = await loadBotCtx(env);
+  if (update.callback_query) await handleCallback(update.callback_query, ctx);
+  else if (update.message) await handleMessage(update.message, ctx);
+  await saveBotCtx(ctx);
 }
 
-// ---------- Точка входа ----------
+export default {
+  async fetch(request, env, execCtx) {
+    if (request.method === 'GET') return new Response('РУКА bot webhook OK');
+    if (request.method !== 'POST') return new Response('method not allowed', { status: 405 });
 
-async function main() {
-  if (!BOT_TOKEN || !OWNER_CHAT_ID || !CHANNEL_ID) {
-    console.error('Не заданы переменные окружения BOT_TOKEN / OWNER_CHAT_ID / CHANNEL_ID');
-    process.exitCode = 1;
-    return;
-  }
-
-  const state = await loadState();
-  const ctx = {
-    topicsMd: await readFile(TOPICS_FILE, 'utf8'),
-    scheduleMd: await readFile(SCHEDULE_FILE, 'utf8'),
-    state,
-    changed: new Set(),
-  };
-
-  const updatesRes = await tg('getUpdates', { offset: state.offset, timeout: 0, allowed_updates: ['message', 'callback_query'] });
-  const updates = updatesRes.ok ? updatesRes.result : [];
-
-  for (const upd of updates) {
-    state.offset = upd.update_id + 1;
-    try {
-      const from = upd.message?.from || upd.callback_query?.from;
-      if (!from || String(from.id) !== String(OWNER_CHAT_ID)) continue;
-      if (upd.callback_query) await handleCallback(upd.callback_query, ctx);
-      else if (upd.message) await handleMessage(upd.message, ctx);
-    } catch (err) {
-      console.error('Ошибка обработки обновления', upd.update_id, err);
+    const secret = request.headers.get('X-Telegram-Bot-Api-Secret-Token');
+    if (!env.WEBHOOK_SECRET || secret !== env.WEBHOOK_SECRET) {
+      return new Response('forbidden', { status: 403 });
     }
-  }
 
-  await checkReminders(ctx);
+    let update;
+    try {
+      update = await request.json();
+    } catch {
+      return new Response('bad request', { status: 400 });
+    }
 
-  if (ctx.changed.has('topics')) await writeFile(TOPICS_FILE, normalizeBlankLines(ctx.topicsMd), 'utf8');
-  if (ctx.changed.has('schedule')) await writeFile(SCHEDULE_FILE, normalizeBlankLines(ctx.scheduleMd), 'utf8');
-  await saveState(ctx.state);
-}
+    execCtx.waitUntil(handleUpdate(update, env).catch((err) => console.error('handleUpdate error', err)));
+    return new Response('ok');
+  },
 
-main().catch((err) => {
-  console.error(err);
-  process.exitCode = 1;
-});
+  async scheduled(event, env, execCtx) {
+    execCtx.waitUntil(runReminders(env).catch((err) => console.error('runReminders error', err)));
+  },
+};
