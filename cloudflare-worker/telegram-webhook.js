@@ -102,38 +102,45 @@ async function tgSendPhoto(env, chatId, imagePath, caption) {
 const kb = (rows) => ({ inline_keyboard: rows });
 const btn = (text, data) => ({ text, callback_data: data });
 
-function menuInlineKeyboard() {
-  return kb([
-    [btn('📝 Новая тема', 'menu:new_topic'), btn('🆕 Создать пост', 'menu:new_post')],
-    [btn('📋 Темы', 'menu:topics'), btn('📅 Расписание', 'menu:schedule')],
-  ]);
+// Единственный источник кнопок главного меню — добавить/убрать/переставить
+// пункт достаточно поправить только этот массив, логику обработки трогать не нужно.
+const MENU_BUTTONS = [
+  { text: '📝 Новая тема', action: 'new_topic' },
+  { text: '🆕 Создать пост', action: 'new_post' },
+  { text: '📋 Темы', action: 'topics' },
+  { text: '📅 Расписание', action: 'schedule' },
+];
+
+const BUTTONS_PER_ROW = 3;
+
+function chunk(arr, size) {
+  const rows = [];
+  for (let i = 0; i < arr.length; i += size) rows.push(arr.slice(i, i + size));
+  return rows;
 }
 
-function matchMenuButton(text) {
-  const map = {
-    '/new_topic': 'new_topic',
-    '/new_post': 'new_post',
-    '/topics': 'topics',
-    '/schedule': 'schedule',
+// Главное меню — постоянная reply-клавиатура (не инлайн), сеткой по 3 кнопки в ряд.
+function mainReplyKeyboard() {
+  return {
+    keyboard: chunk(MENU_BUTTONS.map((b) => ({ text: b.text })), BUTTONS_PER_ROW),
+    resize_keyboard: true,
+    is_persistent: false,
+    one_time_keyboard: false,
   };
-  return map[text] || null;
 }
 
-const MINI_APP_URL = 'https://vyacheslav13rr-cyber.github.io/proekt-ruka/telegram-menu/';
+// Точное совпадение текста нажатой кнопки → действие из конфига выше.
+function matchMenuButton(text) {
+  const found = MENU_BUTTONS.find((b) => b.text === text);
+  return found ? found.action : null;
+}
 
-async function ensureMenuButton(env) {
-  await tg(env, 'setMyCommands', {
-    commands: [
-      { command: 'menu', description: '📲 Открыть меню' },
-      { command: 'new_topic', description: '📝 Новая тема' },
-      { command: 'new_post', description: '🆕 Создать пост' },
-      { command: 'topics', description: '📋 Темы' },
-      { command: 'schedule', description: '📅 Расписание' },
-    ],
-  });
-  await tg(env, 'setChatMenuButton', {
-    menu_button: { type: 'web_app', text: 'Меню', web_app: { url: MINI_APP_URL } },
-  });
+// Убирает нативную кнопку «Меню» слева от поля ввода: список команд очищается,
+// кнопка возвращается к обычному виду по умолчанию. Навигация теперь полностью
+// через reply-клавиатуру снизу.
+async function disableMenuButton(env) {
+  await tg(env, 'deleteMyCommands');
+  await tg(env, 'setChatMenuButton', { menu_button: { type: 'default' } });
 }
 
 function truncate(str, n) {
@@ -409,7 +416,11 @@ function renderScheduleList(ctx) {
 async function publishTopic(ctx, chatId, topicId) {
   const topic = getReadyTopic(ctx.topicsMd, topicId);
   if (!topic) {
-    await tg(ctx.env, 'sendMessage', { chat_id: chatId, text: 'Тема не найдена (возможно уже опубликована).' });
+    await tg(ctx.env, 'sendMessage', {
+      chat_id: chatId,
+      text: 'Тема не найдена (возможно уже опубликована).',
+      reply_markup: mainReplyKeyboard(),
+    });
     return;
   }
   const result = topic.image
@@ -417,7 +428,11 @@ async function publishTopic(ctx, chatId, topicId) {
     : await tg(ctx.env, 'sendMessage', { chat_id: ctx.env.CHANNEL_ID, text: topic.text });
 
   if (!result.ok) {
-    await tg(ctx.env, 'sendMessage', { chat_id: chatId, text: `Не получилось опубликовать: ${result.description || 'ошибка Telegram API'}` });
+    await tg(ctx.env, 'sendMessage', {
+      chat_id: chatId,
+      text: `Не получилось опубликовать: ${result.description || 'ошибка Telegram API'}`,
+      reply_markup: mainReplyKeyboard(),
+    });
     return;
   }
 
@@ -470,7 +485,7 @@ async function handleCallback(cq, ctx) {
   if (data === 'menu:main') {
     ctx.state.sessions[chatId] = { awaiting: null };
     ctx.stateChanged = true;
-    return send('Главное меню:', menuInlineKeyboard());
+    return send('Главное меню — кнопки внизу 👇', kb([]));
   }
 
   if (data === 'menu:new_topic') {
@@ -599,12 +614,16 @@ async function runMenuAction(action, chatId, ctx) {
   if (action === 'new_topic') {
     ctx.state.sessions[chatId] = { awaiting: 'new_topic' };
     ctx.stateChanged = true;
-    return tg(ctx.env, 'sendMessage', { chat_id: chatId, text: 'Пришли текст новой темы.' });
+    return tg(ctx.env, 'sendMessage', { chat_id: chatId, text: 'Пришли текст новой темы.', reply_markup: mainReplyKeyboard() });
   }
   if (action === 'new_post') {
     ctx.state.sessions[chatId] = { awaiting: 'new_post' };
     ctx.stateChanged = true;
-    return tg(ctx.env, 'sendMessage', { chat_id: chatId, text: 'Пришли готовый текст поста (можно в несколько строк).' });
+    return tg(ctx.env, 'sendMessage', {
+      chat_id: chatId,
+      text: 'Пришли готовый текст поста (можно в несколько строк).',
+      reply_markup: mainReplyKeyboard(),
+    });
   }
   if (action === 'topics') {
     return tg(ctx.env, 'sendMessage', {
@@ -628,34 +647,11 @@ async function handleMessage(msg, ctx) {
   const session = ctx.state.sessions[chatId] || { awaiting: null };
   const text = (msg.text || '').trim();
 
-  if (msg.web_app_data) {
-    let payload = null;
-    try {
-      payload = JSON.parse(msg.web_app_data.data);
-    } catch {
-      payload = null;
-    }
-    const action = payload && payload.action;
-    if (action && ['new_topic', 'new_post', 'topics', 'schedule'].includes(action)) {
-      ctx.state.sessions[chatId] = { awaiting: null };
-      await runMenuAction(action, chatId, ctx);
-    }
-    return;
-  }
-
   if (text === '/start') {
     ctx.state.sessions[chatId] = { awaiting: null };
     ctx.stateChanged = true;
-    await ensureMenuButton(ctx.env);
-    await tg(ctx.env, 'sendMessage', { chat_id: chatId, text: 'Убираю старое меню…', reply_markup: { remove_keyboard: true } });
-    await tg(ctx.env, 'sendMessage', { chat_id: chatId, text: 'Главное меню:', reply_markup: menuInlineKeyboard() });
-    return;
-  }
-
-  if (text === '/menu') {
-    ctx.state.sessions[chatId] = { awaiting: null };
-    ctx.stateChanged = true;
-    await tg(ctx.env, 'sendMessage', { chat_id: chatId, text: 'Главное меню:', reply_markup: menuInlineKeyboard() });
+    await disableMenuButton(ctx.env);
+    await tg(ctx.env, 'sendMessage', { chat_id: chatId, text: 'Главное меню — кнопки внизу 👇', reply_markup: mainReplyKeyboard() });
     return;
   }
 
@@ -669,7 +665,7 @@ async function handleMessage(msg, ctx) {
 
   if (session.awaiting === 'new_topic') {
     if (!text) {
-      await tg(ctx.env, 'sendMessage', { chat_id: chatId, text: 'Пришли текст темы.' });
+      await tg(ctx.env, 'sendMessage', { chat_id: chatId, text: 'Пришли текст темы.', reply_markup: mainReplyKeyboard() });
       return;
     }
     const topicText = text.replace(/\s*\n+\s*/g, ' ').trim();
@@ -687,7 +683,7 @@ async function handleMessage(msg, ctx) {
 
   if (session.awaiting === 'new_post') {
     if (!text) {
-      await tg(ctx.env, 'sendMessage', { chat_id: chatId, text: 'Пришли текст поста.' });
+      await tg(ctx.env, 'sendMessage', { chat_id: chatId, text: 'Пришли текст поста.', reply_markup: mainReplyKeyboard() });
       return;
     }
     const id = nextTopicId(ctx.topicsMd);
@@ -710,7 +706,11 @@ async function handleMessage(msg, ctx) {
   if (session.awaiting === 'schedule_datetime') {
     const dt = parseRuDateTime(text);
     if (!dt) {
-      await tg(ctx.env, 'sendMessage', { chat_id: chatId, text: 'Не понял дату/время. Формат: 30.09.2026 19:00. Пришли ещё раз.' });
+      await tg(ctx.env, 'sendMessage', {
+        chat_id: chatId,
+        text: 'Не понял дату/время. Формат: 30.09.2026 19:00. Пришли ещё раз.',
+        reply_markup: mainReplyKeyboard(),
+      });
       return;
     }
     const { topicId } = session.payload;
@@ -730,7 +730,11 @@ async function handleMessage(msg, ctx) {
   if (session.awaiting === 'schedule_edit_datetime') {
     const dt = parseRuDateTime(text);
     if (!dt) {
-      await tg(ctx.env, 'sendMessage', { chat_id: chatId, text: 'Не понял дату/время. Формат: 30.09.2026 19:00. Пришли ещё раз.' });
+      await tg(ctx.env, 'sendMessage', {
+        chat_id: chatId,
+        text: 'Не понял дату/время. Формат: 30.09.2026 19:00. Пришли ещё раз.',
+        reply_markup: mainReplyKeyboard(),
+      });
       return;
     }
     const { scheduleId } = session.payload;
@@ -747,7 +751,7 @@ async function handleMessage(msg, ctx) {
     return;
   }
 
-  await tg(ctx.env, 'sendMessage', { chat_id: chatId, text: 'Не понял. Открой меню командой /menu.', reply_markup: menuInlineKeyboard() });
+  await tg(ctx.env, 'sendMessage', { chat_id: chatId, text: 'Не понял. Выбери кнопку внизу 👇', reply_markup: mainReplyKeyboard() });
 }
 
 // ---------- Точка входа воркера ----------
