@@ -1,0 +1,3 @@
+[submodule "claude-shared-context"]
+	path = claude-shared-context
+	url = https://github.com/vyacheslav13rr-cyber/me-and-claude-shared-context

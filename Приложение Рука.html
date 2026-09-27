@@ -126,6 +126,10 @@
     padding:40px 16px;
     background:radial-gradient(circle at 28% 18%, #f1e7d0 0%, #ddd0ac 55%, #c9b98e 100%);
     font-family:'Manrope', sans-serif;
+    /* без этого на телефоне оттягивание экрана за верхнюю/нижнюю границу
+       раскачивает всю страницу целиком (а не только .content), и в момент
+       растяжения снизу/сверху видна пустая подложка body */
+    overscroll-behavior:none;
   }
 
   /* ---------- Device frame ---------- */
@@ -216,17 +220,18 @@
     /* макетные вырез и поддельную строку статуса не показываем —
        сверху остаётся настоящая системная строка телефона */
     .notch, .statusbar{display:none;}
-    .app-header{padding-top:calc(14px + env(safe-area-inset-top));}
-    .bottom-nav{bottom:calc(14px + env(safe-area-inset-bottom));}
-    .nav-handle{bottom:calc(14px + env(safe-area-inset-bottom));}
-    .content{padding-bottom:calc(130px + env(safe-area-inset-bottom));}
-    .map-side-btn{padding-top:calc(10px + env(safe-area-inset-top));}
+    /* отступы под системную вырезку/жестовую полосу — заданы прямо в базовых
+       правилах ниже через env(), а не здесь: одноимённые правила без media
+       объявлены в файле ПОЗЖЕ и при равной специфичности перебивали бы эти
+       (каскад решает по порядку в исходнике, а не по вложенности в @media) */
   }
 
   /* ---------- App header ---------- */
   .app-header{
     background:linear-gradient(155deg, var(--navy), var(--navy-deep));
-    padding:14px 24px 18px;
+    /* env() — под системную вырезку/чёлку сверху в установленном приложении;
+       в обычном браузере (макет телефона) равен 0, ничего не меняет */
+    padding:calc(14px + env(safe-area-inset-top, 0px)) 24px 18px;
     position:relative;
   }
   .app-header::after{
@@ -284,13 +289,6 @@
   }
   .header-logo-btn:active{transform:scale(.92);}
   .header-logo{width:100%; height:100%; border-radius:11px; display:block;}
-  .header-logo-ping{
-    position:absolute; top:-2px; right:-2px;
-    width:9px; height:9px;
-    border-radius:50%;
-    background:var(--dot-green);
-    box-shadow:0 0 0 2px var(--navy-deep);
-  }
 
   /* уведомления: вариант «в шапке» — золотой значок слева от «РУКА» */
   .notif-header-btn{
@@ -466,7 +464,14 @@
   .content{
     flex:1;
     overflow-y:auto;
-    padding:0 20px 130px;
+    /* env() — запас над жестовой полосой/системной вставкой снизу в
+       установленном приложении, чтобы нижнее меню не перекрывало последний
+       блок при прокрутке до конца; в обычном браузере равен 0 */
+    padding:0 20px calc(130px + env(safe-area-inset-bottom, 0px));
+    /* не даём прокрутке уйти в родителя (body) на конце списка — иначе на
+       телефоне при дотягивании до конца/начала раскачивается вся страница
+       и снизу/сверху на миг видна пустая подложка вместо содержимого */
+    overscroll-behavior-y:contain;
   }
   .content::-webkit-scrollbar{display:none;}
 
@@ -538,37 +543,6 @@
     margin-top:2px;
   }
   .map-row .chevron{width:16px; height:16px; stroke:var(--text-muted); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0;}
-
-  /* кнопка возврата к карте экранов — служебная, вне экрана телефона */
-  .map-side-btn{
-    position:fixed;
-    left:0; top:50%;
-    transform:translateY(-50%);
-    display:flex; flex-direction:column; align-items:center; gap:10px;
-    background:linear-gradient(160deg, #24405f, var(--navy-deep));
-    color:var(--gold-light);
-    border:none;
-    border-left:none;
-    border-radius:0 16px 16px 0;
-    padding:10px 7px;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:11px;
-    font-weight:500;
-    letter-spacing:.14em;
-    text-transform:uppercase;
-    cursor:pointer;
-    box-shadow:6px 0 24px -8px rgba(18,35,58,0.55);
-    transition:padding-left .18s ease, color .18s ease;
-    z-index:50;
-  }
-  .map-side-btn:hover{padding-left:11px;}
-  .map-side-btn svg{width:17px; height:17px; flex-shrink:0;}
-  .map-side-btn.is-active{
-    color:var(--navy-deep);
-    background:linear-gradient(160deg, var(--gold-light), var(--gold));
-    box-shadow:6px 0 24px -8px rgba(198,153,47,0.6);
-  }
-  .map-side-btn[hidden]{display:none;}
 
   /* stat cards (Главная) */
   .stat-grid{
@@ -910,7 +884,7 @@
   .screen.font-sm{zoom:0.92;}
   .screen.font-lg{zoom:1.08;}
 
-  /* ---------- Профиль: варианты кнопки «Доп меню» ---------- */
+  /* ---------- Профиль: варианты кнопки «Уведомления» ---------- */
   .mv-intro{font-size:12px; color:var(--text-soft); line-height:1.5; margin-bottom:14px;}
   .mv-list{display:flex; flex-direction:column; gap:10px;}
   .mv-card{
@@ -1224,6 +1198,25 @@
   /* ---------- Смена: блоки показателей ---------- */
   .shift-list{margin-top:14px;}
   .shift-list[hidden], .shift-detail[hidden]{display:none;}
+  /* запас снизу — на самих экранах, а не только на .content: у
+     .panel[data-panel="shift"] задана фиксированная height:100% (нужна для
+     процентных высот на паре под-экранов, см. комментарий у этого правила),
+     и когда содержимое .shift-list/.shift-detail выше этой высоты, оно
+     переполняет рамку панели через обычный overflow:visible и прокручивается
+     через .content — но padding-bottom самого .content при этом считается
+     относительно короткой рамки панели, а не относительно реально видимого
+     конца переполнившегося содержимого, и на длинных экранах «съедается»
+     целиком — нижнее меню перекрывает последний блок вплотную. Свой
+     padding-bottom прямо на переполняющемся элементе не зависит от рамки
+     панели и всегда добавляется по-настоящему. На коротких экранах, где
+     переполнения нет, эта отдельная задержка складывается с уже имеющимся
+     запасом у .content — это просто чуть больше пустого места в конце
+     прокрутки, а не ошибка. Отдельные под-экраны с уже подобранным своим
+     отступом (#orderView, #orderPicker, [data-detail="newReserve"],
+     [data-detail="profile-settings-account"]) величину не теряют — то же
+     правило, применённое ещё раз, просто складывается с их собственным. */
+  .shift-list,
+  .shift-detail{padding-bottom:calc(130px + env(safe-area-inset-bottom, 0px));}
 
   .stat-block{
     border-radius:18px;
@@ -1757,7 +1750,7 @@
     transition:transform .15s ease;
   }
   .table-card:active{transform:scale(.97);}
-  /* название зоны и номер — одна строка, размер подобран так, чтобы влезало целиком */
+  /* просто «№N» — зона понятна по заголовку группы/вкладке наверху, см. renderTables */
   .table-card-num{
     display:flex; align-items:baseline; min-width:0;
     font-family:'Fraunces', serif;
@@ -1766,11 +1759,7 @@
     color:var(--text-primary);
     line-height:1.15;
   }
-  .table-card-name-text{
-    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-    min-width:0;
-  }
-  .table-card-num-digit{flex-shrink:0; margin-left:4px;}
+  .table-card-num-digit{overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0;}
   .table-card-meta{
     display:flex; align-items:center; gap:5px;
     font-size:10.5px;
@@ -1808,7 +1797,6 @@
     justify-content:center; align-items:center;
   }
   .table-card.is-free .table-card-num{color:var(--text-muted); opacity:.75;}
-  .table-card.is-free .table-card-free{font-size:10.5px; color:var(--text-muted); margin-top:4px; opacity:.75;}
   .table-card-seats{
     display:flex; align-items:center; gap:4px;
     margin-top:6px;
@@ -1839,6 +1827,31 @@
     flex:1;
     height:1px;
     background:var(--card-border);
+  }
+  /* «Свободные столы» — плоский заголовок без нити, по центру (текст сам —
+     единственный ребёнок flex-контейнера, без ::before/::after некому его
+     толкать от края, поэтому центрируем явно); отступ снизу убран — сразу
+     под ним идёт первый заголовок зала */
+  .table-divider-plain{justify-content:center; margin-bottom:0;}
+  .table-divider-plain::before,
+  .table-divider-plain::after{display:none;}
+  /* заголовок зала над свободными столами — тот же рисунок и та же
+     типографика, что у .reserve-table-pick-group-title на «Новом резерве»:
+     короткая золотая нить перед текстом, текст у левого края, длинная нить
+     остатком ширины (а не по центру и не 10.5px/700, как у общего
+     .table-divider) */
+  .table-divider-zone{
+    gap:7px;
+    margin-top:0;
+    font-size:9.5px; font-weight:800; letter-spacing:.02em;
+  }
+  .table-divider-zone::before{
+    flex:0 0 20px;
+    background:linear-gradient(90deg, transparent, rgba(198,153,47,0.6));
+  }
+  .table-divider-zone::after{
+    flex:1;
+    background:linear-gradient(90deg, rgba(198,153,47,0.6), transparent);
   }
 
   /* ---------- Общие элементы действий ---------- */
@@ -1933,6 +1946,21 @@
   }
   .table-card-bill-icon svg{width:100%; height:100%; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
   .table-card.is-bill-tile{border-style:solid; border-color:var(--gold);}
+  /* значок повода, унаследованный от резерва (см. reserveArrivedBtn) — тот
+     же правый верхний угол, что у .reserve-card-badges на карточке резерва
+     и у .table-card-bill-icon здесь же; размер плитки не меняется — значок
+     просто накладывается сверху (position:absolute). Живёт до закрытия
+     стола (releaseTable). Счёт (.table-card-bill-icon) на том же месте
+     бывает редко, но одновременно с поводом — возможно: тогда чек остаётся
+     в верхнем углу как есть, а повод (класс has-bill) опускается на
+     середину правого края, чтобы значки не наезжали друг на друга */
+  .table-card-occasion-icon{
+    position:absolute; top:8px; right:8px;
+    width:14px; height:14px;
+    color:var(--gold);
+  }
+  .table-card-occasion-icon.has-bill{top:50%; right:8px; transform:translateY(-50%);}
+  .table-card-occasion-icon svg{width:100%; height:100%; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
 
   /* ---------- Свободные столы: свёрнуты до двух рядов ---------- */
   .free-expand-btn{
@@ -4169,7 +4197,10 @@
   /* ---------- Bottom nav ---------- */
   .bottom-nav{
     position:absolute;
-    left:14px; right:14px; bottom:14px;
+    left:14px; right:14px;
+    /* env() — приподнимает меню над жестовой полосой/системной вставкой
+       снизу в установленном приложении; в обычном браузере равен 0 */
+    bottom:calc(14px + env(safe-area-inset-bottom, 0px));
     background:var(--nav-bg);
     border:1px solid var(--nav-border);
     border-radius:26px;
@@ -4178,6 +4209,12 @@
     justify-content:space-evenly;
     box-shadow:0 14px 28px rgba(43,36,24,0.22);
     z-index:10;
+    /* горизонтальный свайп — вызов голосового ассистента (см. JS); без
+       этого на реальном тач-устройстве браузер иногда забирает жест себе
+       раньше, чем до нас доходит полная серия pointermove/pointerup.
+       none, а не pan-y — сама полоса меню не скроллится, а pan-y всё
+       равно не спасает от ранней отмены жеста на некоторых движках */
+    touch-action:none;
     transition:background .3s ease, transform .3s ease, opacity .25s ease;
   }
   /* сворачивается вправо, за край экрана — сам размер и шрифт не меняются */
@@ -4199,7 +4236,7 @@
   }
   .nav-handle{
     position:absolute;
-    right:-6px; bottom:calc(14px + 74px - 15px);
+    right:-6px; bottom:calc(14px + env(safe-area-inset-bottom, 0px) + 74px - 15px);
     width:30px; height:30px;
     display:flex; align-items:center; justify-content:center;
     background:var(--nav-bg);
@@ -4289,6 +4326,10 @@
     box-shadow:0 18px 34px -14px rgba(18,35,58,0.7);
     padding:11px 12px;
     z-index:70;
+    /* без этого браузер на реальном тач-устройстве иногда забирает жест
+       себе (как решил бы, что это скролл экрана) раньше, чем дойдёт до
+       pointerup — свайп смахивания тогда просто не засчитывается */
+    touch-action:none;
     transition:transform .28s ease, opacity .28s ease;
   }
   .notify-toast[hidden]{display:none;}
@@ -4308,32 +4349,150 @@
     cursor:pointer;
   }
 
-  /* ---------- Боковое меню отделов (правый край) ---------- */
-  .dept-side-btn{
-    position:absolute;
-    right:0; top:300px;                 /* чуть ниже стыка «Финансы» и «Старт/Стоп лист» */
-    display:flex; align-items:center; justify-content:center;
-    width:22px; height:84px;
-    /* золотой фон — фиксированные токены, не зависят от темы, поэтому кнопка
-       одинаково заметна и на бежевом (светлая), и на синем (тёмная) фоне */
-    background:linear-gradient(160deg, var(--gold-light), var(--gold));
-    border:1px solid rgba(110,74,52,0.28);
-    border-right:none;
-    border-radius:14px 0 0 14px;
+  /* ---------- Голосовой ассистент ----------
+     Вызывается свайпом по нижнему меню (только роль руководителя). Экран
+     не затемняется — весь эффект держится на золотом свечении по контуру
+     .screen (оно и так clip'ится overflow:hidden родителя) плюс плавающей
+     карточке над нижним меню. */
+  .voice-overlay{
+    position:absolute; inset:0;
+    z-index:90;
+    background:transparent;
+    /* весь оверлей — свайп вниз для отмены; нативному скроллу тут ловить
+       нечего, но без явного touch-action браузер иногда всё равно
+       забирает жест себе на середине */
+    touch-action:none;
+  }
+  .voice-overlay[hidden]{display:none;}
+
+  /* глубина (blur/spread) — фиксированная ~30px, «дышит» только opacity —
+     его двигает JS (громкость голоса либо пульс по событиям речи) */
+  .voice-glow{
+    position:absolute; inset:0;
+    pointer-events:none;
+    box-shadow:
+      inset 0 0 14px 2px rgba(239,159,39,0.85),
+      inset 0 0 30px 16px rgba(250,199,117,0.5);
+    opacity:.28;
+    transition:opacity .12s linear;
+  }
+
+  .voice-card{
+    position:absolute; left:14px; right:14px;
+    background:linear-gradient(160deg, #24405f, var(--navy-deep));
+    border:1px solid rgba(239,159,39,0.4);
+    border-radius:16px;
+    padding:13px 16px;
+    box-shadow:0 18px 34px -14px rgba(18,35,58,0.7);
+  }
+  .voice-card-text{
+    display:block;
+    font-family:'Manrope', sans-serif;
+    font-size:13px; font-weight:600;
+    color:var(--cream);
+    text-align:center;
+    word-break:break-word;
+  }
+
+  /* «Понял так» — выезжает снизу над нижним меню, ~280мс, фон не темним */
+  .voice-sheet{
+    position:absolute; left:14px; right:14px;
+    background:var(--content-bg);
+    border:1px solid var(--card-border);
+    border-radius:20px;
+    padding:16px 16px 14px;
+    box-shadow:0 -18px 40px -16px rgba(18,35,58,0.35);
+    z-index:90;
+    overflow:hidden;
+    transform:translateY(120%);
+    transition:transform .28s cubic-bezier(.32,.72,0,1);
+  }
+  .voice-sheet[hidden]{display:none;}
+  .voice-sheet.is-open{transform:translateY(0);}
+  /* кромка 3px сверху шторки + свечение вглубь — высоту/прозрачность
+     «дыхания» (цикл 5с, cos) считает JS кадр за кадром */
+  .voice-sheet-rim{
+    position:absolute; left:0; right:0; top:0; height:3px;
+    background:linear-gradient(90deg, transparent, #EF9F27, transparent);
+    pointer-events:none;
+  }
+  .voice-sheet-glow{
+    position:absolute; left:0; right:0; top:3px; height:40px;
+    background:linear-gradient(180deg, #FAC775, transparent);
+    opacity:.28;
+    pointer-events:none;
+  }
+  .voice-sheet-head{
+    display:flex; align-items:center; gap:8px;
+    position:relative;
+    margin-bottom:12px;
+  }
+  .voice-sheet-icon{width:18px; height:18px; color:#EF9F27; flex-shrink:0;}
+  .voice-sheet-title{font-family:'Manrope', sans-serif; font-size:14px; font-weight:800; color:var(--text-primary);}
+  .voice-sheet-rows{
+    display:flex; flex-direction:column; gap:8px;
+    position:relative;
+    margin-bottom:14px;
+  }
+  .voice-sheet-row{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:10px;
+    font-family:'Manrope', sans-serif;
+  }
+  .voice-sheet-row-label{font-size:11.5px; color:var(--text-muted); font-weight:700;}
+  .voice-sheet-row-value{font-size:13px; color:var(--text-primary); font-weight:700; text-align:right;}
+  .voice-sheet-row-value.is-missing{color:var(--accent);}
+  /* до пяти блюд за одну команду — список строкой вниз, а не в один ряд */
+  .voice-sheet-row-stack{flex-direction:column; align-items:flex-start; gap:4px;}
+  .voice-sheet-dishes{display:flex; flex-direction:column; gap:3px; width:100%;}
+  .voice-sheet-dish{font-size:13px; color:var(--text-primary); font-weight:700;}
+  .voice-sheet-dish.is-missing{color:var(--accent); font-weight:600;}
+  .voice-sheet-actions{display:flex; gap:9px; position:relative;}
+  .voice-sheet-btn{
+    flex:1;
+    border-radius:13px;
+    padding:12px;
+    font-family:'Manrope', sans-serif;
+    font-size:13.5px; font-weight:800;
     cursor:pointer;
-    box-shadow:-6px 0 20px -10px var(--card-shadow);
-    z-index:40;
   }
-  .dept-side-btn svg{width:14px; height:14px; stroke:var(--navy-deep); fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round;}
-  .dept-side-btn[hidden]{display:none;}
+  .voice-sheet-btn:active{transform:scale(.97);}
+  .voice-sheet-btn-ghost{
+    background:none;
+    border:1px solid var(--card-border);
+    color:var(--text-muted);
+  }
+  .voice-sheet-btn-gold{
+    background:#EF9F27;
+    border:none;
+    color:#412402;
+  }
+  .voice-sheet-btn-gold:disabled{opacity:.4; cursor:not-allowed;}
+
+  /* «Голосовой ввод недоступен» — нет поддержки браузером или нет сети */
+  .voice-toast{
+    position:absolute; left:14px; right:14px; top:12px;
+    background:linear-gradient(160deg, #24405f, var(--navy-deep));
+    color:var(--cream);
+    border:1px solid rgba(233,203,126,0.3);
+    border-radius:14px;
+    padding:10px 14px;
+    font-family:'Manrope', sans-serif; font-size:12.5px; font-weight:700;
+    text-align:center;
+    z-index:95;
+    box-shadow:0 14px 28px -12px rgba(18,35,58,0.6);
+  }
+  .voice-toast[hidden]{display:none;}
+
+  /* prefers-reduced-motion — статичное свечение, без пульса/дыхания
+     (JS также не запускает соответствующие requestAnimationFrame-циклы) */
+  @media (prefers-reduced-motion: reduce){
+    .voice-glow{transition:none;}
+    .voice-sheet{transition:none;}
+  }
+
+  /* ---------- Боковое меню отделов (правый край) ---------- */
   /* сторона меняется в настройках профиля */
-  .screen.dept-left .dept-side-btn{
-    right:auto; left:0;
-    border-radius:0 14px 14px 0;
-    border-right:1px solid rgba(110,74,52,0.28);
-    border-left:none;
-    box-shadow:6px 0 20px -10px var(--card-shadow);
-  }
   .screen.dept-left .dept-panel{
     right:auto; left:0;
     border-left:none;
@@ -4341,41 +4500,7 @@
     box-shadow:18px 0 40px -16px rgba(18,35,58,0.5);
   }
 
-  /* ---------- Кнопка «Доп меню»: альтернативные варианты размещения ---------- */
-  /* Вариант «Плавающая кнопка снизу» — круглая, у нижнего меню, с противоположной
-     от уведомлений стороны (уведомления всегда слева-снизу). */
-  .screen.menu-variant-fab .dept-side-btn{
-    right:20px; left:auto; top:auto; bottom:100px;
-    width:52px; height:52px;
-    border-radius:50%;
-    border:1px solid rgba(110,74,52,0.28);
-    box-shadow:0 10px 24px -8px var(--card-shadow);
-  }
-  .screen.menu-variant-fab.dept-left .dept-side-btn{ left:20px; right:auto; }
-  .screen.menu-variant-fab .dept-side-btn svg{width:20px; height:20px;}
-
-  /* Вариант «Перетаскиваемая вкладка» — тот же боковой таб, но его можно
-     потянуть по вертикали и оставить там, где удобнее всего под руку. */
-  .screen.menu-variant-drag .dept-side-btn{cursor:grab; touch-action:none;}
-  .screen.menu-variant-drag .dept-side-btn.is-dragging{cursor:grabbing; opacity:.88;}
-
-  /* Вариант «Свайп от края» — от вкладки остаётся едва заметная полоска,
-     открытие происходит свайпом от края экрана внутрь. */
-  .screen.menu-variant-swipe .dept-side-btn{
-    width:6px; height:56px;
-    padding:0;
-    opacity:.5;
-  }
-  .screen.menu-variant-swipe .dept-side-btn svg{display:none;}
-
-  /* Вариант «В нижнем меню» — боковая вкладка скрыта JS-ом (deptSideBtnEl.hidden),
-     кнопка живёт в .bottom-nav как #navDeptBtn. */
-  .nav-btn-extra{color:var(--gold);}   /* золотой — одинаково заметен в обеих темах */
-  .nav-btn-extra[hidden]{display:none;}
-
-  /* ---------- Кнопка «Уведомления»: альтернативные варианты размещения ----------
-     Левый край, выше «Доп меню» (top:170px против top:300px), чтобы вкладки
-     не пересекались, даже если обе — боковые. */
+  /* ---------- Кнопка «Уведомления»: альтернативные варианты размещения ---------- */
   .notif-edge-btn{
     position:absolute;
     left:0; top:170px;
@@ -4537,6 +4662,7 @@
     font-family:'Manrope', sans-serif;
   }
   .notif-row.is-escalated{border-color:var(--gold);}
+  .notif-row.is-read{opacity:.62;}
   .notif-row-main{
     display:flex; flex-direction:column; gap:2px;
     width:100%; text-align:left;
@@ -5513,10 +5639,13 @@
   /* строка 2: номер стола (без слова «Стол» — само число хуже читалось
      вплотную к «№», поэтому пробел) */
   .reserve-card-row2{margin-top:5px;}
+  /* тот же шрифт/размер/начертание, что у номера стола на «Заказах»
+     (.table-card-num) — единый вид значка номера на обоих экранах */
   .reserve-card-table{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:10.5px; font-weight:700;
+    font-family:'Fraunces', serif;
+    font-size:13.5px; font-weight:600;
     color:var(--text-primary);
+    line-height:1.15;
   }
   .reserve-card-persons{
     display:flex; align-items:center; gap:3px;
@@ -5557,6 +5686,35 @@
   }
   .reserve-card.is-overdue{ animation:reservePulseRed .85s ease-in-out infinite; }
   .reserve-card.is-overdue .reserve-card-time{color:var(--dot-red);}
+
+  /* ---------- Строка чипов столов — общий компонент МН-13/МН-30/МН-31:
+     один стол — как раньше, простым номером; несколько — чипами через
+     «+», flex-wrap, выравнивание вправо. Рамка, «№», «+» и сама цифра —
+     все одним цветом --text-primary (тем же, что и у одиночного номера
+     .reserve-card-table), чтобы объединённый резерв выглядел точно так
+     же, как обычный, просто подстроенным под тему — никакого второго
+     (мутного/золотого) оттенка в этом же значке ---------- */
+  .table-chips-row{display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; gap:4px;}
+  /* на плитках резервов (МН-13) номер стола крупнее и от левого края —
+     та же строка, что имя/время/телефон, а не прижат к правому краю
+     карточки, как в поле «Стол» на МН-30 (там .table-chips-row остаётся
+     как есть, справа от подписи) */
+  .reserve-card-row2 .table-chips-row{justify-content:flex-start;}
+  .table-chips-hash{font-family:'Fraunces', serif; font-size:13.5px; font-weight:600; color:var(--text-primary);}
+  .table-chip{
+    display:inline-flex; align-items:center; justify-content:center;
+    padding:3px 11px;
+    border-radius:8px;
+    border:1.5px solid var(--text-primary);
+    font-family:'Fraunces', serif;
+    font-size:13.5px; font-weight:600;
+    color:var(--text-primary);
+    white-space:nowrap;
+  }
+  .table-chip-plus{width:13px; height:13px; stroke:var(--text-primary); stroke-width:3; fill:none; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0;}
+  .table-chip.is-waiting-hard{border-color:var(--dot-red);}
+  .table-chip.is-waiting-soon{border-color:var(--dot-red); animation:reservePulseRed .85s ease-in-out infinite;}
+  .table-chip.is-released{border-style:dashed; border-color:var(--card-border); color:var(--text-muted); text-decoration:line-through;}
 
   /* ---------- Схема зала ---------- */
   .reserve-scheme-zone{
@@ -5643,6 +5801,36 @@
   .reserve-card-picker{margin:-6px 0 14px;}
   .reserve-card-picker[hidden]{display:none;}
   .reserve-card-picker .reserve-occasion-chips{margin-top:2px;}
+
+  /* ---------- МН-30: список столов объединённого резерва (tables.length > 1),
+     у каждого своя кнопка «Освободить» — см. reserveReleaseTable ---------- */
+  .reserve-table-group{display:flex; flex-direction:column; gap:8px; margin:-6px 0 14px;}
+  .reserve-table-group[hidden]{display:none;}
+  .reserve-table-group-row{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:10px 12px;
+    background:var(--surface);
+    border:1px solid var(--card-border);
+    border-radius:14px;
+  }
+  .reserve-table-group-row.is-waiting{border-color:var(--gold);}
+  .reserve-table-group-info{display:flex; flex-direction:column; gap:2px;}
+  .reserve-table-group-num{font-family:'Manrope', sans-serif; font-size:13px; font-weight:800; color:var(--text-primary);}
+  .reserve-table-group-note{font-size:11px; color:var(--text-muted);}
+  .reserve-table-group-release{
+    flex-shrink:0;
+    background:none;
+    border:1.5px solid var(--gold);
+    border-radius:11px;
+    padding:8px 14px;
+    font-family:'Manrope', sans-serif;
+    font-size:12px; font-weight:800;
+    color:var(--gold);
+    cursor:pointer;
+  }
+  .reserve-table-group-release:active{transform:scale(.96);}
+  .reserve-table-group-released{font-size:11.5px; font-weight:700; color:var(--text-muted); text-decoration:line-through;}
+
   .reserve-btn-outline{
     display:flex; align-items:center; justify-content:center; gap:7px;
     width:100%;
@@ -5679,7 +5867,7 @@
      область равна полной высоте .content, как и везде; своим же
      padding-bottom:130px (тот же приём, что у .content) кнопка «Создать
      резерв» на прокрутке всё равно не залезает под нижнее меню */
-  .shift-detail[data-detail="newReserve"]{height:calc(100% + 130px); overflow-y:auto; padding-bottom:130px; scrollbar-width:none; -ms-overflow-style:none;}
+  .shift-detail[data-detail="newReserve"]{height:calc(100% + 130px + env(safe-area-inset-bottom, 0px)); overflow-y:auto; padding-bottom:calc(130px + env(safe-area-inset-bottom, 0px)); scrollbar-width:none; -ms-overflow-style:none;}
   .shift-detail[data-detail="newReserve"]::-webkit-scrollbar{display:none; width:0; height:0;}
   .reserve-form-row{margin-bottom:14px;}
   .reserve-form-row-split{display:flex; gap:8px;}
@@ -5690,10 +5878,43 @@
     color:var(--text-muted);
     margin-bottom:6px;
   }
-  .reserve-persons-stepper{display:flex; align-items:center; gap:12px;}
+  /* «Свободные столы на это время»/«Выбор столов»/«Столы резерва» — эта
+     подпись держит целую секцию (залы + плитки) ниже, поэтому крупнее и
+     по центру, в отличие от обычных подписей полей формы */
+  #newReserveTablePickLabel{
+    text-align:center;
+    font-size:14px;
+  }
+  .reserve-persons-stepper{display:flex; align-items:center; flex-wrap:wrap; gap:12px;}
   .reserve-persons-stepper .step-count{font-size:16px; min-width:22px;}
+  .reserve-persons-stepper .step-count-input{width:2ch; cursor:pointer;}
   /* плитки 4 в ряд: номер стола, вместимость (иконка) и зал — вместо
      списка по одному столу в строке */
+  .reserve-table-pick-group{margin-bottom:12px;}
+  .reserve-table-pick-group:last-child{margin-bottom:0;}
+  /* название зала — короткая плавная нить слева (та же пропорция и
+     градиент, что у .reserve-collapse-thread на «Резервах»), длинная
+     тонкая нить справа тянется остатком ширины; плитки зала идут ниже */
+  .reserve-table-pick-group-title{
+    display:flex; align-items:center; gap:7px;
+    font-size:9.5px; font-weight:800;
+    color:var(--text-muted);
+    text-transform:uppercase; letter-spacing:.02em;
+    margin-bottom:8px;
+    white-space:nowrap;
+  }
+  .reserve-table-pick-group-title::before{
+    content:'';
+    flex:0 0 20px;
+    height:1px;
+    background:linear-gradient(90deg, transparent, rgba(198,153,47,0.6));
+  }
+  .reserve-table-pick-group-title::after{
+    content:'';
+    flex:1;
+    height:1px;
+    background:linear-gradient(90deg, rgba(198,153,47,0.6), transparent);
+  }
   .reserve-table-pick{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:7px;}
   .reserve-table-pick-tile{
     display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
@@ -5711,14 +5932,75 @@
     background:linear-gradient(160deg, rgba(233,203,126,0.22), rgba(198,153,47,0.14));
   }
   .reserve-table-pick-tile:disabled{opacity:.4; cursor:not-allowed;}
-  .reserve-table-pick-num{font-size:13px; font-weight:800;}
+  /* мультивыбор (МН-31, долгое удержание) — выбранные плитки пульсируют
+     золотой обводкой (тот же приём, что у карточки резерва «скоро»,
+     см. reservePulseGold), занятые столы показаны приглушённо с меткой «занят» */
+  .reserve-table-pick-tile.is-picked{ animation:reservePulseGold 1.7s ease-in-out infinite; }
+  .reserve-table-pick-tile.is-occupied{ opacity:.55; }
+  .reserve-table-pick-tile.is-occupied.is-picked{ opacity:.85; }
+  /* тот же шрифт/размер/начертание, что у номера стола на «Заказах»
+     (.table-card-num) — единый вид значка номера на обоих экранах */
+  .reserve-table-pick-num{font-family:'Fraunces', serif; font-size:13.5px; font-weight:600;}
   .reserve-table-pick-seats{
     display:flex; align-items:center; gap:3px;
     font-size:11px; font-weight:700;
     color:var(--text-muted);
   }
   .reserve-table-pick-seats svg{width:11px; height:11px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
-  .reserve-table-pick-zone{font-size:9.5px; font-weight:800; color:var(--gold); text-transform:uppercase; letter-spacing:.02em;}
+  /* «Мест выбрано… из…» — в мультивыборе живёт прямо в строке «Персоны»,
+     сразу за кнопкой «+» (см. .reserve-persons-stepper), а не отдельной
+     строкой над сеткой столов */
+  .reserve-table-pick-summary{font-size:11.5px; font-weight:700; color:var(--text-muted); white-space:nowrap;}
+  .reserve-table-pick-summary[hidden]{display:none;}
+  /* «Столы резерва» после «Объединить» — те же плитки, что и при выборе
+     (не кружки-чипы), у левого края, через золотой «+» (.table-chip-plus,
+     общий значок с МН-13/МН-30); сами плитки инертны — только показ */
+  .reserve-merged-tiles{display:flex; flex-wrap:wrap; align-items:center; gap:7px;}
+  .reserve-merged-tiles .reserve-table-pick-tile{flex:0 0 66px; padding-left:2px; padding-right:2px;}
+  .reserve-table-pick-tile.is-merged{cursor:default;}
+  /* плашка «Объединить»/«Изменить» | «Отменить» — тот же стиль (хаки-фон,
+     золотая рамка), что у .transfer-bar в МН-16; висит над нижним меню и
+     опускается вместе с ним ровно по тем же правилам, что и
+     .profile-save-bar/.order-fixed-bar (position:absolute от #screen,
+     bottom:14px+высота меню+8px, а при .screen.nav-hidden — те же 14px,
+     что и у самого меню, то есть плашка садится на его место) */
+  .reserve-action-bar{
+    position:absolute;
+    left:20px; right:20px;
+    bottom:calc(14px + 74px + 8px);
+    z-index:18;
+    display:flex; align-items:center; gap:6px;
+    background:var(--khaki-block-bg);
+    border:1px solid var(--gold);
+    border-radius:12px;
+    padding:6px;
+    box-shadow:0 12px 26px -14px var(--card-shadow);
+  }
+  .screen.nav-hidden .reserve-action-bar{bottom:14px;}
+  .reserve-action-bar[hidden]{display:none;}
+  .reserve-action-primary{
+    flex:2;
+    background:linear-gradient(160deg, var(--gold-light), var(--gold));
+    border:none;
+    border-radius:10px;
+    padding:8px;
+    font-family:'Manrope', sans-serif;
+    font-size:12px; font-weight:700;
+    color:var(--navy-deep);
+    cursor:pointer;
+  }
+  .reserve-action-primary:disabled{opacity:.45; cursor:not-allowed;}
+  .reserve-action-cancel{
+    flex:1;
+    background:var(--segment-track);
+    border:1px solid var(--card-border);
+    border-radius:10px;
+    padding:8px;
+    font-family:'Manrope', sans-serif;
+    font-size:12px; font-weight:700;
+    color:var(--text-muted);
+    cursor:pointer;
+  }
   .reserve-buffer-warn{
     display:flex; align-items:flex-start; gap:8px;
     background:rgba(178,72,58,0.12);
@@ -5744,6 +6026,86 @@
     cursor:pointer;
   }
   .reserve-occasion-chips{display:flex; flex-wrap:wrap; gap:7px;}
+  .filter-chip:disabled{opacity:.45; pointer-events:none;}
+
+  /* ---------- МН-31: «Повод» выпадающим списком (рядом с «Ник») ---------- */
+  .reserve-occasion-select{position:relative; flex:1; min-width:0;}
+  .reserve-occasion-btn{
+    display:flex; align-items:center; justify-content:space-between; gap:6px;
+    cursor:pointer;
+  }
+  .reserve-occasion-btn span{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .reserve-occasion-btn svg{
+    flex-shrink:0; width:14px; height:14px;
+    stroke:#6E4A34; fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round;
+    transition:transform .2s ease;
+  }
+  .reserve-occasion-select.is-open .reserve-occasion-btn svg{transform:rotate(180deg);}
+  .reserve-occasion-panel{
+    position:absolute; top:calc(100% + 6px); left:0; right:0;
+    background:var(--surface);
+    border:1px solid var(--card-border);
+    border-radius:12px;
+    box-shadow:0 16px 32px -12px rgba(18,35,58,0.35);
+    padding:6px;
+    z-index:20;
+  }
+  .reserve-occasion-panel[hidden]{display:none;}
+  .reserve-occasion-options{display:flex; flex-direction:column; gap:1px;}
+  .reserve-occasion-option{
+    text-align:left;
+    background:none; border:none;
+    padding:8px 10px;
+    border-radius:8px;
+    font-family:'Manrope', sans-serif;
+    font-size:13px; font-weight:600;
+    color:var(--text-primary);
+    cursor:pointer;
+  }
+  .reserve-occasion-option.active{background:var(--khaki-block-bg); color:var(--navy-deep); font-weight:700;}
+  .reserve-occasion-option:active{transform:scale(.98);}
+  .reserve-occasion-add{border-top:1px solid var(--card-border); margin-top:4px; padding-top:4px;}
+  .reserve-occasion-add-btn{
+    width:100%; text-align:left;
+    background:none; border:none;
+    padding:8px 10px;
+    font-family:'Manrope', sans-serif;
+    font-size:13px; font-weight:700;
+    color:var(--gold);
+    cursor:pointer;
+  }
+  .reserve-occasion-add-form{display:flex; gap:6px; padding:2px;}
+  .reserve-occasion-add-form[hidden]{display:none;}
+  .reserve-occasion-add-input{
+    flex:1; min-width:0;
+    padding:7px 9px;
+    border-radius:8px;
+    border:1px solid var(--card-border);
+    background:var(--surface);
+    font-family:'Manrope', sans-serif;
+    font-size:12.5px;
+    color:var(--text-primary);
+  }
+  .reserve-occasion-add-confirm{
+    flex:0 0 auto;
+    padding:7px 12px;
+    border-radius:8px;
+    border:none;
+    background:linear-gradient(160deg, var(--gold-light), var(--gold));
+    color:var(--navy-deep);
+    font-family:'Manrope', sans-serif;
+    font-size:12.5px; font-weight:700;
+    cursor:pointer;
+  }
+
+  /* ---------- МН-10.3.2: часы работы — мультивыбор дней, компактная строка открытия/закрытия ---------- */
+  .hours-week-check{margin-bottom:10px;}
+  .hours-week-check.is-disabled{opacity:.45;}
+  .hours-time-row{display:flex; gap:8px;}
+  .hours-time-col{flex:1; min-width:0;}
+  .hours-time-input{padding:6px 10px; font-size:12px;}
+  .hours-time-input:disabled{opacity:.45;}
+  .hours-247-row{margin-top:4px;}
 
   /* ---------- МН-31: блоки «Дата» и «Время» ---------- */
   .resdate-head{display:flex; align-items:baseline; gap:6px; margin-bottom:6px;}
@@ -5864,28 +6226,29 @@
   .cal-cell.is-disabled{color:var(--text-muted); opacity:.35; cursor:default;}
   .cal-cell.is-selected{background:var(--navy); color:var(--cream);}
 
-  /* ---------- МН-31: барабан выбора времени ---------- */
-  .time-wheel-box{padding:20px 18px 14px;}
-  .time-wheel-row{
+  /* ---------- МН-31: компонент-барабан — общий для времени и персон,
+     компактная карточка по центру экрана (не бантик снизу) ---------- */
+  .drum-box{max-width:280px; padding:20px 18px 14px;}
+  .drum-row{
     position:relative;
     display:flex; align-items:center; justify-content:center; gap:10px;
-    height:220px;
+    height:190px;
     margin-top:14px;
   }
-  .time-wheel-col{
-    flex:0 0 74px;
+  .drum-col{
+    flex:0 0 64px;
     height:100%;
     overflow-y:auto;
     scroll-snap-type:y mandatory;
     -webkit-overflow-scrolling:touch;
     scrollbar-width:none;
   }
-  .time-wheel-col::-webkit-scrollbar{display:none;}
+  .drum-col::-webkit-scrollbar{display:none;}
   /* паддинг сверху/снизу — половина высоты видимой области минус
      половина строки: только так первая/последняя строка может
      доскроллить до центра (см. scrollWheelTo в скрипте) */
-  .time-wheel-col-inner{padding:88px 0;}
-  .time-wheel-item{
+  .drum-col-inner{padding:73px 0;}
+  .drum-item{
     height:44px;
     display:flex; align-items:center; justify-content:center;
     scroll-snap-align:center;
@@ -5896,16 +6259,30 @@
     cursor:pointer;
     transition:opacity .15s ease, color .15s ease;
   }
-  .time-wheel-item.is-near{opacity:.65;}
-  .time-wheel-item.is-active{opacity:1; color:var(--gold); font-weight:800; font-size:23px;}
-  .time-wheel-colon{font-family:'IBM Plex Mono', monospace; font-size:20px; font-weight:800; color:var(--text-primary);}
-  .time-wheel-selection{
+  .drum-item.is-near{opacity:.65;}
+  .drum-item.is-active{opacity:1; color:var(--gold); font-weight:800; font-size:23px;}
+  .drum-colon{font-family:'IBM Plex Mono', monospace; font-size:20px; font-weight:800; color:var(--text-primary);}
+  .drum-selection{
     position:absolute; left:18px; right:18px; top:50%; height:44px; transform:translateY(-50%);
     border-top:1.5px solid var(--gold); border-bottom:1.5px solid var(--gold);
     pointer-events:none;
     background:linear-gradient(180deg, rgba(198,153,47,0.1), rgba(198,153,47,0.03));
   }
-  .time-wheel-note{font-size:11.5px; color:var(--text-muted); line-height:1.4; margin-top:8px;}
+  .drum-note{font-size:11.5px; color:var(--text-muted); line-height:1.4; margin-top:8px;}
+  .drum-more-btn{
+    display:flex; align-items:center; justify-content:center; gap:6px;
+    margin:10px auto 0;
+    padding:7px 16px;
+    border-radius:12px;
+    border:1.5px solid var(--gold);
+    background:none;
+    color:var(--gold);
+    font-family:'Manrope', sans-serif;
+    font-size:12.5px; font-weight:800;
+    cursor:pointer;
+  }
+  .drum-more-btn svg{width:15px; height:15px; stroke:var(--gold); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+  .drum-more-btn:active{transform:scale(.97);}
 
   /* ---------- МН-13: иконка календаря в строке «История»/переключателя ---------- */
   .reserve-cal-btn{
@@ -5934,10 +6311,6 @@
 </head>
 <body>
 
-<button class="map-side-btn" id="mapHeaderBtn" aria-label="Карта экранов">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="7" height="7" rx="1.4"/><rect x="14" y="4" width="7" height="7" rx="1.4"/><rect x="3" y="14" width="7" height="7" rx="1.4"/><rect x="14" y="14" width="7" height="7" rx="1.4"/></svg>
-</button>
-
 <div class="phone">
   <div class="notch"></div>
   <div class="screen" id="screen">
@@ -5952,11 +6325,10 @@
     </div>
 
     <div class="app-header" id="appHeader">
-      <button class="header-logo-btn" id="assistantHeaderBtn" aria-label="Открыть ассистента РУКА">
+      <button class="header-logo-btn" id="headerMenuBtn" aria-label="Дополнительное меню">
         <svg class="header-logo" viewBox="0 0 512 512" role="img" aria-label="РУКА"><defs><linearGradient id="rukaBg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b3050"/><stop offset="1" stop-color="#0e1c2e"/></linearGradient><clipPath id="rukaCard"><rect x="16" y="16" width="480" height="480" rx="112"/></clipPath></defs><rect x="16" y="16" width="480" height="480" rx="112" fill="url(#rukaBg)"/><g clip-path="url(#rukaCard)"><rect x="92" y="206" width="46" height="194" rx="12" fill="#5b7ba6"/><rect x="156" y="158" width="46" height="242" rx="12" fill="#7c9bc2"/><rect x="220" y="116" width="46" height="284" rx="12" fill="#e6dabf"/><rect x="284" y="62" width="46" height="338" rx="12" fill="#efe6d2"/><path d="M 84,300 A 186,186 0 1 0 438,222 Z" fill="#c9a227"/><polyline points="105,378 222,252 278,306 392,200" fill="none" stroke="#12233a" stroke-width="56" stroke-linecap="round" stroke-linejoin="round"/><polyline points="105,378 222,252 278,306 392,200" fill="none" stroke="#f7efe1" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/></g><rect x="42" y="42" width="428" height="428" rx="92" fill="none" stroke="#c9a227" stroke-width="3" opacity="0.85"/></svg>
-        <span class="header-logo-ping"></span>
       </button>
-      <!-- уведомления: вариант «в шапке» — рядом со значком ассистента -->
+      <!-- уведомления: вариант «в шапке» — рядом с логотипом -->
       <button class="notif-header-btn" id="notifHeaderBtn" hidden aria-label="Уведомления">
         <svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M9.5 19a2.5 2.5 0 0 0 5 0"/></svg>
         <span class="notif-header-count" id="notifHeaderCount" hidden>0</span>
@@ -7299,6 +7671,12 @@
           <div class="finance-rows" id="reserveCardFields"></div>
           <div class="reserve-card-picker" id="reserveCardPicker" hidden></div>
 
+          <!-- объединённый резерв (tables.length > 1) — список столов группы
+               под строкой чипов, у каждого своя кнопка «Освободить» (см.
+               reserveReleaseTable); при одном столе список скрыт, действует
+               обычная «Стол освободился» ниже -->
+          <div class="reserve-table-group" id="reserveTableGroup" hidden></div>
+
           <div class="detail-section-title">Лента событий</div>
           <div class="history-log" id="reserveCardLog"></div>
 
@@ -7345,14 +7723,23 @@
             <span class="reserve-form-label">Персоны</span>
             <div class="reserve-persons-stepper">
               <button class="step-btn" id="newReservePersonsMinus" type="button">−</button>
-              <input class="step-count step-count-input" id="newReservePersonsCount" type="number" inputmode="numeric" min="1" max="30" value="2">
+              <input class="step-count step-count-input" id="newReservePersonsCount" type="text" inputmode="none" readonly min="1" value="2">
               <button class="step-btn" id="newReservePersonsPlus" type="button">+</button>
+              <span class="reserve-table-pick-summary" id="newReserveTablePickSummary" hidden></span>
             </div>
           </div>
 
           <div class="reserve-form-row">
-            <span class="reserve-form-label">Свободные столы на это время</span>
-            <div class="reserve-table-pick" id="newReserveTablePick"></div>
+            <span class="reserve-form-label" id="newReserveTablePickLabel">Свободные столы на это время</span>
+            <!-- объединённый резерв (долгое удержание плитки, см.
+                 nrTablePressTimer) показывает те же плитки через «+» вместо
+                 сетки (см. reserveMergedTilesHtml) — удержание по ним
+                 открывает плашку «Изменить»/«Отменить» ниже -->
+            <div id="newReserveTablePick"></div>
+            <div class="reserve-action-bar" id="newReserveActionBar" hidden>
+              <button class="reserve-action-primary" id="newReserveActionPrimaryBtn" type="button">Объединить</button>
+              <button class="reserve-action-cancel" id="newReserveActionCancelBtn" type="button">Отменить</button>
+            </div>
             <div class="reserve-buffer-warn" id="newReserveBufferWarn" hidden>
               <svg viewBox="0 0 24 24"><path d="M12 9v4"/><path d="M12 16.5h.01"/><path d="M10.3 3.9L2.6 18a1.8 1.8 0 0 0 1.6 2.6h15.6a1.8 1.8 0 0 0 1.6-2.6L13.7 3.9a1.8 1.8 0 0 0-3.4 0z"/></svg>
               <span class="reserve-buffer-warn-text">
@@ -7364,20 +7751,36 @@
 
           <div class="reserve-form-row reserve-form-row-split">
             <input class="auth-field-input" type="text" id="newReserveName" placeholder="Имя Фамилия">
-            <input class="auth-field-input" type="text" id="newReserveTg" placeholder="@ник (из мессенджера)">
-          </div>
-
-          <div class="reserve-form-row">
             <input class="auth-field-input" type="text" id="newReservePhone" inputmode="tel" placeholder="+7 900 000-00-00">
           </div>
 
-          <div class="reserve-form-row">
-            <span class="reserve-form-label">Повод</span>
-            <div class="reserve-occasion-chips" id="newReserveOccasion">
-              <button class="filter-chip active" data-occasion="">Без повода</button>
-              <button class="filter-chip" data-occasion="bday">День рождения</button>
-              <button class="filter-chip" data-occasion="business">Деловая встреча</button>
-              <button class="filter-chip" data-occasion="date">Свидание</button>
+          <div class="reserve-form-row reserve-form-row-split">
+            <input class="auth-field-input" type="text" id="newReserveTg" placeholder="@ник (из мессенджера)">
+            <!-- «Повод» — выпадающий список вместо ряда чипов: список
+                 занимает столько же места, сколько поле «Ник» рядом (см.
+                 reserve-form-row-split), а не отдельную строку под ними;
+                 в самом списке снизу — свой пункт «+ Добавить повод»,
+                 раскрывающий короткую форму ввода нового повода -->
+            <div class="reserve-occasion-select" id="newReserveOccasionSelect">
+              <button class="auth-field-input reserve-occasion-btn" id="newReserveOccasionBtn" type="button">
+                <span id="newReserveOccasionLabel">Без повода</span>
+                <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+              </button>
+              <div class="reserve-occasion-panel" id="newReserveOccasionPanel" hidden>
+                <div class="reserve-occasion-options" id="newReserveOccasionOptions">
+                  <button class="reserve-occasion-option active" data-occasion="" type="button">Без повода</button>
+                  <button class="reserve-occasion-option" data-occasion="bday" type="button">День рождения</button>
+                  <button class="reserve-occasion-option" data-occasion="business" type="button">Деловая встреча</button>
+                  <button class="reserve-occasion-option" data-occasion="date" type="button">Свидание</button>
+                </div>
+                <div class="reserve-occasion-add">
+                  <button class="reserve-occasion-add-btn" id="newReserveOccasionAddBtn" type="button">+ Добавить</button>
+                  <div class="reserve-occasion-add-form" id="newReserveOccasionAddForm" hidden>
+                    <input class="reserve-occasion-add-input" type="text" id="newReserveOccasionAddInput" placeholder="Название повода">
+                    <button class="reserve-occasion-add-confirm" id="newReserveOccasionAddConfirm" type="button">Добавить</button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -7979,34 +8382,41 @@
         <div class="shift-detail" data-detail="profile-settings-restaurant-hours" hidden>
           <button class="back-btn">Назад</button>
           <div class="settings-subtitle">График работы</div>
-          <div class="segmented" role="tablist" id="restaurantHoursModeSwitch">
-            <button class="segmented-btn" data-hours-mode="scheduled">По расписанию</button>
-            <button class="segmented-btn" data-hours-mode="24-7">Круглосуточно</button>
+          <label class="stock-check-row hours-week-check">
+            <input type="checkbox" id="restaurantHoursAllWeek">
+            <span>Вся неделя</span>
+          </label>
+          <div class="reserve-form-row">
+            <div class="reserve-occasion-chips" id="restaurantHoursDayPicker">
+              <button class="filter-chip" type="button" data-hours-day="1">Пн</button>
+              <button class="filter-chip" type="button" data-hours-day="2">Вт</button>
+              <button class="filter-chip" type="button" data-hours-day="3">Ср</button>
+              <button class="filter-chip" type="button" data-hours-day="4">Чт</button>
+              <button class="filter-chip" type="button" data-hours-day="5">Пт</button>
+              <button class="filter-chip" type="button" data-hours-day="6">Сб</button>
+              <button class="filter-chip" type="button" data-hours-day="0">Вс</button>
+            </div>
           </div>
-          <div id="restaurantHoursTimesBlock">
-            <div class="reserve-form-row">
-              <span class="reserve-form-label">День недели</span>
-              <div class="reserve-occasion-chips" id="restaurantHoursDayPicker">
-                <button class="filter-chip" type="button" data-hours-day="1">Пн</button>
-                <button class="filter-chip" type="button" data-hours-day="2">Вт</button>
-                <button class="filter-chip" type="button" data-hours-day="3">Ср</button>
-                <button class="filter-chip" type="button" data-hours-day="4">Чт</button>
-                <button class="filter-chip" type="button" data-hours-day="5">Пт</button>
-                <button class="filter-chip" type="button" data-hours-day="6">Сб</button>
-                <button class="filter-chip" type="button" data-hours-day="0">Вс</button>
-              </div>
-            </div>
-            <div class="reserve-form-row">
+          <div class="reserve-form-row hours-time-row">
+            <div class="hours-time-col">
               <span class="reserve-form-label">Открывается</span>
-              <input class="auth-field-input" type="time" id="restaurantHoursOpen">
+              <input class="auth-field-input hours-time-input" type="time" id="restaurantHoursOpen">
             </div>
-            <div class="reserve-form-row">
+            <div class="hours-time-col">
               <span class="reserve-form-label">Закрывается</span>
-              <input class="auth-field-input" type="time" id="restaurantHoursClose">
+              <input class="auth-field-input hours-time-input" type="time" id="restaurantHoursClose">
             </div>
-            <div class="reserve-form-row">
-              <span class="reserve-form-label" id="restaurantHoursCrossNote"></span>
+          </div>
+          <div class="reserve-form-row">
+            <span class="reserve-form-label" id="restaurantHoursCrossNote"></span>
+          </div>
+          <div class="settings-row hours-247-row">
+            <div class="settings-row-text">
+              <span class="settings-row-title">Круглосуточно</span>
             </div>
+            <button class="switch" id="restaurantHours247Switch" role="switch" aria-checked="false">
+              <span class="switch-thumb"></span>
+            </button>
           </div>
         </div>
 
@@ -8123,14 +8533,6 @@
               </button>
             </div>
             <div class="settings-divider"></div>
-            <button class="settings-row settings-row-link" id="menuVariantsOpenBtn">
-              <div class="settings-row-text">
-                <span class="settings-row-title">Кнопка «Доп меню»</span>
-                <span class="settings-row-note" id="menuVariantsCurrentNote">Расположение — боковая вкладка</span>
-              </div>
-              <svg class="chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
-            </button>
-            <div class="settings-divider"></div>
             <button class="settings-row settings-row-link" id="profileInterfaceOpenBtn">
               <div class="settings-row-text">
                 <span class="settings-row-title">Настройки интерфейса</span>
@@ -8196,8 +8598,7 @@
       <span class="notif-fab-count" id="notifFabCount" hidden>0</span>
     </button>
 
-    <!-- уведомления: варианты «боковая вкладка» и «свайп от края» — левый край,
-         выше вкладки «Доп меню», чтобы не пересекались -->
+    <!-- уведомления: варианты «боковая вкладка» и «свайп от края» — левый край -->
     <button class="notif-edge-btn" id="notifEdgeBtn" hidden aria-label="Уведомления">
       <svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M9.5 19a2.5 2.5 0 0 0 5 0"/></svg>
     </button>
@@ -8207,6 +8608,10 @@
         <span class="icon-wrap"><svg viewBox="0 0 24 24"><path d="M4 11.5L12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h3v-5h4v5h3a1 1 0 0 0 1-1v-9"/></svg><span class="nav-lock-badge"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span></span>
         Главная
       </button>
+      <button class="nav-btn nav-btn-lockable" data-tab="planner">
+        <span class="icon-wrap"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="3" height="3" rx="0.6"/><path d="M9 6.5h12"/><rect x="3" y="11" width="3" height="3" rx="0.6"/><path d="M9 12.5h12"/><rect x="3" y="17" width="3" height="3" rx="0.6"/><path d="M9 18.5h12"/></svg><span class="nav-lock-badge"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span></span>
+        Планировщик
+      </button>
       <button class="nav-btn nav-btn-lockable" data-tab="shift">
         <span class="icon-wrap"><svg viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.4"/><path d="M10.3 5.2h3.4"/><circle cx="12" cy="18.3" r="0.9"/></svg><span class="nav-lock-badge"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span></span>
         Смена
@@ -8215,22 +8620,45 @@
         <span class="icon-wrap"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 6l9 7 9-7"/></svg></span>
         Мессенджер
       </button>
-      <button class="nav-btn nav-btn-lockable" data-tab="planner">
-        <span class="icon-wrap"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="3" height="3" rx="0.6"/><path d="M9 6.5h12"/><rect x="3" y="11" width="3" height="3" rx="0.6"/><path d="M9 12.5h12"/><rect x="3" y="17" width="3" height="3" rx="0.6"/><path d="M9 18.5h12"/></svg><span class="nav-lock-badge"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span></span>
-        Планировщик
-      </button>
       <button class="nav-btn nav-btn-lockable" data-tab="profile">
         <span class="icon-wrap"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg><span class="nav-lock-badge"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span></span>
         Профиль
-      </button>
-      <button class="nav-btn nav-btn-extra" id="navDeptBtn" hidden>
-        <span class="icon-wrap"><svg viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg></span>
-        Доп меню
       </button>
     </nav>
     <button class="nav-handle" id="navHandle" aria-label="Свернуть меню">
       <svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
     </button>
+
+    <!-- ---------- Голосовой ассистент (только роль руководителя) ----------
+         Вызов — горизонтальный свайп по нижнему меню, в любую сторону. -->
+    <div class="voice-overlay" id="voiceOverlay" hidden>
+      <div class="voice-glow" id="voiceGlow"></div>
+      <div class="voice-card" id="voiceCard">
+        <span class="voice-card-text" id="voiceCardText">Слушаю…</span>
+      </div>
+    </div>
+
+    <div class="voice-sheet" id="voiceSheet" hidden>
+      <div class="voice-sheet-rim"></div>
+      <div class="voice-sheet-glow" id="voiceSheetGlow"></div>
+      <div class="voice-sheet-head">
+        <svg class="voice-sheet-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5c.3 3.4 1.1 5.6 2.4 6.9 1.3 1.3 3.5 2.1 6.9 2.4-3.4.3-5.6 1.1-6.9 2.4-1.3 1.3-2.1 3.5-2.4 6.9-.3-3.4-1.1-5.6-2.4-6.9C8.3 12.9 6.1 12.1 2.7 11.8c3.4-.3 5.6-1.1 6.9-2.4C10.9 8.1 11.7 5.9 12 2.5z"/><path d="M19 15.5c.15 1.5.5 2.5 1.1 3.1.6.6 1.6.95 3.1 1.1-1.5.15-2.5.5-3.1 1.1-.6.6-.95 1.6-1.1 3.1-.15-1.5-.5-2.5-1.1-3.1-.6-.6-1.6-.95-3.1-1.1 1.5-.15 2.5-.5 3.1-1.1.6-.6.95-1.6 1.1-3.1z"/></svg>
+        <span class="voice-sheet-title">Понял так</span>
+      </div>
+      <div class="voice-sheet-rows">
+        <div class="voice-sheet-row"><span class="voice-sheet-row-label">Действие</span><span class="voice-sheet-row-value" id="voiceRowAction">—</span></div>
+        <div class="voice-sheet-row voice-sheet-row-stack" id="voiceDishRow">
+          <span class="voice-sheet-row-label" id="voiceRowDishLabel">Блюдо</span>
+          <div class="voice-sheet-dishes" id="voiceDishList"></div>
+        </div>
+      </div>
+      <div class="voice-sheet-actions">
+        <button class="voice-sheet-btn voice-sheet-btn-ghost" id="voiceSheetChangeBtn">Изменить</button>
+        <button class="voice-sheet-btn voice-sheet-btn-gold" id="voiceSheetConfirmBtn">Выполнить</button>
+      </div>
+    </div>
+
+    <div class="voice-toast" id="voiceUnavailableToast" hidden>Голосовой ввод недоступен</div>
 
     <!-- подтверждение сохранения изменений стоп/старт-листа -->
     <!-- модификатор, комментарий и курс для непробитой позиции -->
@@ -8313,18 +8741,37 @@
 
     <!-- МН-31: барабан выбора времени — часы и минуты, оба ограничены
          рабочим графиком выбранного дня (см. venueSlotList) -->
-    <div class="modal-overlay" id="timeWheelOverlay" hidden>
-      <div class="modal-box time-wheel-box">
+    <div class="modal-overlay drum-overlay" id="timeWheelOverlay" hidden>
+      <div class="modal-box drum-box">
         <div class="modal-title">Время</div>
-        <div class="time-wheel-row">
-          <div class="time-wheel-selection" aria-hidden="true"></div>
-          <div class="time-wheel-col" id="timeWheelHours"><div class="time-wheel-col-inner"></div></div>
-          <span class="time-wheel-colon">:</span>
-          <div class="time-wheel-col" id="timeWheelMinutes"><div class="time-wheel-col-inner"></div></div>
+        <div class="drum-row">
+          <div class="drum-selection" aria-hidden="true"></div>
+          <div class="drum-col" id="timeWheelHours"><div class="drum-col-inner"></div></div>
+          <span class="drum-colon">:</span>
+          <div class="drum-col" id="timeWheelMinutes"><div class="drum-col-inner"></div></div>
         </div>
-        <div class="time-wheel-note" id="timeWheelNote"></div>
+        <div class="drum-note" id="timeWheelNote"></div>
         <div class="modal-actions-single">
           <button class="modal-btn modal-btn-gold" id="timeWheelDoneBtn" type="button">Готово</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- МН-31: барабан выбора количества персон — 1 колонка, 1…50, дальше
+         кнопкой «+» (тот же компонент-барабан, что и у времени выше) -->
+    <div class="modal-overlay drum-overlay" id="personsWheelOverlay" hidden>
+      <div class="modal-box drum-box">
+        <div class="modal-title" id="personsWheelTitle">Персоны</div>
+        <div class="drum-row">
+          <div class="drum-selection" aria-hidden="true"></div>
+          <div class="drum-col" id="personsWheelCol"><div class="drum-col-inner"></div></div>
+        </div>
+        <button class="drum-more-btn" id="personsWheelMoreBtn" type="button" aria-label="+1 гость">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c1-4 4-6 7-6s6 2 7 6"/></svg>
+          <span>+</span>
+        </button>
+        <div class="modal-actions-single">
+          <button class="modal-btn modal-btn-gold" id="personsWheelDoneBtn" type="button">Готово</button>
         </div>
       </div>
     </div>
@@ -8710,11 +9157,6 @@
       <button class="notify-btn" id="notifyOpen">Ознакомиться</button>
     </div>
 
-    <!-- боковое меню отделов: правый край, на уровне третьего ряда столов -->
-    <button class="dept-side-btn" id="deptSideBtn" aria-label="Отделы">
-      <svg viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
-    </button>
-
     <div class="dept-overlay" id="deptOverlay" hidden></div>
 
     <aside class="dept-panel" id="deptPanel" hidden>
@@ -8724,6 +9166,10 @@
           <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
         </button>
       </div>
+      <button class="dept-item" id="deptItemAssistant">
+        <svg viewBox="0 0 24 24"><path d="M4 5h16v10H9l-4 4v-4H4z"/><path d="M9 9h6"/><path d="M9 12h4"/></svg>
+        <span class="dept-item-text"><span class="dept-item-name">Ассистент</span><span class="dept-item-note">Вопросы по работе и составу блюд</span></span>
+      </button>
       <button class="dept-item">
         <svg viewBox="0 0 24 24"><path d="M3 7h13v10H3z"/><path d="M16 10h3.5l1.5 3v4h-5"/><circle cx="7" cy="18.5" r="1.8"/><circle cx="17.5" cy="18.5" r="1.8"/></svg>
         <span class="dept-item-text"><span class="dept-item-name">Поставщики</span><span class="dept-item-note">Заявки и накладные</span></span>
@@ -8745,6 +9191,11 @@
         <span class="dept-item-text"><span class="dept-item-name">Техслужба</span><span class="dept-item-note">Заявки на ремонт</span></span>
       </button>
       <div class="dept-note">Разделы соберём в отдельных файлах</div>
+      <div class="settings-divider"></div>
+      <button class="dept-item" id="deptItemMap">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="7" height="7" rx="1.4"/><rect x="14" y="4" width="7" height="7" rx="1.4"/><rect x="3" y="14" width="7" height="7" rx="1.4"/><rect x="14" y="14" width="7" height="7" rx="1.4"/></svg>
+        <span class="dept-item-text"><span class="dept-item-name">Карта экранов</span><span class="dept-item-note">Служебный экран прототипа</span></span>
+      </button>
     </aside>
 
     <!-- уведомления, которые не успели смахнуть: копятся тут, открывается поверх экрана -->
@@ -8759,20 +9210,6 @@
         </button>
       </div>
       <div id="notifPanelBody"></div>
-    </aside>
-
-    <!-- варианты размещения кнопки «Доп меню» — открывается из Профиль → Настройки интерфейса -->
-    <div class="dept-overlay" id="menuVariantsOverlay" hidden></div>
-
-    <aside class="dept-panel" id="menuVariantsPanel" hidden>
-      <div class="dept-panel-head">
-        <span class="dept-panel-title">Кнопка «Доп меню»</span>
-        <button class="dept-close" id="menuVariantsClose" aria-label="Закрыть">
-          <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
-        </button>
-      </div>
-      <div class="mv-intro">Чтобы кнопка всегда была под рукой и не мешала работе. Выберите вариант — он сразу применится в прототипе.</div>
-      <div class="mv-list" id="mvList"></div>
     </aside>
 
     <!-- варианты размещения кнопки «Уведомления» — открывается из Профиль → Настройки интерфейса -->
@@ -9083,7 +9520,7 @@
 </div>
 
 <script>
-  const buttons = document.querySelectorAll('.nav-btn:not(.nav-btn-extra)');
+  const buttons = document.querySelectorAll('.nav-btn');
   const panels = document.querySelectorAll('.panel');
   const titleEl = document.getElementById('screenTitle');
   const subEl = document.getElementById('screenSub');
@@ -9132,7 +9569,7 @@
     });
   });
 
-  const assistantHeaderBtn = document.getElementById('assistantHeaderBtn');
+  const headerMenuBtn = document.getElementById('headerMenuBtn');
   const newChatFab = document.getElementById('newChatFab');
   const newReserveFab = document.getElementById('newReserveFab');
 
@@ -9491,13 +9928,16 @@
 
   let listNotifyPending = null;   // попадёт в копилку, если не ознакомились вовремя
 
-  function showListNotify() {
+  /* voiceUndo — команда голосового ассистента: та же плашка, что у всех,
+     но кнопка «Отменить» вместо «Ознакомиться» (и в копилке тоже) */
+  function showListNotify(voiceUndo) {
     clearTimeout(notifyTimer);
     const title = changedListLabel();
     const note = 'Обновление от менеджера · сотрудникам зала';
     document.getElementById('notifyTitle').textContent = title;
     document.getElementById('notifyNote').textContent = note;
-    listNotifyPending = { employee:'Зал', topic:'stoplist', title:title, note:note, at:Date.now() };
+    document.getElementById('notifyOpen').textContent = voiceUndo ? 'Отменить' : 'Ознакомиться';
+    listNotifyPending = { employee:'Зал', topic:'stoplist', title:title, note:note, at:Date.now(), voiceUndo:voiceUndo || null };
     listNotifyEl.classList.remove('leaving');
     listNotifyEl.style.transition = '';
     listNotifyEl.style.transform = '';
@@ -9508,10 +9948,16 @@
   }
 
   /* pushToInbox — не ознакомились (таймаут или смахнули), кладём в копилку;
-     dismissAnimated — тост уже улетел сам (свайпом), обычное затухание вверх не нужно */
+     dismissAnimated — тост уже улетел сам (свайпом), обычное затухание вверх не нужно.
+     Смахнули пальцем — сотрудник его точно увидел, просто убрал с глаз: в копилке
+     остаётся, но не в счётчике непрочитанных (в отличие от таймаута — тот
+     означает, что уведомление пропустили). */
   function hideListNotify(pushToInbox, dismissAnimated) {
     clearTimeout(notifyTimer);
-    if (pushToInbox && listNotifyPending) pushNotif(listNotifyPending);
+    if (pushToInbox && listNotifyPending) {
+      if (dismissAnimated) listNotifyPending.read = true;
+      pushNotif(listNotifyPending);
+    }
     listNotifyPending = null;
     if (!dismissAnimated) listNotifyEl.classList.add('leaving');
     setTimeout(() => {
@@ -9524,32 +9970,41 @@
   }
 
   document.getElementById('notifyOpen').addEventListener('click', () => {
+    const pending = listNotifyPending;
     hideListNotify(false);
-    location.hash = 'мн-04';
+    if (pending && pending.voiceUndo) {
+      undoVoiceStopCommand(pending.voiceUndo);
+    } else {
+      location.hash = 'мн-04';
+    }
   });
 
   /* смахнуть тост стоп-листа пальцем — не ознакомился, уходит в копилку */
   (function enableListNotifySwipe() {
-    let dragging = false, startX = 0, startY = 0, dx = 0;
+    let dragging = false, startX = 0, startY = 0, dx = 0, activePointerId = null;
     listNotifyEl.addEventListener('pointerdown', e => {
       if (e.target.closest('#notifyOpen')) return;
       dragging = true; startX = e.clientX; startY = e.clientY; dx = 0;
+      activePointerId = e.pointerId;
       listNotifyEl.style.transition = 'none';
       try { listNotifyEl.setPointerCapture(e.pointerId); } catch (err) {}
     });
     listNotifyEl.addEventListener('pointermove', e => {
-      if (!dragging) return;
+      if (!dragging || e.pointerId !== activePointerId) return;
       dx = e.clientX - startX;
       const dy = e.clientY - startY;
       if (Math.abs(dy) > Math.abs(dx) * 1.2) return;
       listNotifyEl.style.transform = 'translateX(' + dx + 'px)';
       listNotifyEl.style.opacity = String(Math.max(0.15, 1 - Math.abs(dx) / 160));
     });
-    function endDrag() {
-      if (!dragging) return;
+    /* commit=false — обрыв жеста браузером (pointercancel), а не осознанное
+       отпускание пальца; такое всегда возвращаем на место, а не засчитываем
+       как смахивание, даже если к этому моменту dx уже за порогом */
+    function endDrag(e, commit) {
+      if (!dragging || (e && e.pointerId !== activePointerId)) return;
       dragging = false;
       listNotifyEl.style.transition = 'transform .2s ease, opacity .2s ease';
-      if (Math.abs(dx) > 70) {
+      if (commit && Math.abs(dx) > 70) {
         const dir = dx > 0 ? 1 : -1;
         listNotifyEl.style.transform = 'translateX(' + dir * 400 + 'px)';
         listNotifyEl.style.opacity = '0';
@@ -9560,8 +10015,8 @@
       }
       dx = 0;
     }
-    listNotifyEl.addEventListener('pointerup', endDrag);
-    listNotifyEl.addEventListener('pointercancel', endDrag);
+    listNotifyEl.addEventListener('pointerup', e => endDrag(e, true));
+    listNotifyEl.addEventListener('pointercancel', e => endDrag(e, false));
   })();
 
   /* «Назад» из Старт/Стоп листа спрашивает про сохранение */
@@ -9610,188 +10065,24 @@
   applySideSwitch(navSideSwitch, 'nav-left', 'navLeft');
   applySideSwitch(deptSideSwitch, 'dept-left', 'deptLeft');
 
-  /* ---------- Боковое меню отделов ---------- */
+  /* ---------- Боковое меню отделов (дополнительное меню) ----------
+     Открывается кликом по логотипу в шапке (headerMenuBtn). */
   const deptPanelEl = document.getElementById('deptPanel');
   const deptOverlayEl = document.getElementById('deptOverlay');
-  const deptSideBtnEl = document.getElementById('deptSideBtn');
 
   function toggleDept(open) {
     deptPanelEl.hidden = !open;
     deptOverlayEl.hidden = !open;
   }
 
-  let deptBtnJustDragged = false;
-  deptSideBtnEl.addEventListener('click', () => {
-    if (deptBtnJustDragged) return;
-    toggleDept(deptPanelEl.hidden);
-  });
+  headerMenuBtn.addEventListener('click', () => toggleDept(deptPanelEl.hidden));
   document.getElementById('deptClose').addEventListener('click', () => toggleDept(false));
   deptOverlayEl.addEventListener('click', () => toggleDept(false));
 
-  /* ---------- Кнопка «Доп меню»: варианты расположения ----------
-     Выбор в Профиль → Настройки интерфейса → «Кнопка «Доп меню»».
-     Каждый вариант — свой класс на .screen, который управляет
-     положением/поведением реальной кнопки бокового меню отделов
-     (deptSideBtnEl) плюс, для варианта «в нижнем меню», отдельная
-     кнопка #navDeptBtn в .bottom-nav. */
-  const navDeptBtnEl = document.getElementById('navDeptBtn');
-  const MENU_VARIANTS = [
-    {
-      key: 'edge', cls: '',
-      title: 'Боковая вкладка (текущий)',
-      note: 'Узкая вкладка у края экрана, всегда видна поверх любого экрана.',
-      mockup: '<span class="mv-tab"></span>'
-    },
-    {
-      key: 'fab', cls: 'menu-variant-fab',
-      title: 'Плавающая кнопка снизу',
-      note: 'Круглая кнопка над нижним меню, с противоположной от уведомлений стороны.',
-      mockup: '<span class="mv-dot" style="right:6px; bottom:15px;"></span>'
-    },
-    {
-      key: 'drag', cls: 'menu-variant-drag',
-      title: 'Перетаскиваемая вкладка',
-      note: 'Та же боковая вкладка, но её можно перетянуть по высоте и оставить там, где удобно.',
-      mockup: '<span class="mv-tab mv-drag"></span>'
-    },
-    {
-      key: 'swipe', cls: 'menu-variant-swipe',
-      title: 'Свайп от края',
-      note: 'От вкладки остаётся едва заметная полоска, открытие — свайпом от края экрана внутрь.',
-      mockup: '<span class="mv-tab mv-thin"></span>'
-    },
-    {
-      key: 'navbar', cls: 'menu-variant-navbar',
-      title: 'В нижнем меню, после «Профиль»',
-      note: 'Вариант от менеджера. Шестая кнопка нижнего меню — сама заметная и привычная по расположению, но меню становится 6-кнопочным.',
-      warn: 'Меняет утверждённую структуру нижнего меню (сейчас — 5 кнопок).',
-      mockup: '<span class="mv-nav" style="position:static; margin-top:78px;"><i></i><i></i><i></i><i></i><i></i><i class="mv-nav-extra"></i></span>'
-    }
-  ];
-
-  function loadMenuVariant() {
-    try { return localStorage.getItem('ruka:menuVariant') || 'edge'; } catch (e) { return 'edge'; }
-  }
-
-  let currentMenuVariant = loadMenuVariant();
-  const menuVariantsCurrentNote = document.getElementById('menuVariantsCurrentNote');
-
-  function applyMenuVariant(key) {
-    const known = MENU_VARIANTS.some(v => v.key === key);
-    if (!known) key = 'edge';
-    MENU_VARIANTS.forEach(v => { if (v.cls) screenEl.classList.remove(v.cls); });
-    const v = MENU_VARIANTS.find(v => v.key === key);
-    if (v.cls) screenEl.classList.add(v.cls);
-    navDeptBtnEl.hidden = key !== 'navbar';
-    deptSideBtnEl.hidden = key === 'navbar';
-    currentMenuVariant = key;
-    try { localStorage.setItem('ruka:menuVariant', key); } catch (e) {}
-    if (menuVariantsCurrentNote) menuVariantsCurrentNote.textContent = 'Расположение — ' + v.title.replace(' (текущий)', '').toLowerCase();
-    renderMenuVariantList();
-  }
-
-  function renderMenuVariantList() {
-    const list = document.getElementById('mvList');
-    if (!list) return;
-    list.innerHTML = MENU_VARIANTS.map(v =>
-      '<button class="mv-card' + (v.key === currentMenuVariant ? ' is-selected' : '') + '" data-mv-select="' + v.key + '">' +
-        '<span class="mv-phone"><span class="mv-bar"></span>' + v.mockup + '<span class="mv-nav"><i></i><i></i><i></i><i></i><i></i></span></span>' +
-        '<span class="mv-card-text">' +
-          '<span class="mv-card-title">' + v.title + '</span>' +
-          '<span class="mv-card-note">' + v.note + '</span>' +
-          (v.warn ? '<span class="mv-card-warn">' + v.warn + '</span>' : '') +
-        '</span>' +
-        '<span class="mv-radio"></span>' +
-      '</button>'
-    ).join('');
-  }
-  renderMenuVariantList();
-
-  document.getElementById('mvList').addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-mv-select]');
-    if (!btn) return;
-    applyMenuVariant(btn.dataset.mvSelect);
+  document.getElementById('deptItemMap').addEventListener('click', () => {
+    toggleDept(false);
+    location.hash = 'мн-00';
   });
-
-  applyMenuVariant(currentMenuVariant);
-
-  const menuVariantsPanelEl = document.getElementById('menuVariantsPanel');
-  const menuVariantsOverlayEl = document.getElementById('menuVariantsOverlay');
-  function toggleMenuVariants(open) {
-    menuVariantsPanelEl.hidden = !open;
-    menuVariantsOverlayEl.hidden = !open;
-  }
-  document.getElementById('menuVariantsOpenBtn').addEventListener('click', () => toggleMenuVariants(true));
-  document.getElementById('menuVariantsClose').addEventListener('click', () => toggleMenuVariants(false));
-  menuVariantsOverlayEl.addEventListener('click', () => toggleMenuVariants(false));
-
-  /* «В нижнем меню» — доп. кнопка открывает то же меню отделов */
-  navDeptBtnEl.addEventListener('click', () => toggleDept(deptPanelEl.hidden));
-
-  /* «Перетаскиваемая вкладка» — тянем боковой таб по вертикали и запоминаем позицию */
-  (function enableDragVariant() {
-    let dragging = false, startY = 0, startTop = 0;
-    function currentTop() {
-      const t = parseFloat(deptSideBtnEl.style.top || getComputedStyle(deptSideBtnEl).top);
-      return isNaN(t) ? 300 : t;
-    }
-    try {
-      const saved = localStorage.getItem('ruka:menuDragTop');
-      if (saved) deptSideBtnEl.style.top = saved;
-    } catch (e) {}
-    deptSideBtnEl.addEventListener('pointerdown', (e) => {
-      if (currentMenuVariant !== 'drag') return;
-      dragging = true;
-      startY = e.clientY;
-      startTop = currentTop();
-      try { deptSideBtnEl.setPointerCapture(e.pointerId); } catch (err) {}
-    });
-    deptSideBtnEl.addEventListener('pointermove', (e) => {
-      if (!dragging) return;
-      const screenH = screenEl.clientHeight || 700;
-      let top = startTop + (e.clientY - startY);
-      top = Math.max(80, Math.min(screenH - 160, top));
-      deptSideBtnEl.style.top = top + 'px';
-      deptSideBtnEl.classList.add('is-dragging');
-    });
-    function endDrag() {
-      if (!dragging) return;
-      dragging = false;
-      deptSideBtnEl.classList.remove('is-dragging');
-      const moved = Math.abs(currentTop() - startTop) > 4;
-      if (moved) {
-        deptBtnJustDragged = true;
-        setTimeout(() => { deptBtnJustDragged = false; }, 0);
-      }
-      try { localStorage.setItem('ruka:menuDragTop', deptSideBtnEl.style.top); } catch (e) {}
-    }
-    deptSideBtnEl.addEventListener('pointerup', endDrag);
-    deptSideBtnEl.addEventListener('pointercancel', endDrag);
-  })();
-
-  /* «Свайп от края» — тянем от края экрана внутрь, чтобы открыть меню отделов */
-  (function enableSwipeVariant() {
-    let active = false, startX = 0, startY = 0;
-    screenEl.addEventListener('pointerdown', (e) => {
-      if (currentMenuVariant !== 'swipe') return;
-      const rect = screenEl.getBoundingClientRect();
-      const fromRight = !screenEl.classList.contains('dept-left');
-      const edgeX = fromRight ? rect.right : rect.left;
-      if (Math.abs(e.clientX - edgeX) > 24) return;
-      active = true;
-      startX = e.clientX;
-      startY = e.clientY;
-    });
-    screenEl.addEventListener('pointerup', (e) => {
-      if (!active) return;
-      active = false;
-      const dx = e.clientX - startX;
-      const dy = Math.abs(e.clientY - startY);
-      const fromRight = !screenEl.classList.contains('dept-left');
-      const passed = fromRight ? dx < -30 : dx > 30;
-      if (passed && dy < 60) toggleDept(true);
-    });
-  })();
 
   /* ---------- Нижнее меню: сворачивание вправо + закрепление из профиля ---------- */
   const bottomNavEl = document.getElementById('bottomNav');
@@ -10562,11 +10853,13 @@
   });
 
   /* ----- сетка столов ----- */
-  /* название зоны может обрезаться, номер стола — никогда; всё в одну строку */
+  /* на плитке — просто «№N» (зона понятна по заголовку группы среди
+     свободных, см. renderTables, и по фильтру вкладок наверху); слово
+     «Стол»/«Веранда»/«Бар» остаётся в заголовках/логах — там оно даёт
+     контекст без сетки рядом, см. tableLabel */
   const tableNumHtml = t =>
     '<span class="table-card-num">' +
-      '<span class="table-card-name-text">' + ZONE_LABEL[t.zone] + '</span>' +
-      '<span class="table-card-num-digit">' + t.zoneNum + '</span>' +
+      '<span class="table-card-num-digit">№ ' + t.zoneNum + '</span>' +
     '</span>';
 
   const ICON_BILL = '<svg viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6"/><path d="M9 12h6"/></svg>';
@@ -10579,7 +10872,6 @@
       const k = t.seats || 2;
       return '<button class="table-card is-free" data-free="' + t.num + '">' +
         tableNumHtml(t) +
-        '<span class="table-card-free">свободен</span>' +
         '<span class="table-card-seats">' + ICON_GUEST + '1–' + k + '</span>' +
       '</button>';
     }
@@ -10591,8 +10883,17 @@
     if (t.pendingEmptyKept && (t.items || []).length) { delete t.pendingEmptyKept; delete t.emptyMissCount; }
     const waiting = !!t.pendingUnsent || !!t.pendingEmptyKept;
     /* счёт этого стола целиком выбит и ждёт кассира — иконка чека в углу */
-    const billIcon = tableActiveBill(t)
+    const hasActiveBill = !!tableActiveBill(t);
+    const billIcon = hasActiveBill
       ? '<span class="table-card-bill-icon">' + ICON_BILL + '</span>'
+      : '';
+    /* повод унаследован от резерва, из которого пришёл гость (см.
+       reserveArrivedBtn) — тот же значок, что на карточке резерва, живёт
+       до закрытия стола (releaseTable); has-bill сдвигает его левее, если
+       на той же плитке одновременно есть чек, ждущий кассира */
+    const occasionIcon = t.reserveOccasion
+      ? '<span class="table-card-occasion-icon' + (hasActiveBill ? ' has-bill' : '') + '"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+          (RESERVE_OCCASION_ICON[t.reserveOccasion] || RESERVE_OCCASION_ICON.custom) + '</svg></span>'
       : '';
     return '<div class="table-card is-open' + (t.calling ? ' is-calling' : '') +
         (isSource ? ' is-move-source' : '') +
@@ -10600,6 +10901,7 @@
         (t.pendingEmptyKept ? ' is-empty-kept' : '') +
         '" data-table="' + t.num + '" role="button" tabindex="0">' +
       billIcon +
+      occasionIcon +
       tableNumHtml(t) +
       '<span class="table-card-waiter">' + t.waiter + '</span>' +
       '<span class="table-card-sum">' + money(tableSum(t)) + '</span>' +
@@ -10612,8 +10914,7 @@
   function billCardTemplate(bill, parent) {
     return '<div class="table-card is-open is-bill-tile" data-bill="' + bill.tag + '" role="button" tabindex="0">' +
       '<span class="table-card-bill-icon">' + ICON_BILL + '</span>' +
-      '<span class="table-card-num"><span class="table-card-name-text">' + ZONE_LABEL[parent.zone] + '</span>' +
-        '<span class="table-card-num-digit">' + bill.tag + '</span></span>' +
+      '<span class="table-card-num"><span class="table-card-num-digit">№ ' + bill.tag + '</span></span>' +
       '<span class="table-card-waiter">' + guestLabel(parent, bill.guest) + '</span>' +
       '<span class="table-card-sum">' + money(bill.total) + '</span>' +
     '</div>';
@@ -10666,10 +10967,24 @@
     /* по официантам свободные столы не показываем — они ничьи, свайп вправо
        возвращает общий список и их обратно */
     if (freeList.length && !ordersByWaiter) {
-      if (busyList.length || billEntries.length) html += '<div class="table-divider">Свободные</div>';
+      if (busyList.length || billEntries.length) html += '<div class="table-divider table-divider-plain">Свободные столы</div>';
       const collapse = freeList.length > FREE_COLLAPSE_LIMIT && !freeExpanded;
       const shownFree = collapse ? freeList.slice(0, FREE_COLLAPSE_LIMIT) : freeList;
-      html += shownFree.map(tableCardTemplate).join('');
+      /* зал не выбран сверху (currentZone === 'all') — свободные столы
+         группируем по залам заголовками, как на «Новом резерве» (см.
+         reserveTablePickGroupsHtml); при выбранном зале group не нужен —
+         list уже отфильтрован до одного зала */
+      if (currentZone === 'all') {
+        Object.keys(ZONE_NAMES).forEach(z => {
+          const zoneFree = shownFree.filter(t => t.zone === z);
+          if (!zoneFree.length) return;
+          const zoneTitle = z === 'hall' ? 'Основной зал' : ZONE_NAMES[z];
+          html += '<div class="table-divider table-divider-zone">' + zoneTitle + '</div>';
+          html += zoneFree.map(tableCardTemplate).join('');
+        });
+      } else {
+        html += shownFree.map(tableCardTemplate).join('');
+      }
       if (freeList.length > FREE_COLLAPSE_LIMIT) {
         html += '<button class="free-expand-btn" id="freeExpandBtn">' +
           (freeExpanded ? 'Свернуть' : 'Развернуть') + '</button>';
@@ -12245,9 +12560,12 @@
             status:'open', calling:false, precheck:t.precheck, locked:t.locked,
             guests:t.guests, mins:t.mins, openedAt:t.openedAt, waiter:t.waiter, items:t.items
           });
+          /* значок повода едет вместе с гостями на новый стол, а не гаснет */
+          if (t.reserveOccasion) dest.reserveOccasion = t.reserveOccasion; else delete dest.reserveOccasion;
           bills.forEach(b => { if (b.table === t.num) b.table = dest.num; });
           t.status = 'free';
           delete t.guests; delete t.mins; delete t.openedAt; delete t.waiter;
+          delete t.reserveOccasion;
           t.items = []; t.calling = false; t.precheck = false; t.locked = false;
           logAction(dest, 'move', 'Стол перенесён · ' + tableLabel(dest), 'Был ' + tableLabel(t));
           currentTable = dest;
@@ -13195,6 +13513,9 @@
     delete t.guestNames;
     delete t.pendingUnsent; delete t.pendingEmptyKept;
     delete t.unsentMissCount; delete t.emptyMissCount;
+    /* значок повода, унаследованный от резерва (см. reserveArrivedBtn) —
+       живёт только до закрытия стола */
+    delete t.reserveOccasion;
   }
 
   /* ---------- Выход из заказа: неотправленные позиции и пустой стол ----------
@@ -13508,7 +13829,7 @@
     {
       key: 'edge', cls: '',
       title: 'Боковая вкладка',
-      note: 'Такая же вкладка, как у «Доп меню», только с левого края и выше — не пересекаются.',
+      note: 'Узкая вкладка у левого края экрана, всегда видна поверх любого экрана.',
       mockup: '<span class="mv-tab" style="left:0; right:auto; border-radius:0 3px 3px 0; top:14px;"></span>'
     },
     {
@@ -13554,23 +13875,27 @@
   }
 
   function updateNotifBell() {
-    const n = notifInbox.length;
-    const active = n > 0;
-    const countText = n > 99 ? '99+' : String(n);
+    /* кнопка видна, пока в копилке вообще что-то есть (прочитанное и нет);
+       счётчик и «активный» цвет — только по непрочитанным: смахнутые
+       уведомления лежат в копилке, но не считаются непрочитанными */
+    const total = notifInbox.length;
+    const unread = notifInbox.filter(x => !x.read).length;
+    const active = total > 0;
+    const countText = unread > 99 ? '99+' : String(unread);
 
     notifFabBtn.hidden = !(currentNotifPlacement === 'fab' && active);
-    notifFabBtn.classList.toggle('is-active', active);
-    notifFabCount.hidden = !active;
+    notifFabBtn.classList.toggle('is-active', unread > 0);
+    notifFabCount.hidden = unread === 0;
     notifFabCount.textContent = countText;
 
     notifHeaderBtn.hidden = !(currentNotifPlacement === 'header' && active);
-    notifHeaderBtn.classList.toggle('is-active', active);
-    notifHeaderCount.hidden = !active;
+    notifHeaderBtn.classList.toggle('is-active', unread > 0);
+    notifHeaderCount.hidden = unread === 0;
     notifHeaderCount.textContent = countText;
 
     const edgeShown = (currentNotifPlacement === 'edge' || currentNotifPlacement === 'swipe') && active;
     notifEdgeBtn.hidden = !edgeShown;
-    notifEdgeBtn.classList.toggle('is-active', active);
+    notifEdgeBtn.classList.toggle('is-active', unread > 0);
   }
 
   function pushNotif(entry) {
@@ -13614,15 +13939,17 @@
           '<div class="notif-topic-title">' + (NOTIF_TOPIC_LABELS[topic] || topic) +
             '<span class="notif-topic-count">' + rows.length + '</span></div>' +
           rows.map(n =>
-            '<div class="notif-row' + (n.escalated ? ' is-escalated' : '') + '">' +
+            '<div class="notif-row' + (n.escalated ? ' is-escalated' : '') + (n.read ? ' is-read' : '') + '">' +
               '<button class="notif-row-main" data-notif-open="' + n.id + '">' +
                 '<span class="notif-row-title">' + n.title + '</span>' +
                 '<span class="notif-row-note">' + n.note + '</span>' +
-                '<span class="notif-row-time">' + stampText(n.at) + '</span>' +
+                '<span class="notif-row-time">' + stampText(n.at) + (n.read ? ' · смахнули' : '') + '</span>' +
               '</button>' +
-              (canCloseFromNotif(n)
-                ? '<button class="notif-row-close" data-notif-close="' + n.id + '">Закрыть стол</button>'
-                : '') +
+              (n.voiceUndo
+                ? '<button class="notif-row-close" data-notif-undo="' + n.id + '">Отменить</button>'
+                : canCloseFromNotif(n)
+                  ? '<button class="notif-row-close" data-notif-close="' + n.id + '">Закрыть стол</button>'
+                  : '') +
             '</div>').join('') +
         '</div>';
       }).join('');
@@ -13698,6 +14025,17 @@
     if (toggle) {
       const key = toggle.dataset.notifToggle;
       if (notifExpanded.has(key)) notifExpanded.delete(key); else notifExpanded.add(key);
+      renderNotifPanel();
+      return;
+    }
+    /* «Отменить» — откат команды голосового ассистента прямо из копилки */
+    const undoBtn = e.target.closest('[data-notif-undo]');
+    if (undoBtn) {
+      const id = undoBtn.dataset.notifUndo;
+      const n = notifInbox.find(x => x.id === id);
+      notifInbox = notifInbox.filter(x => x.id !== id);
+      updateNotifBell();
+      if (n && n.voiceUndo) undoVoiceStopCommand(n.voiceUndo);
       renderNotifPanel();
       return;
     }
@@ -16003,7 +16341,6 @@
      в разметку МН-00 «Карта экранов».
      ===================================================== */
   const mapPanel = document.querySelector('.panel[data-panel="map"]');
-  const mapHeaderBtn = document.getElementById('mapHeaderBtn');
   let routing = false;
 
   /* уходя из деталей смены, гасим всё, что было открыто поверх заказа */
@@ -17313,7 +17650,10 @@
   const RESERVE_OCCASION_ICON = {
     bday:'<path d="M4 21v-6.5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2V21"/><path d="M4 17h16"/><path d="M9 12.5V9"/><path d="M15 12.5V9"/><path d="M9 6.2c0-1 .8-1.7.8-2.7 0-.7-.4-1.2-.8-1.5"/><path d="M15 6.2c0-1 .8-1.7.8-2.7 0-.7-.4-1.2-.8-1.5"/>',
     business:'<rect x="3" y="8" width="18" height="11" rx="2"/><path d="M8 8V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
-    date:'<path d="M12 20.5s-7.5-4.6-9.7-9C.7 7.8 2.4 4.5 5.6 4c2-.3 3.8.7 4.9 2.3.4.6.8 1.2 1.5 1.2s1.1-.6 1.5-1.2C14.6 4.7 16.4 3.7 18.4 4c3.2.5 4.9 3.8 3.3 7.5-2.2 4.4-9.7 9-9.7 9z"/>'
+    date:'<path d="M12 20.5s-7.5-4.6-9.7-9C.7 7.8 2.4 4.5 5.6 4c2-.3 3.8.7 4.9 2.3.4.6.8 1.2 1.5 1.2s1.1-.6 1.5-1.2C14.6 4.7 16.4 3.7 18.4 4c3.2.5 4.9 3.8 3.3 7.5-2.2 4.4-9.7 9-9.7 9z"/>',
+    /* запасная иконка — для поводов, добавленных вручную через «+ Добавить
+       повод» на «Новом резерве» (у них своего значка нет, см. nrAddCustomOccasion) */
+    custom:'<path d="M12 3l2.4 6.5 6.6.3-5.2 4.2 1.9 6.4-5.7-3.8-5.7 3.8 1.9-6.4-5.2-4.2 6.6-.3z"/>'
   };
 
   const RESERVE_DURATION_MIN = 120;  // условная длительность резерва — для расчёта пересечений и буфера
@@ -17343,6 +17683,12 @@
      у столов новых залов (см. createReserveZone) номер задаётся отдельно —
      то, что ввели в «Первый номер стола», не обязано совпадать с id */
   function tableNum(t) { return t.num != null ? t.num : parseInt(t.id.replace('rt', ''), 10); }
+  /* «главный» стол резерва — первый в массиве r.tables: для одиночного
+     резерва это единственный стол, для объединённого — тот, что показывают
+     там, где места на несколько чипов нет (не используется, если места на
+     чипы есть — см. tableChipsHtml) */
+  function reservePrimaryTable(r) { return reserveTable(r.tables[0].id); }
+  function reserveHasTable(r, tableId) { return r.tables.some(x => x.id === tableId); }
 
   /* залы «Резервов» и «Заказов» — разные списки с независимой нумерацией
      (совпадений номеров между ними нет и не предполагается), поэтому
@@ -17421,20 +17767,29 @@
   document.getElementById('calOverlay').addEventListener('click', e => { if (e.target.id === 'calOverlay') closeMonthCalendar(); });
 
   const reserveNow0 = Date.now();
+  /* каждый резерв держит МАССИВ столов ({id, state}), а не один tableId:
+     обычный резерв — массив из 1 стола (state всегда 'ready'); объединённый
+     резерв (см. «Объединить» на МН-31) может занимать
+     несколько столов сразу, каждый со своим состоянием —
+     'ready' (свободен под этот резерв), 'waiting' (стол ещё занят другим
+     резервом, ждём, пока освободится) или 'released' (гости с этого стола
+     уже ушли, стол сдан) — см. tableChipsHtml/renderReserveTableGroup */
   const reservations = [
-    { id:'r1', tableId:'rt3', time:reserveNow0 + 8 * 60000,   persons:4, name:'Игорь Петров',    phone:'+7 916 000-01-01', tg:'',          occasion:'bday',     comment:'Просили торт со свечками', confirmed:true,  deposit:true,  arrived:false, tableFreed:false,
+    { id:'r1', tables:[{id:'rt3', state:'ready'}], time:reserveNow0 + 8 * 60000,   persons:4, name:'Игорь Петров',    phone:'+7 916 000-01-01', tg:'',          occasion:'bday',     comment:'Просили торт со свечками', confirmed:true,  deposit:true,  arrived:false, tableFreed:false,
       log:[ reserveEvent('Создан', 'Хостес Аня', reserveNow0 - 3 * 3600000) ] },
-    { id:'r2', tableId:'rt2', time:reserveNow0 + 40 * 60000,  persons:2, name:'Елена Ким',       phone:'+7 916 000-01-02', tg:'',          occasion:'date',     comment:'', confirmed:true,  deposit:false, arrived:false, tableFreed:false,
+    { id:'r2', tables:[{id:'rt2', state:'ready'}], time:reserveNow0 + 40 * 60000,  persons:2, name:'Елена Ким',       phone:'+7 916 000-01-02', tg:'',          occasion:'date',     comment:'', confirmed:true,  deposit:false, arrived:false, tableFreed:false,
       log:[ reserveEvent('Создан', 'Хостес Аня', reserveNow0 - 5 * 3600000) ] },
-    { id:'r5', tableId:'rt10', time:reserveNow0 + 12 * 60000, persons:2, name:'Сергей Литвинов', phone:'+7 916 000-01-05', tg:'@litvinov', occasion:'date',     comment:'', confirmed:true,  deposit:false, arrived:false, tableFreed:false,
+    { id:'r5', tables:[{id:'rt10', state:'ready'}], time:reserveNow0 + 12 * 60000, persons:2, name:'Сергей Литвинов', phone:'+7 916 000-01-05', tg:'@litvinov', occasion:'date',     comment:'', confirmed:true,  deposit:false, arrived:false, tableFreed:false,
       log:[ reserveEvent('Создан', 'Менеджер Игорь', reserveNow0 - 40 * 60000) ] },
-    { id:'r6', tableId:'rt1', time:reserveNow0 - 50 * 60000,  persons:2, name:'Татьяна Орлова',  phone:'+7 916 000-01-06', tg:'',          occasion:'date',     comment:'', confirmed:true,  deposit:true,  arrived:true,  tableFreed:false,
+    { id:'r6', tables:[{id:'rt1', state:'ready'}], time:reserveNow0 - 50 * 60000,  persons:2, name:'Татьяна Орлова',  phone:'+7 916 000-01-06', tg:'',          occasion:'date',     comment:'', confirmed:true,  deposit:true,  arrived:true,  tableFreed:false,
       orderZone:'hall', orderNum:1,
       log:[ reserveEvent('Создан', 'Хостес Аня', reserveNow0 - 5 * 3600000), reserveEvent('Гость пришёл', 'Хостес Аня', reserveNow0 - 46 * 60000) ] },
-    { id:'r7', tableId:'rt9', time:reserveNow0 - 90 * 60000,  persons:4, name:'Виктор Дьяченко', phone:'+7 916 000-01-07', tg:'',          occasion:'business', comment:'', confirmed:true,  deposit:false, arrived:true,  tableFreed:false,
+    /* демо объединённого резерва — два стола, второй ещё «ждёт» (занят
+       другой компанией) — показывает чипы и список освобождения на МН-30 */
+    { id:'r7', tables:[{id:'rt9', state:'ready'}, {id:'rt16', state:'waiting'}], time:reserveNow0 - 90 * 60000,  persons:4, name:'Виктор Дьяченко', phone:'+7 916 000-01-07', tg:'',          occasion:'business', comment:'', confirmed:true,  deposit:false, arrived:true,  tableFreed:false,
       orderZone:'veranda', orderNum:13,
       log:[ reserveEvent('Создан', 'Менеджер Игорь', reserveNow0 - 8 * 3600000), reserveEvent('Гость пришёл', 'Хостес Аня', reserveNow0 - 85 * 60000) ] },
-    { id:'r9', tableId:'rt3', time:reserveNow0 + 170 * 60000, persons:3, name:'Дмитрий Крылов',  phone:'+7 916 000-01-09', tg:'',          occasion:'business', comment:'', confirmed:true,  deposit:false, arrived:false, tableFreed:false,
+    { id:'r9', tables:[{id:'rt3', state:'ready'}], time:reserveNow0 + 170 * 60000, persons:3, name:'Дмитрий Крылов',  phone:'+7 916 000-01-09', tg:'',          occasion:'business', comment:'', confirmed:true,  deposit:false, arrived:false, tableFreed:false,
       log:[ reserveEvent('Создан', 'Менеджер Игорь', reserveNow0 - 20 * 60000) ] }
   ];
   let reserveSeq = 9;
@@ -17465,8 +17820,15 @@
     if (reserveIsSoon(r)) return 'is-soon';
     return '';
   }
+  /* «waiting»-чип на строке столов пульсирует красным в последние 30 минут
+     до резерва (включая просрочку) — свой порог, отдельный от 15-минутной
+     золотой пульсации всей плитки (reserveIsSoon) */
+  function reserveWaitingPulses(r) { return r.time - Date.now() <= 30 * 60000; }
+  /* состояние физического стола на схеме зала — считает столы только тех
+     резервов, где этот стол ещё не 'released' (освобождённый в рамках
+     объединённого резерва стол больше не держит место) */
   function reserveTableState(tableId) {
-    const rs = reservations.filter(r => r.tableId === tableId && !r.tableFreed);
+    const rs = reservations.filter(r => !r.tableFreed && r.tables.some(x => x.id === tableId && x.state !== 'released'));
     if (!rs.length) return 'free';
     if (rs.some(r => r.arrived)) return 'inhall';
     if (rs.some(r => reserveIsLate(r))) return 'late';
@@ -17505,19 +17867,41 @@
      верх карточки, сверху вниз, если их когда-нибудь станет больше одной */
   function reserveCardBadges(r) {
     const icons = [];
-    if (r.occasion) icons.push({ icon: RESERVE_OCCASION_ICON[r.occasion], title: RESERVE_OCCASION_NAME[r.occasion] });
+    if (r.occasion) icons.push({ icon: RESERVE_OCCASION_ICON[r.occasion] || RESERVE_OCCASION_ICON.custom, title: RESERVE_OCCASION_NAME[r.occasion] });
     if (!icons.length) return '';
     return '<span class="reserve-card-badges">' + icons.map(b =>
       '<span class="reserve-card-badge" title="' + b.title + '"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + b.icon + '</svg></span>'
     ).join('') + '</span>';
   }
+  /* ---------- Строка чипов столов — общий компонент МН-13/МН-30/МН-31 ----------
+     Один стол показывается как раньше, простым номером без чипа — чипы
+     появляются только при tables.length > 1. Состояние чипа: ready —
+     обычный; waiting — красная обводка (статичная, если до резерва больше
+     получаса, иначе пульсирует, см. reserveWaitingPulses); released —
+     пунктирная, приглушённый текст, зачёркнут, из строки не убирается */
+  const TABLE_CHIP_PLUS = '<svg class="table-chip-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>';
+  function tableChipClass(entry, pulses) {
+    if (entry.state === 'released') return ' is-released';
+    if (entry.state === 'waiting') return pulses ? ' is-waiting-soon' : ' is-waiting-hard';
+    return '';
+  }
+  function tableChipsHtml(tableRefs, pulses) {
+    return '<span class="table-chips-hash">№</span>' + tableRefs.map((entry, i) => {
+      const t = reserveTable(entry.id);
+      return (i > 0 ? TABLE_CHIP_PLUS : '') +
+        '<span class="table-chip' + tableChipClass(entry, pulses) + '">' + (t ? tableNum(t) : '?') + '</span>';
+    }).join('');
+  }
+
   function reserveCardHtml(r, showDate) {
-    const t = reserveTable(r.tableId);
+    const tableCell = r.tables.length > 1
+      ? '<span class="table-chips-row">' + tableChipsHtml(r.tables, reserveWaitingPulses(r)) + '</span>'
+      : '<span class="reserve-card-table">№ ' + (reservePrimaryTable(r) ? tableNum(reservePrimaryTable(r)) : '—') + '</span>';
     return '<button class="reserve-card ' + reserveBorderClass(r) + '" data-reserve-open="' + r.id + '">' +
       reserveCardBadges(r) +
       '<span class="reserve-card-name">' + reserveShortName(r.name) + '</span>' +
       (showDate ? '<span class="reserve-card-date">' + fmtDDMMYY(new Date(r.time)) + '</span>' : '') +
-      '<span class="reserve-card-row2"><span class="reserve-card-table">№ ' + (t ? tableNum(t) : '—') + '</span></span>' +
+      '<span class="reserve-card-row2">' + tableCell + '</span>' +
       '<span class="reserve-card-persons"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c1-4 4-6 7-6s6 2 7 6"/></svg>' + r.persons + '</span>' +
       '<span class="reserve-card-time">' + stampText(r.time) + '</span>' +
       '<span class="reserve-card-phone">' + r.phone + '</span>' +
@@ -17530,8 +17914,7 @@
     const showDate = !sameDay(viewDate, today);
     const active = reservations.filter(r => {
       if (r.tableFreed) return false;
-      const t = reserveTable(r.tableId);
-      if (!t || !reserveZoneMatch(t.zone)) return false;
+      if (!r.tables.some(x => { const t = reserveTable(x.id); return t && reserveZoneMatch(t.zone); })) return false;
       return sameDay(new Date(r.time), viewDate);
     });
     const cardHtml = r => reserveCardHtml(r, showDate);
@@ -17561,7 +17944,7 @@
     const state = reserveTableState(t.id);
     return '<button class="reserve-table shape-' + t.shape + ' state-' + state + '" data-reserve-table="' + t.id + '" ' +
       'style="left:' + t.x + '%; top:' + t.y + '%; width:' + t.w + '%; height:' + t.h + '%;">' +
-      '№' + tableNum(t) + '</button>';
+      '№ ' + tableNum(t) + '</button>';
   }
   function renderReserveScheme() {
     const zones = reserveZoneFilter === 'all' ? reserveZones.map(z => z.id) : [reserveZoneFilter];
@@ -17715,7 +18098,7 @@
     if (!btn) return;
     const tableId = btn.dataset.reserveTable;
     if (reserveTableState(tableId) === 'free') { openNewReserve(tableId); setRoute('мн-31'); return; }
-    const r = reservations.find(x => x.tableId === tableId && !x.tableFreed);
+    const r = reservations.find(x => !x.tableFreed && x.tables.some(tb => tb.id === tableId && tb.state !== 'released'));
     if (r) { openReserveCard(r.id); setRoute('мн-30'); }
   });
 
@@ -17737,21 +18120,37 @@
   const RESERVE_KEY_EVENTS = new Set(['Создан', 'Гость пришёл', 'Стол освободился']);
   let reserveCardEditField = null;   // null | 'table' | 'waiter'
 
+  /* залы всех столов группы, без повторов — используется, когда столов
+     больше одного и у одного поля «Зал» одного значения уже не хватает */
+  function reserveZonesLabel(r) {
+    const names = [];
+    r.tables.forEach(x => {
+      const t = reserveTable(x.id);
+      if (t && !names.includes(reserveZoneName(t.zone))) names.push(reserveZoneName(t.zone));
+    });
+    return names.length ? names.join(', ') : '—';
+  }
+
   function renderReserveCard() {
     const r = findReserve(currentReserveId);
     if (!r) return;
-    const t = reserveTable(r.tableId);
+    const single = r.tables.length === 1;
+    const t = reservePrimaryTable(r);
     /* менять стол и официанта можно только у уже занятого (гость на месте
        и стол ещё не освобождён) резерва — до этого «официант» ещё не
-       назначен и понятие «сменить стол» не имеет смысла */
+       назначен и понятие «сменить стол» не имеет смысла; смена стола через
+       эту строку — только у обычного, одностолового резерва (объединённый
+       ведётся списком ниже, см. renderReserveTableGroup) */
     const occupied = r.arrived && !r.tableFreed;
+    const canEditTable = occupied && single;
+    const tableValue = single ? (t ? '№ ' + tableNum(t) : '—') : '<span class="table-chips-row">' + tableChipsHtml(r.tables, reserveWaitingPulses(r)) + '</span>';
     document.getElementById('reserveCardFields').innerHTML =
       reserveFieldRow('Время', stampText(r.time)) +
       reserveFieldRow('Персоны', r.persons + ' гост' + guestWord(r.persons)) +
-      (occupied
-        ? reserveFieldRowEditable('Стол', t ? '№' + tableNum(t) : '—', 'table')
-        : reserveFieldRow('Стол', t ? '№' + tableNum(t) : '—')) +
-      reserveFieldRow('Зал', t ? reserveZoneName(t.zone) : '—') +
+      (canEditTable
+        ? reserveFieldRowEditable('Стол', tableValue, 'table')
+        : reserveFieldRow('Стол', tableValue)) +
+      reserveFieldRow('Зал', single ? (t ? reserveZoneName(t.zone) : '—') : reserveZonesLabel(r)) +
       (occupied
         ? reserveFieldRowEditable('Официант', reserveWaiterName(r), 'waiter')
         : reserveFieldRow('Официант', reserveWaiterName(r))) +
@@ -17761,8 +18160,9 @@
       reserveFieldRow('Повод', r.occasion ? RESERVE_OCCASION_NAME[r.occasion] : '—') +
       reserveFieldRow('Комментарий', r.comment || '—', true);
 
-    if (!occupied) reserveCardEditField = null;
+    if (!canEditTable && !occupied) reserveCardEditField = null;
     renderReserveCardPicker();
+    renderReserveTableGroup();
 
     const log = r.log.slice().sort((a, b) => b.at - a.at);
     document.getElementById('reserveCardLog').innerHTML = log.map(e =>
@@ -17776,10 +18176,68 @@
     ).join('');
 
     document.getElementById('reserveArrivedBtn').hidden = r.arrived;
-    document.getElementById('reserveFreedBtn').hidden = !r.arrived || r.tableFreed;
+    /* у объединённого резерва «Стол освободился» целиком заменяет список
+       столов ниже — своя кнопка «Освободить» есть у каждого стола там */
+    document.getElementById('reserveFreedBtn').hidden = !single || !r.arrived || r.tableFreed;
     document.getElementById('reserveNoteComposer').hidden = true;
     document.getElementById('reserveNoteInput').value = '';
   }
+
+  /* ---------- МН-30: список столов объединённого резерва ----------
+     'waiting' → «Освободить» переводит в 'ready' (гости с чужого резерва
+     пересажены, стол теперь наш); 'ready' → «Освободить» переводит в
+     'released' (наши гости ушли, стол сдан); все 'released' → резерв
+     закрывается автоматически (r.tableFreed), как единая «Стол
+     освободился» у обычного резерва */
+  function renderReserveTableGroup() {
+    const box = document.getElementById('reserveTableGroup');
+    const r = findReserve(currentReserveId);
+    if (!r || r.tables.length <= 1) { box.hidden = true; box.innerHTML = ''; return; }
+    box.hidden = false;
+    box.innerHTML = r.tables.map(entry => {
+      const t = reserveTable(entry.id);
+      const num = t ? tableNum(t) : '?';
+      const meta = t ? (t.seats + ' мест · ' + reserveZoneName(t.zone)) : '';
+      if (entry.state === 'released') {
+        return '<div class="reserve-table-group-row">' +
+          '<div class="reserve-table-group-info"><span class="reserve-table-group-num">Стол № ' + num + '</span><span class="reserve-table-group-note">' + meta + '</span></div>' +
+          '<span class="reserve-table-group-released">Освобождён</span>' +
+        '</div>';
+      }
+      return '<div class="reserve-table-group-row' + (entry.state === 'waiting' ? ' is-waiting' : '') + '">' +
+        '<div class="reserve-table-group-info"><span class="reserve-table-group-num">Стол № ' + num + '</span><span class="reserve-table-group-note">' +
+          (entry.state === 'waiting' ? 'Ждём, пока освободится · ' : '') + meta + '</span></div>' +
+        '<button class="reserve-table-group-release" type="button" data-release-table="' + entry.id + '">Освободить</button>' +
+      '</div>';
+    }).join('');
+  }
+
+  function reserveReleaseTable(tableId) {
+    const r = findReserve(currentReserveId);
+    if (!r) return;
+    const entry = r.tables.find(x => x.id === tableId);
+    if (!entry || entry.state === 'released') return;
+    const t = reserveTable(tableId);
+    const num = t ? tableNum(t) : tableId;
+    if (entry.state === 'waiting') {
+      entry.state = 'ready';
+      r.log.push(reserveEvent('Стол освободился', reserveStaffName(), Date.now(), '№' + num + ' — гости пересажены, стол наш'));
+    } else {
+      entry.state = 'released';
+      r.log.push(reserveEvent('Стол освободился', reserveStaffName(), Date.now(), '№' + num));
+      if (r.tables.every(x => x.state === 'released')) {
+        r.tableFreed = true;
+        r.log.push(reserveEvent('Стол освободился', reserveStaffName(), Date.now(), 'Все столы сданы — резерв закрыт'));
+      }
+    }
+    renderReserveCard();
+    renderReserveTiles();
+  }
+  document.getElementById('reserveTableGroup').addEventListener('click', e => {
+    const btn = e.target.closest('[data-release-table]');
+    if (!btn) return;
+    reserveReleaseTable(btn.dataset.releaseTable);
+  });
 
   function renderReserveCardPicker() {
     const picker = document.getElementById('reserveCardPicker');
@@ -17787,16 +18245,16 @@
     if (!r || !reserveCardEditField) { picker.hidden = true; picker.innerHTML = ''; return; }
     picker.hidden = false;
     if (reserveCardEditField === 'table') {
-      const t = reserveTable(r.tableId);
+      const t = reservePrimaryTable(r);
       const zoneTables = reserveTables.filter(x => x.zone === (t ? t.zone : null));
       picker.innerHTML = '<div class="reserve-table-pick">' + zoneTables.map(x => {
         const state = reserveTableState(x.id);
-        const isCurrent = x.id === r.tableId;
+        const isCurrent = x.id === r.tables[0].id;
         const isDisabled = !isCurrent && state === 'inhall';
         return '<button class="reserve-table-pick-tile' + (isCurrent ? ' active' : '') + '"' +
           (isDisabled ? ' disabled' : '') +
           ' data-pick-reserve-table="' + x.id + '">' +
-          '<span class="reserve-table-pick-num">№' + tableNum(x) + '</span>' +
+          '<span class="reserve-table-pick-num">№ ' + tableNum(x) + '</span>' +
           '<span class="reserve-table-pick-seats"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c1-4 4-6 7-6s6 2 7 6"/></svg>' + x.seats + '</span>' +
         '</button>';
       }).join('') + '</div>';
@@ -17826,12 +18284,12 @@
 
   function reserveChangeTable(newTableId) {
     const r = findReserve(currentReserveId);
-    const oldT = reserveTable(r.tableId);
+    const oldT = r ? reservePrimaryTable(r) : null;
     const newT = reserveTable(newTableId);
-    if (!r || !newT || newTableId === r.tableId) { reserveCardEditField = null; renderReserveCard(); return; }
+    if (!r || !newT || newTableId === r.tables[0].id) { reserveCardEditField = null; renderReserveCard(); return; }
     const oldNum = oldT ? tableNum(oldT) : null;
     const newNum = tableNum(newT);
-    r.tableId = newTableId;
+    r.tables[0] = { id: newTableId, state: 'ready' };
     const order = linkedOrderTable(r);
     if (order) {
       const targetZone = RESERVE_ZONE_TO_ORDER_ZONE[newT.zone];
@@ -17904,6 +18362,18 @@
     if (!r || r.arrived) return;
     r.arrived = true;
     r.log.push(reserveEvent('Гость пришёл', reserveStaffName(), Date.now()));
+    /* значок повода переезжает на стол в «Заказах» с тем же номером —
+       отдельного моста между id резервов и столов Зала в прототипе нет
+       (это два независимых демо-набора), поэтому сопоставляем по номеру
+       стола; живёт до закрытия стола, см. releaseTable */
+    if (r.occasion) {
+      r.tables.forEach(ref => {
+        const rt = reserveTable(ref.id);
+        const hallTable = rt && tables.find(x => x.num === tableNum(rt));
+        if (hallTable) hallTable.reserveOccasion = r.occasion;
+      });
+      renderTables();
+    }
     renderReserveCard();
   });
 
@@ -17935,7 +18405,26 @@
   /* ---------- МН-31: новый резерв ---------- */
   let newReservePersons = 2;
   let newReserveOccasion = '';
-  let newReserveSelectedTable = null;
+  /* поводы, добавленные кнопкой «+ Добавить повод» в выпадающем списке —
+     только на время сессии (сбрасываются вместе с остальными демо-данными
+     через «Сбросить черновики и демо-данные», см. draftReset/location.reload) */
+  let customOccasionSeq = 0;
+  /* мультивыбор столов: массив {id, state} — обычный резерв всегда 1
+     элемент state:'ready' (выбор только из свободных, как раньше). Долгое
+     удержание выбранной плитки (nrTablePressTimer) включает
+     newReserveMultiMode, где видны ВСЕ столы, включая занятые — занятый
+     попадает со state 'waiting', свободный — 'ready'. «Объединить в один
+     резерв» (newReserveMerged) сворачивает выбор в строку чипов; долгое
+     удержание по ней не переключает режим сразу, а открывает плашку
+     «Изменить»/«Отменить» (newReserveMergedActionOpen) — «Изменить»
+     переводит в мультивыбор (сохранив снимок newReserveEditSnapshot, чтобы
+     «Отменить» в мультивыборе откатывал именно к этой группе, а не сбрасывал
+     всё); «Отменить» на самой плашке — полный сброс до пустой сетки */
+  let newReserveSelectedTables = [];
+  let newReserveMultiMode = false;
+  let newReserveMerged = false;
+  let newReserveMergedActionOpen = false;
+  let newReserveEditSnapshot = null;
   let newReservePrefillTable = null;
   let newReserveBufferAcked = false;
 
@@ -17984,21 +18473,25 @@
     for (let m = openMin; m <= cutoffClose; m += 15) list.push(pad2(Math.floor(m / 60) % 24) + ':' + pad2(m % 60));
     return list;
   }
-  /* лента показывает все оставшиеся слоты выбранного дня до закрытия:
-     для сегодня — от текущего момента и до закрытия, для остальных дней —
-     с открытия и до закрытия целиком. Отсчёт от «сейчас» — строго
-     следующие 15 минут: если сейчас ровно 15:00, первый слот в ленте —
-     15:15, а не 15:00 (на текущий момент уже нельзя создать резерв) */
+  /* лента — не больше NR_LANE_SIZE ячеек (шаг 15 мин, окно ровно 3 часа от
+     первой до последней ячейки): для сегодня — от текущего момента,
+     округлённого ВВЕРХ до 15 мин (на ровной четверти часа ячейка не
+     сдвигается: 11:00 остаётся 11:00, 11:07 становится 11:15), для
+     остальных дней — с открытия. Меньше NR_LANE_SIZE ячеек — если слотов
+     до закрытия осталось меньше. Окно скользящее: см. таймер у
+     nrRenderTimeBlock — прошедшая ячейка уходит, в конец добавляется новая */
+  const NR_LANE_SIZE = 13;
+  function nrRoundUp15(min) { return min % 15 === 0 ? min : (Math.floor(min / 15) + 1) * 15; }
   function nrLaneSlots(day, today) {
     const all = venueSlotList(day);
-    if (!sameDay(day, today)) return all;
+    if (!sameDay(day, today)) return all.slice(0, NR_LANE_SIZE);
     const openMin = venueProfile.hours.mode === '24-7' ? 0 : parseHM(hoursForDay(day.getDay()).open);
     const now = new Date();
     const nowMin = now.getHours() * 60 + now.getMinutes();
-    if (nowMin < openMin) return all;
-    const rounded = (Math.floor(nowMin / 15) + 1) * 15;
+    if (nowMin < openMin) return all.slice(0, NR_LANE_SIZE);
+    const rounded = nrRoundUp15(nowMin);
     const idx = Math.min(all.length, Math.round((rounded - openMin) / 15));
-    return all.slice(idx);
+    return all.slice(idx, idx + NR_LANE_SIZE);
   }
   function nrEffectiveDate() {
     if (!nrPickedDay) return null;
@@ -18047,12 +18540,20 @@
     ).join('');
     document.getElementById('newReserveTimeLane').classList.toggle('dim', far);
     /* кнопка-часы — не список «ещё времени», а прямая установка: клик сразу
-       поднимает native time-picker через визуально скрытое поле (см.
-       #newReserveTimeSetWrap) — на экране остаётся только иконка */
+       открывает барабан (openTimeWheel) — на экране остаётся только иконка,
+       либо чип с выбранным временем (.restime-chip/.restime-chip-main),
+       если оно не входит в видимую ленту */
     document.getElementById('newReserveClockSlot').innerHTML = far
       ? '<button class="restime-chip" id="newReserveClockBtn" type="button" aria-label="Изменить время">' + RES_CLOCK_ICON + '<span class="restime-chip-main">' + nrPickedTime + '</span></button>'
       : '<button class="restime-icon-btn" id="newReserveClockBtn" type="button" aria-label="Установить время">' + RES_CLOCK_ICON + '</button>';
   }
+  /* окно ленты скользит само по себе, даже если пользователь не трогает
+     экран: раз в минуту пересчитываем — прошедшая ячейка уходит, в конец
+     добавляется новая (см. NR_LANE_SIZE у nrLaneSlots) */
+  setInterval(() => {
+    const panel = document.querySelector('.shift-detail[data-detail="newReserve"]');
+    if (panel && !panel.hidden) nrRenderTimeBlock();
+  }, 60000);
 
   function nrUpdate() {
     newReserveBufferAcked = false;
@@ -18130,8 +18631,8 @@
     return venueSlotList(day).filter(s => s.slice(0, 2) === hour).map(s => s.slice(3));
   }
   function renderWheelColumn(colId, items) {
-    document.querySelector('#' + colId + ' .time-wheel-col-inner').innerHTML =
-      items.map(v => '<div class="time-wheel-item" data-value="' + v + '">' + v + '</div>').join('');
+    document.querySelector('#' + colId + ' .drum-col-inner').innerHTML =
+      items.map(v => '<div class="drum-item" data-value="' + v + '">' + v + '</div>').join('');
   }
   function scrollWheelTo(colId, idx, smooth) {
     document.getElementById(colId).scrollTo({ top: Math.max(0, idx) * WHEEL_ITEM_H, behavior: smooth ? 'smooth' : 'auto' });
@@ -18139,7 +18640,7 @@
   function updateWheelHighlight(colId) {
     const col = document.getElementById(colId);
     const idx = Math.round(col.scrollTop / WHEEL_ITEM_H);
-    [...col.querySelectorAll('.time-wheel-item')].forEach((it, i) => {
+    [...col.querySelectorAll('.drum-item')].forEach((it, i) => {
       it.classList.toggle('is-active', i === idx);
       it.classList.toggle('is-near', Math.abs(i - idx) === 1);
     });
@@ -18152,14 +18653,26 @@
       ? 'Круглосуточно, шаг 15 мин'
       : 'Часы ' + h.open + '…' + h.close + ', минуты по 15 мин.' + (crosses ? ' После полуночи — ночь той же смены.' : '');
   }
+  /* без выбранного времени барабан открывается не с начала дня, а на первом
+     слоте после конца окна ленты (лента до 15:15 → барабан стартует на
+     15:30) — так пользователь листает дальше, а не назад к уже видимому */
+  function nrFirstSlotAfterLane(day) {
+    const today = dateOnly(new Date());
+    const all = venueSlotList(day);
+    const lane = nrLaneSlots(day, today);
+    if (!lane.length) return all[0] || null;
+    const nextIdx = all.indexOf(lane[lane.length - 1]) + 1;
+    return all[nextIdx] || lane[lane.length - 1];
+  }
   function openTimeWheel() {
     const day = nrPickedDay || dateOnly(new Date());
     const hours = timeWheelHourList(day);
     if (!hours.length) return;
-    let hour = nrPickedTime ? nrPickedTime.slice(0, 2) : hours[0];
+    const defaultHM = nrPickedTime || nrFirstSlotAfterLane(day);
+    let hour = defaultHM ? defaultHM.slice(0, 2) : hours[0];
     if (!hours.includes(hour)) hour = hours[0];
     const minutes = timeWheelMinuteList(day, hour);
-    let minute = nrPickedTime ? nrPickedTime.slice(3) : minutes[0];
+    let minute = defaultHM ? defaultHM.slice(3) : minutes[0];
     if (!minutes.includes(minute)) minute = minutes[0];
     timeWheelCtx = { day: day };
     renderTimeWheelNote(day);
@@ -18180,7 +18693,7 @@
   function currentWheelValue(colId) {
     const col = document.getElementById(colId);
     const idx = Math.round(col.scrollTop / WHEEL_ITEM_H);
-    const items = col.querySelectorAll('.time-wheel-item');
+    const items = col.querySelectorAll('.drum-item');
     return items[idx] ? items[idx].dataset.value : null;
   }
   document.getElementById('timeWheelHours').addEventListener('scroll', () => {
@@ -18205,9 +18718,9 @@
   });
   ['timeWheelHours', 'timeWheelMinutes'].forEach(colId => {
     document.getElementById(colId).addEventListener('click', e => {
-      const item = e.target.closest('.time-wheel-item');
+      const item = e.target.closest('.drum-item');
       if (!item) return;
-      const items = [...document.querySelectorAll('#' + colId + ' .time-wheel-item')];
+      const items = [...document.querySelectorAll('#' + colId + ' .drum-item')];
       scrollWheelTo(colId, items.indexOf(item), true);
     });
   });
@@ -18219,6 +18732,57 @@
   });
   document.getElementById('timeWheelOverlay').addEventListener('click', e => {
     if (e.target.id === 'timeWheelOverlay') closeTimeWheel();
+  });
+
+  /* ---------- МН-31: барабан персон — тот же компонент-барабан, одна
+     колонка 1…50; дальше — кнопкой «+», без верхнего предела ---------- */
+  let personsWheelTimer = null;
+  let personsWheelOverflow = null;
+  function renderPersonsWheelTitle(value) {
+    document.getElementById('personsWheelTitle').textContent = 'Персоны: ' + value;
+  }
+  function openPersonsWheel() {
+    const list = []; for (let i = 1; i <= 50; i++) list.push(String(i));
+    personsWheelOverflow = newReservePersons > 50 ? newReservePersons : null;
+    renderWheelColumn('personsWheelCol', list);
+    renderPersonsWheelTitle(newReservePersons);
+    document.getElementById('personsWheelOverlay').hidden = false;
+    requestAnimationFrame(() => {
+      const idx = Math.min(49, Math.max(0, newReservePersons - 1));
+      scrollWheelTo('personsWheelCol', idx);
+      updateWheelHighlight('personsWheelCol');
+    });
+  }
+  function closePersonsWheel() { document.getElementById('personsWheelOverlay').hidden = true; }
+  document.getElementById('newReservePersonsCount').addEventListener('click', openPersonsWheel);
+  document.getElementById('newReservePersonsCount').addEventListener('focus', e => e.target.blur());
+  document.getElementById('personsWheelCol').addEventListener('scroll', () => {
+    updateWheelHighlight('personsWheelCol');
+    clearTimeout(personsWheelTimer);
+    personsWheelTimer = setTimeout(() => {
+      const v = currentWheelValue('personsWheelCol');
+      if (!v) return;
+      personsWheelOverflow = null;
+      renderPersonsWheelTitle(v);
+    }, 150);
+  });
+  document.getElementById('personsWheelCol').addEventListener('click', e => {
+    const item = e.target.closest('.drum-item');
+    if (!item) return;
+    const items = [...document.querySelectorAll('#personsWheelCol .drum-item')];
+    scrollWheelTo('personsWheelCol', items.indexOf(item), true);
+  });
+  document.getElementById('personsWheelMoreBtn').addEventListener('click', () => {
+    personsWheelOverflow = (personsWheelOverflow || 50) + 1;
+    renderPersonsWheelTitle(personsWheelOverflow);
+  });
+  document.getElementById('personsWheelDoneBtn').addEventListener('click', () => {
+    const v = personsWheelOverflow || Number(currentWheelValue('personsWheelCol'));
+    closePersonsWheel();
+    if (v) setNewReservePersons(v);
+  });
+  document.getElementById('personsWheelOverlay').addEventListener('click', e => {
+    if (e.target.id === 'personsWheelOverlay') closePersonsWheel();
   });
 
   function newReserveSlot() {
@@ -18233,7 +18797,7 @@
   /* резервы этого стола на ту же календарную дату, что и выбранный слот */
   function tableReservesOnDate(tableId, dateStr) {
     return reservations.filter(r => {
-      if (r.tableId !== tableId || r.tableFreed) return false;
+      if (r.tableFreed || !r.tables.some(tb => tb.id === tableId && tb.state !== 'released')) return false;
       const d = new Date(r.time);
       const rd = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
       return rd === dateStr;
@@ -18242,108 +18806,342 @@
 
   function updateNewReserveBuffer(dateStr, slot) {
     const warn = document.getElementById('newReserveBufferWarn');
-    if (!newReserveSelectedTable) { warn.hidden = true; return; }
-    const others = tableReservesOnDate(newReserveSelectedTable, dateStr);
-    const tight = others.some(r => {
+    if (!newReserveSelectedTables.length) { warn.hidden = true; return; }
+    const tight = newReserveSelectedTables.some(sel => tableReservesOnDate(sel.id, dateStr).some(r => {
       const gapBefore = slot.start - (r.time + RESERVE_DURATION_MIN * 60000);
       const gapAfter = r.time - slot.end;
       return (gapBefore >= 0 && gapBefore < RESERVE_BUFFER_MIN * 60000) || (gapAfter >= 0 && gapAfter < RESERVE_BUFFER_MIN * 60000);
-    });
+    }));
     warn.hidden = !tight || newReserveBufferAcked;
   }
 
   function updateNewReserveSubmit() {
     const name = document.getElementById('newReserveName').value.trim();
     const phone = document.getElementById('newReservePhone').value.trim();
-    const ok = !!(newReserveSlot() && newReserveSelectedTable && name && phone);
+    const ok = !!(newReserveSlot() && newReserveSelectedTables.length && name && phone);
     document.getElementById('newReserveSubmit').disabled = !ok;
+  }
+
+  function nrSelectedIds() { return newReserveSelectedTables.map(x => x.id); }
+  function nrSelectedSeats() {
+    return newReserveSelectedTables.reduce((sum, x) => { const t = reserveTable(x.id); return sum + (t ? t.seats : 0); }, 0);
+  }
+  /* объединять можно только столы одного зала — «Объединить» остаётся
+     неактивной, если выбраны столы из разных залов (см. actionPrimary.disabled) */
+  function nrSelectedSameZone() {
+    const zones = newReserveSelectedTables.map(x => { const t = reserveTable(x.id); return t ? t.zone : null; });
+    return new Set(zones).size <= 1;
+  }
+  function nrFreeTableIds(dateStr, slot) {
+    return reserveTables.filter(t => {
+      const others = tableReservesOnDate(t.id, dateStr);
+      return !others.some(r => slot.start < r.time + RESERVE_DURATION_MIN * 60000 && r.time < slot.end);
+    }).map(t => t.id);
+  }
+  function reserveTablePickTileHtml(t, extraClass) {
+    return '<button class="reserve-table-pick-tile' + extraClass + '" data-pick-table="' + t.id + '">' +
+      '<span class="reserve-table-pick-num">№ ' + tableNum(t) + '</span>' +
+      '<span class="reserve-table-pick-seats"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c1-4 4-6 7-6s6 2 7 6"/></svg>' + t.seats + '</span>' +
+    '</button>';
+  }
+
+  /* группировка плиток по залам с заголовками слева («Основной зал» —
+     всегда первым, остальные — в порядке reserveZones); метка зала на
+     самой плитке убрана (см. reserveTablePickTileHtml) — её роль теперь
+     у заголовка группы */
+  function reserveTablePickGroupsHtml(tables, tileHtmlFn) {
+    return reserveZones.map(z => {
+      const zoneTables = tables.filter(t => t.zone === z.id).sort((a, b) => tableNum(a) - tableNum(b));
+      if (!zoneTables.length) return '';
+      const title = z.id === 'main' ? 'Основной зал' : z.name;
+      return '<div class="reserve-table-pick-group">' +
+        '<div class="reserve-table-pick-group-title">' + title + '</div>' +
+        '<div class="reserve-table-pick">' + zoneTables.map(tileHtmlFn).join('') + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  /* объединённый резерв («Столы резерва») — те же плитки, что и при
+     выборе (не кружки-чипы), через золотой «+», в том же месте, где
+     раньше была сетка; объединять можно только столы одного зала (см.
+     nrSelectedSameZone), поэтому у всей группы один заголовок */
+  function reserveMergedTilesHtml(tableRefs) {
+    const first = reserveTable(tableRefs[0].id);
+    const zoneId = first ? first.zone : null;
+    const title = zoneId === 'main' ? 'Основной зал' : reserveZoneName(zoneId);
+    const tilesHtml = tableRefs.map((ref, i) => {
+      const t = reserveTable(ref.id);
+      if (!t) return '';
+      return (i > 0 ? TABLE_CHIP_PLUS : '') + reserveTablePickTileHtml(t, ' active is-merged');
+    }).join('');
+    return '<div class="reserve-table-pick-group">' +
+      '<div class="reserve-table-pick-group-title">' + title + '</div>' +
+      '<div class="reserve-merged-tiles">' + tilesHtml + '</div>' +
+    '</div>';
   }
 
   function renderNewReserveTables() {
     const dateStr = document.getElementById('newReserveDate').value;
     const slot = newReserveSlot();
     const pick = document.getElementById('newReserveTablePick');
+    const summary = document.getElementById('newReserveTablePickSummary');
+    const actionBar = document.getElementById('newReserveActionBar');
+    const actionPrimary = document.getElementById('newReserveActionPrimaryBtn');
+    const label = document.getElementById('newReserveTablePickLabel');
+    const warn = document.getElementById('newReserveBufferWarn');
+
     if (!slot) {
+      pick.hidden = false; summary.hidden = true; actionBar.hidden = true;
+      label.textContent = 'Свободные столы на это время';
       pick.innerHTML = '<div class="reserve-empty">Выберите дату и время</div>';
-      newReserveSelectedTable = null;
-      document.getElementById('newReserveBufferWarn').hidden = true;
+      newReserveSelectedTables = []; newReserveMultiMode = false; newReserveMerged = false;
+      newReserveMergedActionOpen = false; newReserveEditSnapshot = null;
+      warn.hidden = true;
       updateNewReserveSubmit();
       return;
     }
-    const free = reserveTables.filter(t => {
-      const others = tableReservesOnDate(t.id, dateStr);
-      return !others.some(r => slot.start < r.time + RESERVE_DURATION_MIN * 60000 && r.time < slot.end);
-    });
+
+    /* объединено (см. «Объединить») — вместо сетки та же плитка(и) выбранных
+       столов через «+» (см. reserveMergedTilesHtml), тапы по ним не
+       работают; долгое удержание по плиткам (nrTablePressTimer, см. ниже)
+       открывает плашку «Изменить»/«Отменить» (newReserveMergedActionOpen) */
+    if (newReserveMerged) {
+      pick.hidden = false; summary.hidden = true;
+      label.textContent = 'Столы резерва';
+      pick.innerHTML = reserveMergedTilesHtml(newReserveSelectedTables);
+      if (newReserveMergedActionOpen) {
+        actionBar.hidden = false;
+        actionPrimary.textContent = 'Изменить';
+        actionPrimary.disabled = false;
+      } else {
+        actionBar.hidden = true;
+      }
+      updateNewReserveBuffer(dateStr, slot);
+      updateNewReserveSubmit();
+      return;
+    }
+
+    const freeIds = nrFreeTableIds(dateStr, slot);
+
+    if (newReserveMultiMode) {
+      /* мультивыбор — свободные и занятые столы вместе, та же группировка
+         по залам; состояние выбранных пересчитываем каждый раз — занятый
+         на новое время стол «ждёт», освободившийся снова просто «готов» */
+      label.textContent = 'Выбор столов';
+      newReserveSelectedTables.forEach(sel => { sel.state = freeIds.includes(sel.id) ? 'ready' : 'waiting'; });
+      pick.hidden = false;
+      pick.innerHTML = reserveTablePickGroupsHtml(reserveTables, t => {
+        const occupied = !freeIds.includes(t.id);
+        const cls = (nrSelectedIds().includes(t.id) ? ' is-picked' : '') + (occupied ? ' is-occupied' : '');
+        return reserveTablePickTileHtml(t, cls);
+      });
+      summary.hidden = false;
+      const sameZone = nrSelectedSameZone();
+      summary.textContent = sameZone
+        ? 'Мест выбрано: ' + nrSelectedSeats() + ' из ' + newReservePersons
+        : 'Столы разных залов — выберите один зал';
+      actionBar.hidden = false;
+      actionPrimary.textContent = 'Объединить';
+      actionPrimary.disabled = newReserveSelectedTables.length < 2 || !sameZone;
+      newReservePrefillTable = null;
+      updateNewReserveBuffer(dateStr, slot);
+      updateNewReserveSubmit();
+      return;
+    }
+
+    /* обычный режим — только свободные столы; после выбора остальные
+       скрываются, остаётся только выбранная плитка (см. клик-обработчик) */
+    label.textContent = 'Свободные столы на это время';
+    summary.hidden = true; actionBar.hidden = true;
+    const free = reserveTables.filter(t => freeIds.includes(t.id));
     if (!free.length) {
+      pick.hidden = false;
       pick.innerHTML = '<div class="reserve-empty">Нет свободных столов на выбранное время</div>';
-      newReserveSelectedTable = null;
-      document.getElementById('newReserveBufferWarn').hidden = true;
+      newReserveSelectedTables = [];
+      warn.hidden = true;
       updateNewReserveSubmit();
       return;
     }
-    if (newReserveSelectedTable && !free.some(t => t.id === newReserveSelectedTable)) newReserveSelectedTable = null;
-    if (!newReserveSelectedTable && newReservePrefillTable && free.some(t => t.id === newReservePrefillTable)) {
-      newReserveSelectedTable = newReservePrefillTable;
+    let selectedId = newReserveSelectedTables[0] ? newReserveSelectedTables[0].id : null;
+    if (selectedId && !freeIds.includes(selectedId)) selectedId = null;
+    if (!selectedId && newReservePrefillTable && freeIds.includes(newReservePrefillTable)) {
+      selectedId = newReservePrefillTable;
     }
-    pick.innerHTML = free.map(t =>
-      '<button class="reserve-table-pick-tile' + (t.id === newReserveSelectedTable ? ' active' : '') + '" data-pick-table="' + t.id + '">' +
-        '<span class="reserve-table-pick-num">№' + tableNum(t) + '</span>' +
-        '<span class="reserve-table-pick-seats"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c1-4 4-6 7-6s6 2 7 6"/></svg>' + t.seats + '</span>' +
-        '<span class="reserve-table-pick-zone">' + reserveZoneName(t.zone) + '</span>' +
-      '</button>'
-    ).join('');
+    newReserveSelectedTables = selectedId ? [{ id: selectedId, state: 'ready' }] : [];
+    pick.hidden = false;
+    const shown = selectedId ? free.filter(t => t.id === selectedId) : free;
+    pick.innerHTML = reserveTablePickGroupsHtml(shown, t => reserveTablePickTileHtml(t, selectedId === t.id ? ' active' : ''));
     newReservePrefillTable = null;
     updateNewReserveBuffer(dateStr, slot);
     updateNewReserveSubmit();
   }
 
+  /* без верхнего предела — счётчик расширяется под 3+ цифры (см.
+     .step-count-input), барабан персон (openPersonsWheel) уходит за 50 через «+» */
+  function setNewReservePersons(n) {
+    newReservePersons = Math.max(1, n);
+    const el = document.getElementById('newReservePersonsCount');
+    el.value = newReservePersons;
+    el.style.width = Math.max(2, String(newReservePersons).length) + 'ch';
+  }
+
   function openNewReserve(prefillTableId) {
-    newReservePersons = 2;
     newReserveOccasion = '';
-    newReserveSelectedTable = null;
+    newReserveSelectedTables = [];
+    newReserveMultiMode = false;
+    newReserveMerged = false;
+    newReserveMergedActionOpen = false;
+    newReserveEditSnapshot = null;
     newReservePrefillTable = prefillTableId || null;
     newReserveBufferAcked = false;
     nrPickedDay = dateOnly(new Date());
     nrPickedTime = null;
-    document.getElementById('newReservePersonsCount').value = newReservePersons;
+    setNewReservePersons(2);
     document.getElementById('newReserveName').value = '';
     document.getElementById('newReservePhone').value = '';
     document.getElementById('newReserveTg').value = '';
     document.getElementById('newReserveComment').value = '';
-    document.querySelectorAll('#newReserveOccasion .filter-chip').forEach(b => b.classList.toggle('active', b.dataset.occasion === ''));
+    nrSetOccasion('');
+    closeNewReserveOccasionPanel();
     document.getElementById('newReserveBufferWarn').hidden = true;
     nrUpdate();
     updateNewReserveSubmit();
     showDetail('newReserve', 'Новый резерв', 'Создание резерва');
   }
 
+  function nrUpdatePickSummary() {
+    if (!newReserveMultiMode || newReserveMerged) return;
+    document.getElementById('newReserveTablePickSummary').textContent = nrSelectedSameZone()
+      ? 'Мест выбрано: ' + nrSelectedSeats() + ' из ' + newReservePersons
+      : 'Столы разных залов — выберите один зал';
+  }
   document.getElementById('newReservePersonsMinus').addEventListener('click', () => {
     if (newReservePersons <= 1) return;
-    newReservePersons--;
-    document.getElementById('newReservePersonsCount').value = newReservePersons;
+    setNewReservePersons(newReservePersons - 1);
+    nrUpdatePickSummary();
   });
   document.getElementById('newReservePersonsPlus').addEventListener('click', () => {
-    if (newReservePersons >= 30) return;
-    newReservePersons++;
-    document.getElementById('newReservePersonsCount').value = newReservePersons;
-  });
-  document.getElementById('newReservePersonsCount').addEventListener('change', e => {
-    let n = parseInt(e.target.value, 10);
-    if (!n || n < 1) n = 1;
-    if (n > 30) n = 30;
-    newReservePersons = n;
-    e.target.value = newReservePersons;
+    setNewReservePersons(newReservePersons + 1);
+    nrUpdatePickSummary();
   });
 
+  /* тап по плитке стола: в обычном режиме — одиночный выбор (как раньше);
+     в мультивыборе — переключает стол во/из выбора; в объединённом резерве
+     плитки только для показа — тап по ним ничего не делает (см.
+     reserveMergedTilesHtml). Долгое удержание любой плитки (порог 700 мс —
+     тот же, что у удержания позиции заказа для переноса/удаления, см.
+     orderPositionsEl pointerdown выше) включает мультивыбор либо, если
+     резерв уже объединён, открывает плашку «Изменить»/«Отменить» — см.
+     nrTablePress* ниже */
   document.getElementById('newReserveTablePick').addEventListener('click', e => {
+    if (nrTablePressMoved) { nrTablePressMoved = false; return; }
+    if (newReserveMerged) return;
     const btn = e.target.closest('[data-pick-table]');
     if (!btn) return;
-    newReserveSelectedTable = btn.dataset.pickTable;
+    const id = btn.dataset.pickTable;
     newReserveBufferAcked = false;
-    document.querySelectorAll('#newReserveTablePick .reserve-table-pick-tile').forEach(b => b.classList.toggle('active', b === btn));
-    const slot = newReserveSlot();
-    if (slot) updateNewReserveBuffer(document.getElementById('newReserveDate').value, slot);
-    updateNewReserveSubmit();
+    if (newReserveMultiMode) {
+      const idx = newReserveSelectedTables.findIndex(x => x.id === id);
+      if (idx >= 0) newReserveSelectedTables.splice(idx, 1);
+      else newReserveSelectedTables.push({ id: id, state: 'ready' });
+      renderNewReserveTables();
+      return;
+    }
+    const already = newReserveSelectedTables[0] && newReserveSelectedTables[0].id === id;
+    newReserveSelectedTables = already ? [] : [{ id: id, state: 'ready' }];
+    renderNewReserveTables();
+  });
+  document.getElementById('newReserveTablePick').addEventListener('contextmenu', e => e.preventDefault());
+
+  /* долгое удержание плитки — включает мультивыбор (см. renderNewReserveTables) */
+  let nrTablePressTimer = null, nrTablePressId = null, nrTablePressPoint = null, nrTablePressMoved = false;
+  function nrTablePressReset() {
+    window.removeEventListener('pointermove', nrTablePressMove);
+    window.removeEventListener('pointerup', nrTablePressEnd);
+    window.removeEventListener('pointercancel', nrTablePressEnd);
+    clearTimeout(nrTablePressTimer);
+    nrTablePressTimer = null; nrTablePressId = null; nrTablePressPoint = null;
+  }
+  function nrTablePressMove(e) {
+    if (!nrTablePressPoint) return;
+    if (Math.abs(e.clientX - nrTablePressPoint.x) > 10 || Math.abs(e.clientY - nrTablePressPoint.y) > 10) nrTablePressReset();
+  }
+  function nrTablePressEnd() { nrTablePressReset(); }
+  document.getElementById('newReserveTablePick').addEventListener('pointerdown', e => {
+    nrTablePressMoved = false;
+    const btn = e.target.closest('[data-pick-table]');
+    if (!btn) return;
+    nrTablePressId = btn.dataset.pickTable;
+    nrTablePressPoint = { x: e.clientX, y: e.clientY };
+    window.addEventListener('pointermove', nrTablePressMove);
+    window.addEventListener('pointerup', nrTablePressEnd);
+    window.addEventListener('pointercancel', nrTablePressEnd);
+    nrTablePressTimer = setTimeout(() => {
+      const id = nrTablePressId;
+      nrTablePressReset();
+      nrTablePressMoved = true;
+      suppressNextClickGlobally();
+      if (newReserveMerged) {
+        newReserveMergedActionOpen = true;
+        renderNewReserveTables();
+        return;
+      }
+      newReserveMultiMode = true;
+      newReserveEditSnapshot = null;
+      if (!nrSelectedIds().includes(id)) newReserveSelectedTables.push({ id: id, state: 'ready' });
+      renderNewReserveTables();
+    }, 700);
+  });
+
+  /* плашка «Объединить»/«Изменить» — основное действие */
+  document.getElementById('newReserveActionPrimaryBtn').addEventListener('click', () => {
+    const btn = document.getElementById('newReserveActionPrimaryBtn');
+    if (btn.disabled) return;
+    if (newReserveMerged && newReserveMergedActionOpen) {
+      /* «Изменить» — снимок текущей группы нужен, чтобы «Отменить» в
+         развернувшемся мультивыборе откатывал именно к ней, а не сбрасывал
+         выбор целиком (см. newReserveActionCancelBtn) */
+      newReserveEditSnapshot = newReserveSelectedTables.map(x => ({ id: x.id, state: x.state }));
+      newReserveMergedActionOpen = false;
+      newReserveMerged = false;
+      newReserveMultiMode = true;
+      renderNewReserveTables();
+      return;
+    }
+    if (newReserveSelectedTables.length < 2) return;
+    newReserveMerged = true;
+    newReserveMultiMode = false;
+    newReserveEditSnapshot = null;
+    renderNewReserveTables();
+  });
+
+  /* «Отменить» на той же плашке — три разных отката в зависимости от того,
+     откуда пришли (см. renderNewReserveTables) */
+  document.getElementById('newReserveActionCancelBtn').addEventListener('click', () => {
+    if (newReserveMerged && newReserveMergedActionOpen) {
+      /* плашка «Изменить»/«Отменить» над уже объединённой группой — полный сброс */
+      newReserveMergedActionOpen = false;
+      newReserveMerged = false;
+      newReserveMultiMode = false;
+      newReserveSelectedTables = [];
+      newReserveEditSnapshot = null;
+      renderNewReserveTables();
+      return;
+    }
+    if (newReserveMultiMode && newReserveEditSnapshot) {
+      /* редактирование существующей группы («Изменить») — откат к ней же */
+      newReserveSelectedTables = newReserveEditSnapshot;
+      newReserveEditSnapshot = null;
+      newReserveMultiMode = false;
+      newReserveMerged = true;
+      renderNewReserveTables();
+      return;
+    }
+    /* свежий мультивыбор, группы ещё не было — полный сброс */
+    newReserveMultiMode = false;
+    newReserveMerged = false;
+    newReserveSelectedTables = [];
+    renderNewReserveTables();
   });
 
   document.getElementById('newReserveBufferAck').addEventListener('click', () => {
@@ -18351,11 +19149,67 @@
     document.getElementById('newReserveBufferWarn').hidden = true;
   });
 
-  document.getElementById('newReserveOccasion').addEventListener('click', e => {
+  /* «Повод» — выпадающий список рядом с «Ник» (см. reserve-occasion-select).
+     Свой пункт «+ Добавить повод» внизу списка раскрывает короткую форму —
+     введённое имя добавляется и в RESERVE_OCCASION_NAME (чтобы карточка
+     резерва в МН-30/истории могла показать название), и в сам список */
+  function nrOccasionLabel(key) {
+    return key ? (RESERVE_OCCASION_NAME[key] || key) : 'Без повода';
+  }
+  function nrSetOccasion(key) {
+    newReserveOccasion = key;
+    document.getElementById('newReserveOccasionLabel').textContent = nrOccasionLabel(key);
+    document.querySelectorAll('#newReserveOccasionOptions .reserve-occasion-option').forEach(b => {
+      b.classList.toggle('active', b.dataset.occasion === key);
+    });
+  }
+  function closeNewReserveOccasionPanel() {
+    document.getElementById('newReserveOccasionSelect').classList.remove('is-open');
+    document.getElementById('newReserveOccasionPanel').hidden = true;
+    document.getElementById('newReserveOccasionAddForm').hidden = true;
+    document.getElementById('newReserveOccasionAddBtn').hidden = false;
+    document.getElementById('newReserveOccasionAddInput').value = '';
+  }
+  document.getElementById('newReserveOccasionBtn').addEventListener('click', () => {
+    const select = document.getElementById('newReserveOccasionSelect');
+    const panel = document.getElementById('newReserveOccasionPanel');
+    const open = select.classList.toggle('is-open');
+    panel.hidden = !open;
+    if (!open) { document.getElementById('newReserveOccasionAddForm').hidden = true; document.getElementById('newReserveOccasionAddBtn').hidden = false; }
+  });
+  document.getElementById('newReserveOccasionOptions').addEventListener('click', e => {
     const btn = e.target.closest('[data-occasion]');
     if (!btn) return;
-    newReserveOccasion = btn.dataset.occasion;
-    document.querySelectorAll('#newReserveOccasion .filter-chip').forEach(b => b.classList.toggle('active', b === btn));
+    nrSetOccasion(btn.dataset.occasion);
+    closeNewReserveOccasionPanel();
+  });
+  document.getElementById('newReserveOccasionAddBtn').addEventListener('click', () => {
+    document.getElementById('newReserveOccasionAddBtn').hidden = true;
+    document.getElementById('newReserveOccasionAddForm').hidden = false;
+    document.getElementById('newReserveOccasionAddInput').focus();
+  });
+  function nrAddCustomOccasion() {
+    const input = document.getElementById('newReserveOccasionAddInput');
+    const name = input.value.trim();
+    if (!name) return;
+    customOccasionSeq++;
+    const key = 'custom' + customOccasionSeq;
+    RESERVE_OCCASION_NAME[key] = name;
+    const optBtn = document.createElement('button');
+    optBtn.className = 'reserve-occasion-option';
+    optBtn.type = 'button';
+    optBtn.dataset.occasion = key;
+    optBtn.textContent = name;
+    document.getElementById('newReserveOccasionOptions').appendChild(optBtn);
+    nrSetOccasion(key);
+    closeNewReserveOccasionPanel();
+  }
+  document.getElementById('newReserveOccasionAddConfirm').addEventListener('click', nrAddCustomOccasion);
+  document.getElementById('newReserveOccasionAddInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); nrAddCustomOccasion(); }
+  });
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#newReserveOccasionSelect')) closeNewReserveOccasionPanel();
   });
 
   ['newReserveName', 'newReservePhone'].forEach(id => {
@@ -18368,7 +19222,7 @@
     reserveSeq++;
     reservations.push({
       id:'r' + reserveSeq,
-      tableId:newReserveSelectedTable,
+      tables:newReserveSelectedTables.map(x => ({ id:x.id, state:x.state })),
       time:slot.start,
       persons:newReservePersons,
       name:document.getElementById('newReserveName').value.trim(),
@@ -18496,60 +19350,74 @@
     }
     document.getElementById('restaurantHoursNote').textContent = text;
   }
-  /* день недели, чей график сейчас показан/редактируется на экране —
-     по умолчанию открывается на сегодняшнем дне */
-  let restaurantHoursSelectedDay = new Date().getDay();
-  function renderRestaurantHoursDay() {
-    const h = hoursForDay(restaurantHoursSelectedDay);
+  /* дни недели, чей общий график сейчас редактируется на экране — любое
+     количество в любом порядке; по умолчанию вся неделя, как в исходных
+     данных (все дни настроены одинаково) */
+  let restaurantHoursSelectedDays = new Set([0, 1, 2, 3, 4, 5, 6]);
+  function renderRestaurantHoursDays() {
     document.querySelectorAll('#restaurantHoursDayPicker .filter-chip').forEach(btn => {
-      btn.classList.toggle('active', Number(btn.dataset.hoursDay) === restaurantHoursSelectedDay);
+      btn.classList.toggle('active', restaurantHoursSelectedDays.has(Number(btn.dataset.hoursDay)));
     });
+    document.getElementById('restaurantHoursAllWeek').checked = restaurantHoursSelectedDays.size === 7;
+    /* поля открытия/закрытия показывают время первого выбранного дня (по
+       порядку недели, а не выбора) — редактирование применяется сразу ко
+       всем выбранным дням */
+    const firstDay = [1, 2, 3, 4, 5, 6, 0].find(d => restaurantHoursSelectedDays.has(d));
+    const h = firstDay === undefined ? { open: '', close: '' } : hoursForDay(firstDay);
     document.getElementById('restaurantHoursOpen').value = h.open;
     document.getElementById('restaurantHoursClose').value = h.close;
     /* переход через полночь — явно показываем, что учли, а не просто
        молча считаем: закрытие раньше открытия для этого же дня значит
        «на следующие сутки» */
     document.getElementById('restaurantHoursCrossNote').textContent =
-      parseHM(h.close) <= parseHM(h.open) ? 'Закрытие — уже на следующий день' : '';
+      h.open && h.close && parseHM(h.close) <= parseHM(h.open) ? 'Закрытие — уже на следующий день' : '';
   }
-  function renderRestaurantHoursMode() {
-    document.querySelectorAll('#restaurantHoursModeSwitch .segmented-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.hoursMode === venueProfile.hours.mode);
-    });
-    document.getElementById('restaurantHoursTimesBlock').hidden = venueProfile.hours.mode === '24-7';
+  function renderRestaurantHours247() {
+    const on = venueProfile.hours.mode === '24-7';
+    document.getElementById('restaurantHours247Switch').setAttribute('aria-checked', String(on));
+    document.querySelectorAll('#restaurantHoursDayPicker .filter-chip').forEach(b => { b.disabled = on; });
+    document.getElementById('restaurantHoursAllWeek').disabled = on;
+    document.getElementById('restaurantHoursAllWeek').closest('label').classList.toggle('is-disabled', on);
+    document.getElementById('restaurantHoursOpen').disabled = on;
+    document.getElementById('restaurantHoursClose').disabled = on;
   }
   renderRestaurantHoursNote();
   document.getElementById('restaurantHoursOpenBtn').addEventListener('click', () => {
-    restaurantHoursSelectedDay = new Date().getDay();
-    renderRestaurantHoursDay();
-    renderRestaurantHoursMode();
+    renderRestaurantHoursDays();
+    renderRestaurantHours247();
     showProfileDetail('profile-settings-restaurant-hours');
   });
-  document.querySelectorAll('#restaurantHoursModeSwitch .segmented-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      venueProfile.hours.mode = btn.dataset.hoursMode;
-      renderRestaurantHoursMode();
-      renderRestaurantHoursNote();
-      nrUpdate();
-    });
+  document.getElementById('restaurantHours247Switch').addEventListener('click', () => {
+    venueProfile.hours.mode = venueProfile.hours.mode === '24-7' ? 'scheduled' : '24-7';
+    renderRestaurantHours247();
+    renderRestaurantHoursNote();
+    nrUpdate();
+  });
+  document.getElementById('restaurantHoursAllWeek').addEventListener('change', e => {
+    restaurantHoursSelectedDays = e.target.checked ? new Set([0, 1, 2, 3, 4, 5, 6]) : new Set();
+    renderRestaurantHoursDays();
   });
   document.getElementById('restaurantHoursDayPicker').addEventListener('click', e => {
     const btn = e.target.closest('[data-hours-day]');
     if (!btn) return;
-    restaurantHoursSelectedDay = Number(btn.dataset.hoursDay);
-    renderRestaurantHoursDay();
+    const day = Number(btn.dataset.hoursDay);
+    /* «Вся неделя» отражает состояние набора — снимается сама, как только
+       хотя бы один день выключен, независимо от того, как её включали */
+    if (restaurantHoursSelectedDays.has(day)) restaurantHoursSelectedDays.delete(day);
+    else restaurantHoursSelectedDays.add(day);
+    renderRestaurantHoursDays();
   });
   document.getElementById('restaurantHoursOpen').addEventListener('change', e => {
     if (!e.target.value) return;
-    hoursForDay(restaurantHoursSelectedDay).open = e.target.value;
-    renderRestaurantHoursDay();
+    restaurantHoursSelectedDays.forEach(day => { hoursForDay(day).open = e.target.value; });
+    renderRestaurantHoursDays();
     renderRestaurantHoursNote();
     nrUpdate();
   });
   document.getElementById('restaurantHoursClose').addEventListener('change', e => {
     if (!e.target.value) return;
-    hoursForDay(restaurantHoursSelectedDay).close = e.target.value;
-    renderRestaurantHoursDay();
+    restaurantHoursSelectedDays.forEach(day => { hoursForDay(day).close = e.target.value; });
+    renderRestaurantHoursDays();
     renderRestaurantHoursNote();
     nrUpdate();
   });
@@ -18761,7 +19629,7 @@
       location.hash = id;
     }
     routing = false;
-    syncMapBtn(id);
+    syncScreenInfo(id);
   }
 
   /* выполнить маршрут и подтянуть хеш — когда экран нужно именно открыть */
@@ -18769,11 +19637,6 @@
     const fn = ROUTES[id];
     if (fn) fn();
     setRoute(id);
-  }
-
-  function syncMapBtn(id) {
-    mapHeaderBtn.classList.toggle('is-active', id === 'мн-00');
-    syncScreenInfo(id);
   }
 
   /* ---------- памятка по экрану — что это за экран и что на нём делают ----------
@@ -18859,11 +19722,11 @@
     routing = true;
     if (route) route(); else showMap();
     routing = false;
-    syncMapBtn(route ? id : 'мн-00');
+    syncScreenInfo(route ? id : 'мн-00');
   }
 
   window.addEventListener('hashchange', () => {
-    if (skipRouteCount > 0) { skipRouteCount--; syncMapBtn(currentRoute()); return; }
+    if (skipRouteCount > 0) { skipRouteCount--; syncScreenInfo(currentRoute()); return; }
     applyRoute();
   });
 
@@ -18871,8 +19734,6 @@
   document.querySelectorAll('.map-row[data-goto]').forEach(row => {
     row.addEventListener('click', () => { location.hash = row.dataset.goto; });
   });
-
-  mapHeaderBtn.addEventListener('click', () => { location.hash = 'мн-00'; });
 
   /* синхронизация хеша при обычной навигации по прототипу */
   const TAB_ROUTE = { home:'мн-01', shift:'мн-02', messenger:'мн-05', planner:'мн-09', profile:'мн-10' };
@@ -18916,7 +19777,8 @@
 
   /* ассистент открывается с любого экрана — «Назад» должен вернуть именно туда */
   let assistantReturnRoute = null;
-  assistantHeaderBtn.addEventListener('click', () => {
+  document.getElementById('deptItemAssistant').addEventListener('click', () => {
+    toggleDept(false);
     if (currentRoute() !== 'мн-07') assistantReturnRoute = currentRoute();
     goRoute('мн-07');
   });
@@ -19527,6 +20389,553 @@
     });
   });
   applyVenueWording();
+
+  /* ==========================================================
+     Голосовой ассистент — только роль руководителя (isManagerRole).
+     Вызов: горизонтальный свайп по нижнему меню, любое направление,
+     жест живёт на #bottomNav целиком, а не у краёв экрана, поэтому
+     системные edge-жесты не задеты. Разбор фразы поддерживает пока
+     одну команду: «поставь/убери [блюдо] в стоп» — остальные заготовки
+     ниже рассчитаны на то, что команд станет больше (см. changesData).
+     ========================================================== */
+  if (isManagerRole) {
+    const voiceOverlayEl = document.getElementById('voiceOverlay');
+    const voiceGlowEl = document.getElementById('voiceGlow');
+    const voiceCardEl = document.getElementById('voiceCard');
+    const voiceCardTextEl = document.getElementById('voiceCardText');
+    const voiceSheetEl = document.getElementById('voiceSheet');
+    const voiceSheetGlowEl = document.getElementById('voiceSheetGlow');
+    const voiceRowActionEl = document.getElementById('voiceRowAction');
+    const voiceDishRowEl = document.getElementById('voiceDishRow');
+    const voiceRowDishLabelEl = document.getElementById('voiceRowDishLabel');
+    const voiceDishListEl = document.getElementById('voiceDishList');
+    const voiceSheetChangeBtnEl = document.getElementById('voiceSheetChangeBtn');
+    const voiceSheetConfirmBtnEl = document.getElementById('voiceSheetConfirmBtn');
+    const voiceUnavailableEl = document.getElementById('voiceUnavailableToast');
+
+    const voiceReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const VoiceSpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    let voiceState = 'idle';   // idle | listening | sheet
+    let voiceRecognition = null;
+    let voiceFinalTranscript = '';
+    let voiceCurrentCommand = null;
+
+    function positionAboveNav(el) {
+      const navRect = bottomNavEl.getBoundingClientRect();
+      const screenRect = screenEl.getBoundingClientRect();
+      el.style.bottom = (screenRect.bottom - navRect.top + 10) + 'px';
+    }
+
+    let voiceUnavailableTimer = null;
+    function showVoiceToast(text) {
+      voiceUnavailableEl.textContent = text;
+      voiceUnavailableEl.hidden = false;
+      clearTimeout(voiceUnavailableTimer);
+      voiceUnavailableTimer = setTimeout(() => { voiceUnavailableEl.hidden = true; }, 2600);
+    }
+    function showVoiceUnavailable() {
+      showVoiceToast('Голосовой ввод недоступен');
+    }
+
+    /* ---------- Свечение при прослушивании: яркость от громкости голоса,
+       глубина/цвета — фиксированные (задаёт CSS). В тишине не гаснет —
+       держится на полу VOICE_GLOW_FLOOR.
+       Точный замер через getUserMedia+AnalyserNode сюда сознательно не
+       добавлен: на части мобильных браузеров параллельный с распознаванием
+       доступ к микрофону не просто «не даётся» с понятной ошибкой (тогда
+       сработал бы штатный откат из ТЗ), а молча обрывает сам захват речи
+       распознаванием на полуслове — цена точной подсветки оказалась
+       слишком высокой. Вместо этого — пульс по событиям самого
+       распознавания (onspeechstart/onspeechend + каждый result), это и
+       есть тот самый запасной вариант из ТЗ, просто теперь единственный. */
+    const VOICE_GLOW_FLOOR = 0.28;
+    function setVoiceGlowLevel(level) {
+      voiceGlowEl.style.opacity = Math.max(0, Math.min(1, level)).toFixed(3);
+    }
+
+    let voicePulseTimer = null;
+    function pulseVoiceGlow() {
+      if (voiceReducedMotion) return;
+      setVoiceGlowLevel(1);
+      clearTimeout(voicePulseTimer);
+      voicePulseTimer = setTimeout(() => setVoiceGlowLevel(VOICE_GLOW_FLOOR), 240);
+    }
+
+    function createVoiceRecognition() {
+      const rec = new VoiceSpeechRecognitionCtor();
+      rec.lang = 'ru-RU';
+      rec.interimResults = true;
+      /* continuous:false обрывал сессию по первой же паузе между словами —
+         «Цезарь [пауза] с курицей в стоп» распознавался как одно слово
+         «Цезарь», и на этом всё заканчивалось. С continuous:true движок
+         не закрывает сессию сам — конец фразы теперь определяем своей
+         паузой между фрагментами (voiceSilenceStop), с запасом на обычные
+         паузы между словами */
+      rec.continuous = true;
+      rec.maxAlternatives = 1;
+      let noSpeechErrored = false;
+      let silenceTimer = null;
+      function scheduleSilenceStop() {
+        clearTimeout(silenceTimer);
+        silenceTimer = setTimeout(() => { try { rec.stop(); } catch (err) {} }, 1600);
+      }
+      /* e.results — персистентный, растущий список за всю сессию; вместо
+         того чтобы плюсовать «новые» финальные куски по resultIndex (на
+         части браузеров при continuous:true один и тот же isFinal-кусок
+         иногда прилетает повторно — отсюда было «Цезарьсалат Цезарьсалат
+         Цезарь…»), просто пересобираем текст целиком с нуля на каждом
+         событии — так повтор в принципе невозможен, кусок либо есть в
+         results, либо нет */
+      rec.onresult = e => {
+        let transcript = '';
+        for (let i = 0; i < e.results.length; i++) transcript += e.results[i][0].transcript;
+        voiceFinalTranscript = transcript;
+        voiceCardTextEl.textContent = transcript.trim() || 'Слушаю…';
+        pulseVoiceGlow();
+        scheduleSilenceStop();   // пришёл фрагмент — ждём, вдруг фраза продолжится
+      };
+      rec.onspeechstart = () => setVoiceGlowLevel(1);
+      rec.onspeechend = () => setVoiceGlowLevel(VOICE_GLOW_FLOOR);
+      rec.onerror = e => {
+        if (e.error === 'not-allowed' || e.error === 'service-not-allowed' || e.error === 'network') {
+          closeVoicePanel();
+          showVoiceUnavailable();
+          return;
+        }
+        /* «тишина» в самом начале — частая ситуация: сотрудник ещё не
+           успел заговорить, пока смотрел, что панель открылась; такие
+           попытки не проваливаем сразу, а перезапускаем (см. onend) */
+        if (e.error === 'no-speech') noSpeechErrored = true;
+      };
+      rec.onend = () => {
+        clearTimeout(silenceTimer);
+        if (voiceRecognition !== rec) return;   // уже отменили/заменили извне
+        voiceRecognition = null;
+        clearTimeout(voiceListenSafetyTimer);
+        if (noSpeechErrored && voiceState === 'listening' && voiceNoSpeechRetries < VOICE_NO_SPEECH_MAX_RETRIES) {
+          voiceNoSpeechRetries++;
+          voiceCardTextEl.textContent = 'Слушаю…';
+          beginVoiceRecognitionSession();
+          return;
+        }
+        finishVoiceListening();
+      };
+      return rec;
+    }
+
+    /* если распознавание вообще не прислало ни onresult, ни onend (движок
+       завис) — не оставляем ассистента «слушающим» навсегда */
+    let voiceListenSafetyTimer = null;
+    let voiceNoSpeechRetries = 0;
+    const VOICE_NO_SPEECH_MAX_RETRIES = 2;
+
+    function beginVoiceRecognitionSession() {
+      voiceRecognition = createVoiceRecognition();
+      try { voiceRecognition.start(); }
+      catch (err) { voiceRecognition = null; closeVoicePanel(); showVoiceUnavailable(); return; }
+      clearTimeout(voiceListenSafetyTimer);
+      voiceListenSafetyTimer = setTimeout(() => {
+        if (!voiceRecognition) return;
+        try { voiceRecognition.stop(); } catch (err) {}
+      }, 18000);   // общий потолок на всю фразу — с запасом на паузы между словами
+    }
+
+    function openVoiceListening() {
+      if (voiceState !== 'idle') return;
+      if (!VoiceSpeechRecognitionCtor || !navigator.onLine) { showVoiceUnavailable(); return; }
+      voiceState = 'listening';
+      voiceFinalTranscript = '';
+      voiceNoSpeechRetries = 0;
+      voiceCardTextEl.textContent = 'Слушаю…';
+      positionAboveNav(voiceCardEl);
+      voiceOverlayEl.hidden = false;
+      setVoiceGlowLevel(VOICE_GLOW_FLOOR);
+      beginVoiceRecognitionSession();
+    }
+
+    function finishVoiceListening() {
+      voiceOverlayEl.hidden = true;
+      voiceState = 'idle';
+      const transcript = voiceFinalTranscript.trim();
+      if (!transcript) { showVoiceToast('Не расслышал'); return; }
+      const cmd = parseVoiceCommand(transcript);
+      /* фраза не разобрана — не закрываемся молча (раньше выглядело так,
+         будто ассистент вообще не среагировал), а прямо показываем, что
+         услышали, чтобы было понятно, что переформулировать */
+      if (!cmd) { showVoiceToast('Не понял команду: «' + transcript + '»'); return; }
+      openVoiceSheet(cmd);
+    }
+
+    function closeVoicePanel() {
+      clearTimeout(voiceListenSafetyTimer);
+      if (voiceRecognition) {
+        const rec = voiceRecognition;
+        voiceRecognition = null;
+        rec.onend = null; rec.onresult = null; rec.onerror = null;
+        try { rec.abort(); } catch (err) {}
+      }
+      voiceOverlayEl.hidden = true;
+      voiceState = 'idle';
+      voiceFinalTranscript = '';
+    }
+
+    /* отмена до подтверждения: тап вне карточки или свайп вниз */
+    voiceOverlayEl.addEventListener('click', e => {
+      if (e.target.closest('#voiceCard')) return;
+      closeVoicePanel();
+    });
+    (function enableVoiceCancelSwipe() {
+      let dragging = false, startY = 0, activePointerId = null;
+      voiceOverlayEl.addEventListener('pointerdown', e => {
+        dragging = true; startY = e.clientY; activePointerId = e.pointerId;
+        try { voiceOverlayEl.setPointerCapture(e.pointerId); } catch (err) {}
+      });
+      voiceOverlayEl.addEventListener('pointermove', e => {
+        if (!dragging || e.pointerId !== activePointerId) return;
+        if (e.clientY - startY > 60) { dragging = false; closeVoicePanel(); }
+      });
+      voiceOverlayEl.addEventListener('pointerup', e => {
+        if (e.pointerId !== activePointerId) return;
+        dragging = false;
+      });
+      voiceOverlayEl.addEventListener('pointercancel', e => {
+        if (e.pointerId !== activePointerId) return;
+        dragging = false;
+      });
+    })();
+
+    /* ---------- Разбор фразы: действие / блюдо(-а) ----------
+       Две команды:
+       1. «поставь/убери [блюдо, блюдо и блюдо…] в стоп» — до пяти блюд за
+          раз, через «и»/запятую. Блюдо ищем нечётко по всему меню
+          Старт/Стоп (menuItems).
+       2. «обнули/сбрось/очисти старт[-лист] и/или стоп[-лист]» — без
+          блюда, действует на весь список разом (обе кухни/бар).
+       Запятую в normalizeText не трогаем — она (вместе с «и») разделяет
+       блюда в списке; для сравнения с названием блюда она всё равно не
+       нужна, т.к. к этому моменту фраза уже разбита на отдельные блюда. */
+    function voiceNormalizeText(s) {
+      return (s || '')
+        .toLowerCase()
+        .replace(/ё/g, 'е')
+        .replace(/[«»"'.!?()]/g, '')
+        .replace(/-/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function voiceSplitDishPhrases(phrase) {
+      return phrase
+        .split(/\s*,\s*|\s+и\s+/)
+        .map(s => s.replace(/,/g, ' ').replace(/\s+/g, ' ').trim())
+        .filter(Boolean)
+        .slice(0, 5);   // до пяти блюд за одну команду
+    }
+
+    /* нечёткое сравнение слов через редакторское расстояние — допускает
+       мелкие огрехи распознавания речи (одна-две буквы), не только
+       точное совпадение начала слова */
+    function voiceLevenshtein(a, b) {
+      const m = a.length, n = b.length;
+      if (!m) return n;
+      if (!n) return m;
+      const dp = new Array(n + 1);
+      for (let j = 0; j <= n; j++) dp[j] = j;
+      for (let i = 1; i <= m; i++) {
+        let prev = dp[0];
+        dp[0] = i;
+        for (let j = 1; j <= n; j++) {
+          const tmp = dp[j];
+          dp[j] = a[i - 1] === b[j - 1] ? prev : 1 + Math.min(prev, dp[j], dp[j - 1]);
+          prev = tmp;
+        }
+      }
+      return dp[n];
+    }
+    function voiceWordSimilarity(a, b) {
+      if (!a || !b) return 0;
+      if (a === b) return 1;
+      return 1 - voiceLevenshtein(a, b) / Math.max(a.length, b.length);
+    }
+
+    const VOICE_STOP_ADD_VERBS = ['постав', 'добав'];
+    const VOICE_STOP_REMOVE_VERBS = ['убер', 'убра', 'сним', 'верн'];
+    const VOICE_RESET_VERBS = ['обнул', 'сброс', 'очист'];
+
+    function voiceFuzzyFindMenuItem(phrase) {
+      const q = voiceNormalizeText(phrase);
+      if (!q) return null;
+      const qWords = q.split(' ').filter(Boolean);
+      let best = null, bestScore = 0;
+      menuItems.forEach(item => {
+        const name = voiceNormalizeText(item.name);
+        let score = 0;
+        if (name === q) score = 100;
+        else if (name.includes(q) || q.includes(name)) score = 85;
+        else {
+          const nameWords = name.split(' ').filter(Boolean);
+          let weight = 0;
+          qWords.forEach(w => {
+            let bestWordSim = 0;
+            nameWords.forEach(nw => {
+              const sim = (nw.startsWith(w) || w.startsWith(nw)) ? 1 : voiceWordSimilarity(w, nw);
+              if (sim > bestWordSim) bestWordSim = sim;
+            });
+            weight += bestWordSim;
+          });
+          score = Math.max(
+            Math.round(weight / qWords.length * 65),
+            Math.round(voiceWordSimilarity(q, name) * 70)
+          );
+        }
+        if (score > bestScore) { bestScore = score; best = item; }
+      });
+      return bestScore >= 32 ? best : null;
+    }
+
+    /* «обнули/сбрось/очисти старт[-лист] и/или стоп[-лист]» — без блюда,
+       сразу по всему меню (не только по выбранному сейчас на экране цеху) */
+    function parseVoiceResetCommand(norm) {
+      const hasVerb = VOICE_RESET_VERBS.some(v => norm.includes(v));
+      if (!hasVerb) return null;
+      const hasStop = /(^|\s)стоп/.test(norm);
+      const hasStart = /(^|\s)старт/.test(norm);
+      if (!hasStop && !hasStart) return null;
+      const scope = hasStop && hasStart ? 'both' : hasStop ? 'stop' : 'start';
+      const actionLabel = scope === 'both' ? 'Обнулить старт- и стоп-лист'
+        : scope === 'stop' ? 'Обнулить стоп-лист' : 'Обнулить старт-лист';
+      return { type: 'resetList', scope: scope, actionLabel: actionLabel, changesData: true };
+    }
+
+    function parseVoiceCommand(rawText) {
+      const norm = voiceNormalizeText(rawText);
+      if (!norm) return null;
+      const reset = parseVoiceResetCommand(norm);
+      if (reset) return reset;
+      /* не привязываемся к концу фразы — «...в стоп лист пожалуйста» и
+         подобные хвосты не должны ронять разбор, «стоп» после предлога
+         достаточно поймать где угодно в фразе */
+      const m = norm.match(/^(\S+)\s+(.+?)\s+(?:в|на|из|со|с)\s+стоп/);
+      if (!m) return null;
+      const verb = m[1];
+      const dishListPhrase = m[2].trim();
+      if (!dishListPhrase) return null;
+      const isAdd = VOICE_STOP_ADD_VERBS.some(v => verb.startsWith(v));
+      const isRemove = !isAdd && VOICE_STOP_REMOVE_VERBS.some(v => verb.startsWith(v));
+      if (!isAdd && !isRemove) return null;
+      const dishes = voiceSplitDishPhrases(dishListPhrase).map(p => ({
+        phrase: p,
+        item: voiceFuzzyFindMenuItem(p)
+      }));
+      if (!dishes.length) return null;
+      return {
+        type: 'stopDish',
+        kind: isAdd ? 'add' : 'remove',
+        actionLabel: isAdd ? 'Добавить в стоп-лист' : 'Убрать из стоп-листа',
+        dishes: dishes,
+        changesData: true   // информационные команды (когда появятся) — false, без шторки и без «Отменить»
+      };
+    }
+
+    /* ---------- «Понял так» — шторка с подтверждением ---------- */
+    let voiceSheetBreatheRaf = null;
+    function startVoiceSheetBreathe() {
+      if (voiceReducedMotion) {
+        voiceSheetGlowEl.style.height = '60px';
+        voiceSheetGlowEl.style.opacity = '.5';
+        return;
+      }
+      const step = ts => {
+        const t = (ts % 5000) / 5000;
+        const phase = (1 - Math.cos(t * Math.PI * 2)) / 2;   // 0..1..0, плавно
+        voiceSheetGlowEl.style.height = (40 + 40 * phase).toFixed(1) + 'px';
+        voiceSheetGlowEl.style.opacity = (0.28 + 0.5 * phase).toFixed(3);
+        voiceSheetBreatheRaf = requestAnimationFrame(step);
+      };
+      voiceSheetBreatheRaf = requestAnimationFrame(step);
+    }
+    function stopVoiceSheetBreathe() {
+      if (voiceSheetBreatheRaf) cancelAnimationFrame(voiceSheetBreatheRaf);
+      voiceSheetBreatheRaf = null;
+    }
+
+    function openVoiceSheet(cmd) {
+      voiceState = 'sheet';
+      voiceCurrentCommand = cmd;
+      voiceRowActionEl.textContent = cmd.actionLabel;
+      if (cmd.type === 'resetList') {
+        voiceDishRowEl.hidden = true;
+        voiceSheetConfirmBtnEl.disabled = false;
+      } else {
+        voiceDishRowEl.hidden = false;
+        voiceRowDishLabelEl.textContent = cmd.dishes.length > 1 ? 'Блюда' : 'Блюдо';
+        voiceDishListEl.innerHTML = cmd.dishes.map(d =>
+          '<div class="voice-sheet-dish' + (d.item ? '' : ' is-missing') + '">' +
+            (d.item ? d.item.name : 'Не найдено: «' + d.phrase + '»') +
+          '</div>'
+        ).join('');
+        voiceSheetConfirmBtnEl.disabled = cmd.dishes.some(d => !d.item);
+      }
+      positionAboveNav(voiceSheetEl);
+      voiceSheetEl.hidden = false;
+      voiceSheetEl.classList.remove('is-open');
+      void voiceSheetEl.offsetHeight;   // форсируем reflow — иначе первый transition не сыграет
+      requestAnimationFrame(() => voiceSheetEl.classList.add('is-open'));
+      startVoiceSheetBreathe();
+    }
+
+    function closeVoiceSheet(after) {
+      voiceSheetEl.classList.remove('is-open');
+      stopVoiceSheetBreathe();
+      setTimeout(() => {
+        voiceSheetEl.hidden = true;
+        if (after) after();
+      }, 280);
+    }
+
+    voiceSheetChangeBtnEl.addEventListener('click', () => {
+      closeVoiceSheet(() => {
+        voiceState = 'idle';
+        voiceCurrentCommand = null;
+        openVoiceListening();
+      });
+    });
+
+    voiceSheetConfirmBtnEl.addEventListener('click', () => {
+      if (voiceSheetConfirmBtnEl.disabled || !voiceCurrentCommand) return;
+      const cmd = voiceCurrentCommand;
+      closeVoiceSheet(() => {
+        voiceState = 'idle';
+        voiceCurrentCommand = null;
+        applyVoiceCommand(cmd);
+      });
+    });
+
+    /* ---------- Выполнение через существующую логику Старт/Стоп листа ----------
+       Тот же item.status и те же renderStartStop()/renderDishList(), что и у
+       ручного переключателя (attachToggleHandlers) — здесь не toggle, а явная
+       установка, потому что голосовая команда — это намерение, а не клик по
+       уже видимой кнопке. markListChanged/listChanges используем только на
+       время одного вызова showListNotify, чтобы не тянуть в неё несохранённые
+       ручные правки, если они где-то параллельно копятся. Обе команды
+       сводятся к одному и тому же: списку {itemId, prevStatus} для отката —
+       поэтому у них общий showListNotify/undoVoiceStopCommand. */
+    function applyVoiceCommand(cmd) {
+      if (cmd.type === 'resetList') applyVoiceResetCommand(cmd);
+      else applyVoiceStopDishCommand(cmd);
+    }
+
+    function applyVoiceStopDishCommand(cmd) {
+      const items = cmd.dishes.map(d => d.item).filter(Boolean);
+      if (!items.length) return;
+      const changes = items.map(item => {
+        const prevStatus = item.status;
+        item.status = cmd.kind === 'add' ? 'stop' : (item.status === 'stop' ? null : item.status);
+        return { itemId: item.id, prevStatus: prevStatus };
+      });
+      renderStartStop();
+      renderDishList();
+      const hadStopFlag = listChanges.has('stop');
+      listChanges.add('stop');
+      showListNotify({ items: changes });
+      if (!hadStopFlag) listChanges.delete('stop');
+    }
+
+    function applyVoiceResetCommand(cmd) {
+      const touchesStart = cmd.scope === 'start' || cmd.scope === 'both';
+      const touchesStop = cmd.scope === 'stop' || cmd.scope === 'both';
+      const changes = [];
+      menuItems.forEach(item => {
+        if ((touchesStart && item.status === 'start') || (touchesStop && item.status === 'stop')) {
+          changes.push({ itemId: item.id, prevStatus: item.status });
+          item.status = null;
+        }
+      });
+      renderStartStop();
+      renderDishList();
+      if (!changes.length) return;   // обнулять было нечего — уведомление ни к чему
+      const hadStart = listChanges.has('start'), hadStop = listChanges.has('stop');
+      if (touchesStart) listChanges.add('start');
+      if (touchesStop) listChanges.add('stop');
+      showListNotify({ items: changes });
+      if (touchesStart && !hadStart) listChanges.delete('start');
+      if (touchesStop && !hadStop) listChanges.delete('stop');
+    }
+
+    /* «Отменить» — из живой плашки или прямо из копилки; остальным сотрудникам
+       это уходит как обычное изменение стоп-листа, отдельного уведомления
+       об откате не делаем (никакого showListNotify здесь) */
+    window.undoVoiceStopCommand = function (info) {
+      (info.items || []).forEach(entry => {
+        const item = menuItems.find(i => i.id === entry.itemId);
+        if (item) item.status = entry.prevStatus;
+      });
+      renderStartStop();
+      renderDishList();
+    };
+
+    /* ---------- Вызов: горизонтальный свайп по нижнему меню ----------
+       Начало жеста ближе 24px к левому/правому краю — не наш, чтобы не
+       задевать системные edge-жесты; порог по dx — чтобы не мешать обычным
+       тапам по кнопкам вкладок. */
+    (function enableVoiceAssistantTrigger() {
+      let dragging = false, startX = 0, startY = 0, moved = false, activePointerId = null;
+      let safetyTimer = null;
+
+      /* на некоторых мобильных браузерах жест иногда «теряется» —
+         pointerup/pointercancel не долетают (браузер решил, что это
+         вертикальный скролл, и забрал жест себе); свежий pointerdown
+         жёстко сбрасывает застрявшее состояние, а таймер отпускает его
+         сам, если события так и не пришли (тот же приём, что в
+         reserveSwipeReset) */
+      function resetDrag() {
+        dragging = false;
+        activePointerId = null;
+        clearTimeout(safetyTimer);
+      }
+
+      bottomNavEl.addEventListener('pointerdown', e => {
+        resetDrag();
+        moved = false;
+        if (voiceState !== 'idle') return;
+        const rect = bottomNavEl.getBoundingClientRect();
+        if (e.clientX - rect.left < 24 || rect.right - e.clientX < 24) return;
+        dragging = true; startX = e.clientX; startY = e.clientY;
+        activePointerId = e.pointerId;
+        /* захват указателя — иначе на узкой полосе меню палец легко уходит
+           за пределы элемента и pointermove/pointerup перестают доходить */
+        try { bottomNavEl.setPointerCapture(e.pointerId); } catch (err) {}
+        safetyTimer = setTimeout(resetDrag, 800);
+      });
+      /* решаем по первому же движению, не дожидаясь pointerup — на реальных
+         тач-браузерах короткий горизонтальный свайп иногда обрывается
+         pointercancel'ом (см. reserveSwipeReset выше) раньше, чем палец
+         оторвётся от экрана, так что ждать отпускания небезопасно */
+      bottomNavEl.addEventListener('pointermove', e => {
+        if (!dragging || e.pointerId !== activePointerId || moved) return;
+        const dx = e.clientX - startX, dy = e.clientY - startY;
+        if (Math.abs(dx) > 16 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+          moved = true;
+          resetDrag();
+          openVoiceListening();
+        }
+      });
+      bottomNavEl.addEventListener('pointerup', e => {
+        if (!dragging || e.pointerId !== activePointerId) return;
+        resetDrag();
+      });
+      bottomNavEl.addEventListener('pointercancel', e => {
+        if (e.pointerId !== activePointerId) return;
+        resetDrag();
+      });
+      /* гасим клик по кнопке вкладки, если жест распознан как вызов ассистента */
+      bottomNavEl.addEventListener('click', e => {
+        if (moved) { e.stopPropagation(); e.preventDefault(); }
+        moved = false;
+      }, true);
+    })();
+  }
 
   /* старт: первый экран файла — МН-00 */
   if (!location.hash) location.hash = 'мн-00';
