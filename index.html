@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Golden Particles</title>
+<style>
+  html, body { margin: 0; padding: 0; overflow: hidden; background: #000; width: 100%; height: 100%; }
+  canvas { display: block; }
+  #ui {
+    position: fixed; top: 16px; right: 16px; z-index: 10;
+    display: flex; gap: 10px; font-family: -apple-system, system-ui, sans-serif;
+  }
+  .ui-btn {
+    background: rgba(255, 200, 87, 0.12);
+    border: 1px solid rgba(255, 200, 87, 0.4);
+    color: #FFF1C1;
+    padding: 10px 16px;
+    border-radius: 24px;
+    font-size: 13px;
+    cursor: pointer;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    transition: background 0.2s, border-color 0.2s;
+    user-select: none;
+  }
+  .ui-btn:hover { background: rgba(255, 200, 87, 0.22); border-color: rgba(255, 200, 87, 0.7); }
+  .ui-btn.active { background: rgba(255, 176, 0, 0.35); border-color: #FFB000; }
+  #fileInput { display: none; }
+  #status {
+    position: fixed; bottom: 14px; left: 16px; z-index: 10;
+    font-family: -apple-system, system-ui, sans-serif;
+    color: rgba(255, 241, 193, 0.55);
+    font-size: 11px;
+    letter-spacing: 0.02em;
+  }
+</style>
+</head>
+<body>
+
+<div id="ui">
+  <button class="ui-btn" id="btnMic">Микрофон</button>
+  <button class="ui-btn" id="btnFile">Файл</button>
+  <input type="file" id="fileInput" accept="audio/*">
+</div>
+<div id="status">Состояние покоя — куб</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/examples/js/shaders/CopyShader.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/examples/js/postprocessing/MaskPass.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/examples/js/postprocessing/UnrealBloomPass.js"></script>
+
+<script>
+(function () {
+  'use strict';
+
+  var COUNT = 20000;
+
+  // ---------- Renderer / Scene ----------
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 100);
+  camera.position.set(0, 0, 9);
+
+  var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x000000, 1);
+  document.body.appendChild(renderer.domElement);
+
+  var composer = new THREE.EffectComposer(renderer);
+  composer.addPass(new THREE.RenderPass(scene, camera));
+  var bloomPass = new THREE.UnrealBloomPass(
+    new THREE.Vector2(window.innerWidth, window.innerHeight),
+    1.15,  // strength
+    0.9,   // radius
+    0.12   // threshold
+  );
+  composer.addPass(bloomPass);
+
+  // ---------- Shape generators ----------
+  function randInSphere(r) {
+    var u = Math.random(), v = Math.random();
+    var theta = 2 * Math.PI * u;
+    var phi = Math.acos(2 * v - 1);
+    var radius = r * Math.cbrt(Math.random());
+    return new THREE.Vector3(
+      radius * Math.sin(phi) * Math.cos(theta),
+      radius * Math.sin(phi) * Math.sin(theta),
+      radius * Math.cos(phi)
+    );
+  }
+
+  function makeCube(n, size) {
+    var pts = new Float32Array(n * 3);
+    var half = size / 2;
+    for (var i = 0; i < n; i++) {
+      var face = Math.floor(Math.random() * 6);
+      var a = (Math.random() * 2 - 1) * half;
+      var b = (Math.random() * 2 - 1) * half;
+      var x, y, z;
+      // bias: most points on faces/edges, some inside volume for density
+      if (Math.random() < 0.75) {
+        switch (face) {
+          case 0: x = half; y = a; z = b; break;
+          case 1: x = -half; y = a; z = b; break;
+          case 2: y = half; x = a; z = b; break;
+          case 3: y = -half; x = a; z = b; break;
+          case 4: z = half; x = a; y = b; break;
+          default: z = -half; x = a; y = b; break;
+        }
+      } else {
+        x = (Math.random() * 2 - 1) * half;
+        y = (Math.random() * 2 - 1) * half;
+        z = (Math.random() * 2 - 1) * half;
+      }
+      pts[i * 3] = x; pts[i * 3 + 1] = y; pts[i * 3 + 2] = z;
+    }
+    return pts;
+  }
+
+  function makeSphere(n, r) {
+    var pts = new Float32Array(n * 3);
+    for (var i = 0; i < n; i++) {
+      var p;
+      if (Math.random() < 0.8) {
+        // shell
+        var u = Math.random(), v = Math.random();
+        var theta = 2 * Math.PI * u;
+        var phi = Math.acos(2 * v - 1);
+        p = new THREE.Vector3(
+          r * Math.sin(phi) * Math.cos(theta),
+          r * Math.sin(phi) * Math.sin(theta),
+          r * Math.cos(phi)
+        );
+      } else {
+        p = randInSphere(r);
+      }
+      pts[i * 3] = p.x; pts[i * 3 + 1] = p.y; pts[i * 3 + 2] = p.z;
+    }
+    return pts;
+  }
+
+  function makeCloud(n, r) {
+    var pts = new Float32Array(n * 3);
+    for (var i = 0; i < n; i++) {
+      pts[i * 3] = (Math.random() * 2 - 1) * r;
+      pts[i * 3 + 1] = (Math.random() * 2 - 1) * r;
+      pts[i * 3 + 2] = (Math.random() * 2 - 1) * r;
+    }
+    return pts;
+  }
+
+  function makeTorus(n, R, tube) {
+    var pts = new Float32Array(n * 3);
+    for (var i = 0; i < n; i++) {
+      var u = Math.random() * Math.PI * 2;
+      var v = Math.random() * Math.PI * 2;
+      var rr = tube * Math.sqrt(Math.random());
+      var x = (R + rr * Math.cos(v)) * Math.cos(u);
+      var y = (R + rr * Math.cos(v)) * Math.sin(u);
+      var z = rr * Math.sin(v);
+      pts[i * 3] = x; pts[i * 3 + 1] = y; pts[i * 3 + 2] = z;
+    }
+    return pts;
+  }
+
+  var SHAPES = {
+    cube: makeCube(COUNT, 5.2),
+    sphere: makeSphere(COUNT, 3.4),
+    cloud: makeCloud(COUNT, 4.6),
+    torus: makeTorus(COUNT, 3.0, 1.1)
+  };
+  var SHAPE_ORDER = ['cube', 'sphere', 'cloud', 'torus'];
+
+  // ---------- Geometry / attributes ----------
+  var geometry = new THREE.BufferGeometry();
+
+  var positions = new Float32Array(COUNT * 3); // current rendered position
+  var startPos = new Float32Array(COUNT * 3);  // morph source
+  var targetPos = new Float32Array(COUNT * 3); // morph destination
+  var basePos = new Float32Array(COUNT * 3);   // "settled" shape position (no noise)
+  var seeds = new Float32Array(COUNT);
+  var colors = new Float32Array(COUNT * 3);
+
+  var GOLD_MAIN = new THREE.Color(0xFFC857);
+  var GOLD_ACCENT1 = new THREE.Color(0xFFB000);
+  var GOLD_ACCENT2 = new THREE.Color(0xFFF1C1);
+
+  positions.set(SHAPES.cube);
+  basePos.set(SHAPES.cube);
+  startPos.set(SHAPES.cube);
+  targetPos.set(SHAPES.cube);
+
+  for (var i = 0; i < COUNT; i++) {
+    seeds[i] = Math.random() * 1000;
+    var pick = Math.random();
+    var c = pick < 0.55 ? GOLD_MAIN : (pick < 0.85 ? GOLD_ACCENT1 : GOLD_ACCENT2);
+    colors[i * 3] = c.r;
+    colors[i * 3 + 1] = c.g;
+    colors[i * 3 + 2] = c.b;
+  }
+
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute('aSeed', new THREE.BufferAttribute(seeds, 1));
+  geometry.setAttribute('aColor', new THREE.BufferAttribute(colors, 3));
+
+  // ---------- Shader material ----------
+  var uniforms = {
+    uTime: { value: 0 },
+    uSize: { value: 2.4 },
+    uAmp: { value: 0.0 },       // amplitude of displacement noise (volume driven)
+    uPulse: { value: 0.0 },     // scale pulse (volume driven)
+    uBurst: { value: 0.0 },     // peak burst strength
+    uPixelRatio: { value: renderer.getPixelRatio() }
+  };
+
+  var vertexShader = [
+    'uniform float uTime;',
+    'uniform float uSize;',
+    'uniform float uAmp;',
+    'uniform float uPulse;',
+    'uniform float uBurst;',
+    'uniform float uPixelRatio;',
+    'attribute float aSeed;',
+    'attribute vec3 aColor;',
+    'varying vec3 vColor;',
+    'varying float vAlpha;',
+
+    'vec3 hash3(float n) {',
+    '  float x = fract(sin(n) * 43758.5453);',
+    '  float y = fract(sin(n * 1.7) * 21563.231);',
+    '  float z = fract(sin(n * 2.3) * 13568.789);',
+    '  return vec3(x, y, z) * 2.0 - 1.0;',
+    '}',
+
+    'void main() {',
+    '  vec3 pos = position;',
+    '  vec3 dir = normalize(pos + 0.0001);',
+    '  vec3 n = hash3(aSeed + uTime * 0.6);',
+
+    '  float breathe = sin(uTime * 0.6 + aSeed * 0.01) * 0.04;',
+    '  pos += dir * breathe;',
+
+    '  pos += n * uAmp * (0.4 + 0.6 * sin(aSeed + uTime * 2.0));',
+
+    '  float scalePulse = 1.0 + uPulse * 0.18 * sin(aSeed * 0.05 + uTime * 3.0);',
+    '  pos *= scalePulse;',
+
+    '  pos += dir * uBurst * (1.5 + 1.5 * fract(sin(aSeed * 3.1) * 1000.0));',
+
+    '  vColor = aColor;',
+
+    '  vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);',
+    '  float dist = -mvPosition.z;',
+    '  gl_PointSize = uSize * uPixelRatio * (220.0 / dist);',
+    '  vAlpha = clamp(1.4 - dist / 16.0, 0.15, 1.0);',
+    '  gl_Position = projectionMatrix * mvPosition;',
+    '}'
+  ].join('\n');
+
+  var fragmentShader = [
+    'varying vec3 vColor;',
+    'varying float vAlpha;',
+    'void main() {',
+    '  vec2 uv = gl_PointCoord - vec2(0.5);',
+    '  float d = length(uv);',
+    '  float core = smoothstep(0.5, 0.0, d);',
+    '  float glow = smoothstep(0.5, 0.0, d) * 0.6;',
+    '  float alpha = core * vAlpha;',
+    '  if (alpha < 0.02) discard;',
+    '  gl_FragColor = vec4(vColor * (1.0 + glow), alpha);',
+    '}'
+  ].join('\n');
+
+  var material = new THREE.ShaderMaterial({
+    uniforms: uniforms,
+    vertexShader: vertexShader,
+    fragmentShader: fragmentShader,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending
+  });
+
+  var points = new THREE.Points(geometry, material);
+  scene.add(points);
+
+  // ---------- Morph state machine ----------
+  var currentShapeIdx = 0;
+  var morphing = false;
+  var morphT = 0;
+  var MORPH_DURATION = 2.0; // seconds
+
+  var statusEl = document.getElementById('status');
+  var SHAPE_LABELS = { cube: 'куб', sphere: 'сфера', cloud: 'хаотичное облако', torus: 'тор' };
+
+  function startMorphTo(shapeName) {
+    if (morphing) return;
+    startPos.set(basePos);
+    targetPos.set(SHAPES[shapeName]);
+    morphing = true;
+    morphT = 0;
+    currentShapeIdx = SHAPE_ORDER.indexOf(shapeName);
+    statusEl.textContent = 'Морфинг → ' + SHAPE_LABELS[shapeName];
+  }
+
+  function nextShapeRandom() {
+    var idx = currentShapeIdx;
+    var next;
+    do {
+      next = Math.floor(Math.random() * SHAPE_ORDER.length);
+    } while (next === idx);
+    startMorphTo(SHAPE_ORDER[next]);
+  }
+
+  function scheduleRandomMorph() {
+    var delay = 10000 + Math.random() * 10000; // 10-20s
+    window.setTimeout(function () {
+      nextShapeRandom();
+      scheduleRandomMorph();
+    }, delay);
+  }
+  scheduleRandomMorph();
+
+  // ---------- Audio ----------
+  var audioCtx = null;
+  var analyser = null;
+  var freqData = null;
+  var timeData = null;
+  var audioSource = null;
+  var micStream = null;
+  var audioEl = null;
+
+  var smoothedVolume = 0;
+  var lastLoudMorphTime = 0;
+  var LOUD_THRESHOLD = 0.35;
+  var LOUD_COOLDOWN = 2500; // ms
+
+  var btnMic = document.getElementById('btnMic');
+  var btnFile = document.getElementById('btnFile');
+  var fileInput = document.getElementById('fileInput');
+
+  function ensureAudioCtx() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 1024;
+      analyser.smoothingTimeConstant = 0.82;
+      freqData = new Uint8Array(analyser.frequencyBinCount);
+      timeData = new Uint8Array(analyser.fftSize);
+    }
+    return audioCtx;
+  }
+
+  function disconnectSource() {
+    if (audioSource) {
+      try { audioSource.disconnect(); } catch (e) {}
+      audioSource = null;
+    }
+    if (micStream) {
+      micStream.getTracks().forEach(function (t) { t.stop(); });
+      micStream = null;
+    }
+  }
+
+  function setActiveButton(which) {
+    btnMic.classList.toggle('active', which === 'mic');
+    btnFile.classList.toggle('active', which === 'file');
+  }
+
+  btnMic.addEventListener('click', function () {
+    if (btnMic.classList.contains('active')) {
+      disconnectSource();
+      setActiveButton(null);
+      statusEl.textContent = 'Микрофон выключен';
+      return;
+    }
+    ensureAudioCtx();
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(function (stream) {
+        disconnectSource();
+        micStream = stream;
+        audioSource = audioCtx.createMediaStreamSource(stream);
+        audioSource.connect(analyser);
+        setActiveButton('mic');
+        statusEl.textContent = 'Слушаю микрофон…';
+      })
+      .catch(function (err) {
+        statusEl.textContent = 'Микрофон недоступен: ' + err.message + ' (нужен HTTPS/localhost, не file://)';
+      });
+  });
+
+  btnFile.addEventListener('click', function () {
+    fileInput.click();
+  });
+
+  fileInput.addEventListener('change', function (e) {
+    var file = e.target.files && e.target.files[0];
+    if (!file) return;
+    ensureAudioCtx();
+    disconnectSource();
+
+    if (audioEl) {
+      audioEl.pause();
+      audioEl.src = '';
+    }
+    audioEl = new Audio();
+    audioEl.src = URL.createObjectURL(file);
+    audioEl.loop = true;
+    audioEl.crossOrigin = 'anonymous';
+
+    audioSource = audioCtx.createMediaElementSource(audioEl);
+    audioSource.connect(analyser);
+    analyser.connect(audioCtx.destination);
+
+    audioEl.play().then(function () {
+      setActiveButton('file');
+      statusEl.textContent = 'Играет файл: ' + file.name;
+    }).catch(function (err) {
+      statusEl.textContent = 'Не удалось воспроизвести файл: ' + err.message;
+    });
+  });
+
+  function getAudioLevels() {
+    if (!analyser) return { volume: 0, bass: 0, mid: 0, treble: 0, peak: 0 };
+    analyser.getByteFrequencyData(freqData);
+    var n = freqData.length;
+    var sum = 0, bassSum = 0, midSum = 0, trebleSum = 0, peak = 0;
+    var bassEnd = Math.floor(n * 0.15);
+    var midEnd = Math.floor(n * 0.5);
+    for (var i = 0; i < n; i++) {
+      var v = freqData[i] / 255;
+      sum += v;
+      if (v > peak) peak = v;
+      if (i < bassEnd) bassSum += v;
+      else if (i < midEnd) midSum += v;
+      else trebleSum += v;
+    }
+    return {
+      volume: sum / n,
+      bass: bassSum / bassEnd,
+      mid: midSum / (midEnd - bassEnd),
+      treble: trebleSum / (n - midEnd),
+      peak: peak
+    };
+  }
+
+  // ---------- Resize ----------
+  window.addEventListener('resize', function () {
+    var w = window.innerWidth, h = window.innerHeight;
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+    composer.setSize(w, h);
+    uniforms.uPixelRatio.value = renderer.getPixelRatio();
+  });
+
+  // ---------- Animation loop ----------
+  var clock = new THREE.Clock();
+
+  function easeInOutCubic(t) {
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  }
+
+  function animate() {
+    requestAnimationFrame(animate);
+    var dt = clock.getDelta();
+    var t = clock.elapsedTime;
+    uniforms.uTime.value = t;
+
+    // audio-reactive levels
+    var levels = getAudioLevels();
+    smoothedVolume = smoothedVolume * 0.85 + levels.volume * 0.15;
+
+    uniforms.uAmp.value = smoothedVolume * 1.6 + levels.bass * 0.6;
+    uniforms.uPulse.value = smoothedVolume * 2.2;
+
+    if (levels.peak > 0.75) {
+      uniforms.uBurst.value = Math.min(uniforms.uBurst.value + 0.25, 1.0);
+    }
+    uniforms.uBurst.value *= 0.9; // decay back
+
+    // loud sound triggers a shape change
+    var now = performance.now();
+    if (smoothedVolume > LOUD_THRESHOLD && now - lastLoudMorphTime > LOUD_COOLDOWN) {
+      lastLoudMorphTime = now;
+      nextShapeRandom();
+    }
+
+    // morph update
+    if (morphing) {
+      morphT += dt / MORPH_DURATION;
+      if (morphT >= 1) {
+        morphT = 1;
+        morphing = false;
+        basePos.set(targetPos);
+        statusEl.textContent = 'Состояние покоя — ' + SHAPE_LABELS[SHAPE_ORDER[currentShapeIdx]];
+      }
+      var e = easeInOutCubic(Math.min(morphT, 1));
+      for (var i = 0; i < COUNT * 3; i++) {
+        basePos[i] = startPos[i] + (targetPos[i] - startPos[i]) * e;
+      }
+    }
+
+    var posAttr = geometry.attributes.position.array;
+    posAttr.set(basePos);
+    geometry.attributes.position.needsUpdate = true;
+
+    points.rotation.y += dt * 0.08;
+    points.rotation.x = Math.sin(t * 0.05) * 0.08;
+
+    composer.render();
+  }
+
+  animate();
+})();
+</script>
+</body>
+</html>
